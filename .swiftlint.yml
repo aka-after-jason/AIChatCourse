@@ -4,3 +4,6 @@ type_body_length:
   warning: 500 # set a warning when a type body exceds 500 lines
 file_length:
   warning: 750 # set a warning when a file exceds 750 lines
+
+disabled_rules:
+  - trailing_whitespace
