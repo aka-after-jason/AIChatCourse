@@ -27,6 +27,7 @@ struct OnboardingCompletedView: View {
         .safeAreaInset(edge: .bottom, content: {
             ctaButton
         })
+        .toolbar(.hidden, for: .navigationBar)
         .padding(24)
     }
 

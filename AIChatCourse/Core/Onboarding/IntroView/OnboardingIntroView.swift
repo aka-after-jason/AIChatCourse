@@ -20,6 +20,7 @@ struct OnboardingIntroView: View {
                     .callToActionButton()
             }
         }
+        .toolbar(.hidden, for: .navigationBar)
         .padding(24)
     }
 
@@ -42,4 +43,5 @@ struct OnboardingIntroView: View {
     NavigationStack {
         OnboardingIntroView()
     }
+    .environment(AppState())
 }
