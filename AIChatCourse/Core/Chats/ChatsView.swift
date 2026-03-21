@@ -12,7 +12,20 @@ struct ChatsView: View {
     var body: some View {
         NavigationStack {
             List(chats, id: \.self) { chat in
-                Text(chat.id)
+                ChatRowCellViewBuilder(
+                    currentUserId: nil,
+                    chat: chat,
+                    getAvatar: {
+                        try? await Task.sleep(for: .seconds(5))
+                        return AvatarModel.mock
+                    },
+                    getLastChatMessage: {
+                        try? await Task.sleep(for: .seconds(5))
+                        return ChatMessageModel.mock
+                    }
+                )
+                .anyButton(.highlight, action: {})
+                .removeListRowFormatting()
             }
             .navigationTitle("Chats")
         }
