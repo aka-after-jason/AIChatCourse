@@ -114,7 +114,7 @@ struct AvatarDescriptionBuilder {
     }
 }
 
-enum CharacterOption: String {
+enum CharacterOption: String, CaseIterable, Hashable {
     case man, woman, alian, dog, cat
     
     static var `default`: Self { // default 在Swift中是一个关键字
