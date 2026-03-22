@@ -30,7 +30,7 @@ struct ProfileView: View {
             SettingsView()
         }
         .fullScreenCover(isPresented: $showCreateAvatarView) {
-            Text("Avatarview")
+            CreateAvatarView()
         }
         .task {
             await loadData()
@@ -38,7 +38,7 @@ struct ProfileView: View {
     }
 
     private func loadData() async {
-        try? await Task.sleep(for: .seconds(5))
+        try? await Task.sleep(for: .seconds(2))
         isLoading = false
         myAvatars = AvatarModel.mocks
     }
