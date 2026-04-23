@@ -51,7 +51,7 @@ struct AvatarModel: Hashable {
             AvatarModel(
                 avatarId: UUID().uuidString,
                 name: "Alpha",
-                characterOption: .alian,
+                characterOption: .alien,
                 characterAction: .smiling,
                 characterLocation: .park,
                 profileImageName: Constants.randomImageUrl,

@@ -29,15 +29,30 @@ struct AvatarDescriptionBuilder {
 }
 
 enum CharacterOption: String, CaseIterable, Hashable {
-    case man, woman, alian, dog, cat
+    case man, woman, alien, dog, cat
     
     static var `default`: Self { // default 在Swift中是一个关键字
         .man
     }
     
+    var plural: String {
+        switch self {
+        case .man:
+            return "men"
+        case .woman:
+            return "women"
+        case .alien:
+            return "aliens"
+        case .dog:
+            return "dogs"
+        case .cat:
+            return "cats"
+        }
+    }
+    
     var startsWithVowel: Bool {
         switch self {
-        case .alian:
+        case .alien:
             return true
         default:
             return false
