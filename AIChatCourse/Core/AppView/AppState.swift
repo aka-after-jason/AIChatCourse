@@ -8,7 +8,7 @@
 import SwiftUI
 
 @Observable
-class AppState {
+class AppState { // 使用了 @Observable 宏, 就不需要 @Published
     private(set) var showTabBar: Bool {
         didSet {
             UserDefaults.showTabBarView = showTabBar

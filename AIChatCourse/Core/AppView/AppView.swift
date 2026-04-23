@@ -11,6 +11,7 @@ import SwiftUI
 // onboarding - signed out
 
 struct AppView: View {
+    // 由于使用了 @Observable, 这里需要使用 @State
     @State var appState: AppState = AppState()
     var body: some View {
         AppViewBuilder(
@@ -22,6 +23,7 @@ struct AppView: View {
                 WelcomeView()
             }
         )
+        // 由于使用了 @Observable, 这里需要使用 environment,不是 environmentObject
         .environment(appState) // TabBarView 和 WelcomeView 都能访问
     }
 }

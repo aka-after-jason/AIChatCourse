@@ -11,28 +11,115 @@ struct ChatView: View {
     @State private var chatMessages: [ChatMessageModel] = ChatMessageModel.mocks
     @State private var avatar: AvatarModel? = .mock
     @State private var currentUser: UserModel? = .mock
+    @State private var textfieldText: String = ""
+    @State private var showDialog: Bool = false
+    @State private var scrollPosition: String?
     var body: some View {
         VStack {
-            ScrollView {
-                LazyVStack(spacing: 24) {
-                    ForEach(chatMessages) { message in
-                        let isCurrentUser = message.authorId == currentUser?.userId
-                        ChatBubbleViewBuilder(
-                            message: message,
-                            isCurrentUser: isCurrentUser,
-                            imageName: avatar?.profileImageName
-                        )
-                    }
-                }
-                .frame(maxWidth: .infinity)
-                .padding(8)
-            }
-
-            Rectangle()
-                .frame(height: 50)
+            scrollviewSection
+            textFieldSection
         }
         .navigationTitle(avatar?.name ?? "Chat")
         .toolbarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button(action: {
+                    onChatSettingsPressed()
+                }, label: {
+                    Image(systemName: "ellipsis")
+                        .foregroundStyle(.accent)
+                        .padding(8)
+                })
+            }
+        }
+        .confirmationDialog("", isPresented: $showDialog) {
+            Button("Report User / Chat", role: .destructive) {
+                
+            }
+            Button("Delete Chat", role: .destructive) {
+                
+            }
+        } message: {
+            Text("What would you like to do?")
+        }
+    }
+
+    private var scrollviewSection: some View {
+        ScrollView {
+            LazyVStack(spacing: 24) {
+                ForEach(chatMessages) { message in
+                    let isCurrentUser = message.authorId == currentUser?.userId
+                    ChatBubbleViewBuilder(
+                        message: message,
+                        isCurrentUser: isCurrentUser,
+                        imageName: avatar?.profileImageName
+                    )
+                    .id(message.id)
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .padding(8)
+            .rotationEffect(.degrees(180)) // 将内容反转, 目的是让内容贴近输入框
+        }
+        // 将 scrollview 反转,目的是让内容贴近输入框
+        .rotationEffect(.degrees(180))
+        .scrollPosition(id: $scrollPosition, anchor: .center)
+        // .default 动画 搭配scrollview 绝配
+        .animation(.default, value: chatMessages.count)
+    }
+    
+    private var textFieldSection: some View {
+        TextField("Say something...", text: $textfieldText)
+            .keyboardType(.alphabet)
+            .autocorrectionDisabled()
+            .padding(12)
+            .padding(.trailing, 60) // textfield 在发送按钮的左边
+            .overlay(alignment: .trailing, content: {
+                Image(systemName: "arrow.up.circle.fill")
+                    .font(.system(size: 32))
+                    .padding(.trailing, 4)
+                    .foregroundStyle(.accent)
+                    .anyButton {
+                        onSendMessagePressed()
+                    }
+            })
+            .background(
+                ZStack {
+                    // 背景
+                    RoundedRectangle(cornerRadius: 100)
+                        .fill(Color(uiColor: .systemBackground))
+                    // 描边
+                    RoundedRectangle(cornerRadius: 100)
+                        .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                }
+            )
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(Color(uiColor: .secondarySystemBackground))
+    }
+    
+    private func onSendMessagePressed() {
+        guard let currentUser else {return}
+        
+        let content = textfieldText
+        
+        let message = ChatMessageModel(
+            id: UUID().uuidString,
+            chatId: UUID().uuidString,
+            authorId: currentUser.userId,
+            content: content,
+            seenByIds: nil,
+            dateCreated: .now
+        )
+        
+        chatMessages.append(message)
+        scrollPosition = message.id
+        textfieldText = ""
+        
+    }
+    
+    private func onChatSettingsPressed() {
+        showDialog.toggle()
     }
 }
 
