@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ChatsView: View {
     @State private var chats: [ChatModel] = ChatModel.mocks
+    @State private var isnavigation: Bool = false
     var body: some View {
         NavigationStack {
             List(chats, id: \.self) { chat in
@@ -24,10 +25,15 @@ struct ChatsView: View {
                         return ChatMessageModel.mock
                     }
                 )
-                .anyButton(.highlight, action: {})
+                .anyButton(.highlight, action: {
+                    isnavigation = true
+                })
                 .removeListRowFormatting()
             }
             .navigationTitle("Chats")
+            .navigationDestination(isPresented: $isnavigation) {
+                ChatView()
+            }
         }
     }
 }

@@ -7,6 +7,8 @@
 
 import SwiftUI
 
+// MARK: SwiftUI advanced architecture
+
 @main
 struct AIChatCourseApp: App {
     var body: some Scene {

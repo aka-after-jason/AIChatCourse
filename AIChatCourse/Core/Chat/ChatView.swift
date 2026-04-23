@@ -13,10 +13,12 @@ struct ChatView: View {
     @State private var currentUser: UserModel? = .mock
     @State private var textfieldText: String = ""
     @State private var scrollPosition: String?
-    
+
     @State private var alertItem: AnyAppAlertItem?
     @State private var dialogItem: AnyAppAlertItem?
-    
+
+    @State private var showProfileModalView: Bool = false
+
     var body: some View {
         VStack {
             scrollviewSection
@@ -37,6 +39,23 @@ struct ChatView: View {
         }
         .showCustomAlert(type: .confirmationDialog, alertItem: $dialogItem)
         .showCustomAlert(type: .alert, alertItem: $alertItem)
+        .showModal(showModal: $showProfileModalView) {
+            if let avatar {
+                profileModal(avatar: avatar)
+            }
+        }
+    }
+    
+    private func profileModal(avatar: AvatarModel) -> some View {
+        ProfileModalView(
+            imageName: avatar.profileImageName,
+            title: avatar.name,
+            subtitle: avatar.characterOption?.rawValue.capitalized,
+            headline: avatar.characterDescription) {
+                showProfileModalView = false
+            }
+            .padding(40)
+            .transition(.slide)
     }
 
     private var scrollviewSection: some View {
@@ -47,7 +66,8 @@ struct ChatView: View {
                     ChatBubbleViewBuilder(
                         message: message,
                         isCurrentUser: isCurrentUser,
-                        imageName: avatar?.profileImageName
+                        imageName: avatar?.profileImageName,
+                        onImagePressed: onAvatarImagePressed
                     )
                     .id(message.id)
                 }
@@ -137,5 +157,9 @@ extension ChatView {
                 )
             }
         )
+    }
+
+    private func onAvatarImagePressed() {
+        showProfileModalView = true
     }
 }

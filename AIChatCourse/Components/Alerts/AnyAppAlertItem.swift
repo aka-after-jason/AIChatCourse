@@ -5,8 +5,10 @@
 //  Created by Elaine on 2026/4/23.
 //
 
-import SwiftUI
 import Foundation
+import SwiftUI
+
+// MARK: Reusable alerts
 
 struct AnyAppAlertItem {
     let title: String
