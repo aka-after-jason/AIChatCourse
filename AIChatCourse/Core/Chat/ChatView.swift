@@ -12,8 +12,11 @@ struct ChatView: View {
     @State private var avatar: AvatarModel? = .mock
     @State private var currentUser: UserModel? = .mock
     @State private var textfieldText: String = ""
-    @State private var showDialog: Bool = false
     @State private var scrollPosition: String?
+    
+    @State private var alertItem: AnyAppAlertItem?
+    @State private var dialogItem: AnyAppAlertItem?
+    
     var body: some View {
         VStack {
             scrollviewSection
@@ -32,16 +35,8 @@ struct ChatView: View {
                 })
             }
         }
-        .confirmationDialog("", isPresented: $showDialog) {
-            Button("Report User / Chat", role: .destructive) {
-                
-            }
-            Button("Delete Chat", role: .destructive) {
-                
-            }
-        } message: {
-            Text("What would you like to do?")
-        }
+        .showCustomAlert(type: .confirmationDialog, alertItem: $dialogItem)
+        .showCustomAlert(type: .alert, alertItem: $alertItem)
     }
 
     private var scrollviewSection: some View {
@@ -67,7 +62,7 @@ struct ChatView: View {
         // .default 动画 搭配scrollview 绝配
         .animation(.default, value: chatMessages.count)
     }
-    
+
     private var textFieldSection: some View {
         TextField("Say something...", text: $textfieldText)
             .keyboardType(.alphabet)
@@ -97,34 +92,50 @@ struct ChatView: View {
             .padding(.vertical, 6)
             .background(Color(uiColor: .secondarySystemBackground))
     }
-    
-    private func onSendMessagePressed() {
-        guard let currentUser else {return}
-        
-        let content = textfieldText
-        
-        let message = ChatMessageModel(
-            id: UUID().uuidString,
-            chatId: UUID().uuidString,
-            authorId: currentUser.userId,
-            content: content,
-            seenByIds: nil,
-            dateCreated: .now
-        )
-        
-        chatMessages.append(message)
-        scrollPosition = message.id
-        textfieldText = ""
-        
-    }
-    
-    private func onChatSettingsPressed() {
-        showDialog.toggle()
-    }
 }
 
 #Preview {
     NavigationStack {
         ChatView()
+    }
+}
+
+// MARK: 事件
+
+extension ChatView {
+    private func onSendMessagePressed() {
+        guard let currentUser else { return }
+        let content = textfieldText
+        do {
+            try TextValidationHelper.checkIfTextIsValid(text: content)
+            let message = ChatMessageModel(
+                id: UUID().uuidString,
+                chatId: UUID().uuidString,
+                authorId: currentUser.userId,
+                content: content,
+                seenByIds: nil,
+                dateCreated: .now
+            )
+            chatMessages.append(message)
+            scrollPosition = message.id
+            textfieldText = ""
+        } catch {
+            alertItem = AnyAppAlertItem(error: error)
+        }
+    }
+
+    private func onChatSettingsPressed() {
+        dialogItem = AnyAppAlertItem(
+            title: "",
+            subtitle: "What would you like to do?",
+            buttons: {
+                AnyView(
+                    Group {
+                        Button("Report User / Chat", role: .destructive) {}
+                        Button("Delete Chat", role: .destructive) {}
+                    }
+                )
+            }
+        )
     }
 }
