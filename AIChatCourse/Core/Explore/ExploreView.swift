@@ -13,33 +13,19 @@ struct ExploreView: View {
     @State private var featuredAvatars: [AvatarModel] = AvatarModel.mocks
     @State private var categories: [CharacterOption] = CharacterOption.allCases
     @State private var popularAvatars: [AvatarModel] = AvatarModel.mocks
+    @State private var path: [NavigationPathOption] = []
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             List {
                 featuredSection
                 categorySection
                 popularSection
             }
             .navigationTitle("Explore")
+            .customNavigationDestinationForCoreModule(path: $path)
         }
     }
-    
-    private var popularSection: some View {
-        Section {
-            ForEach(popularAvatars, id: \.self) { avatar in
-                CustomListCellView(
-                    imageName: avatar.profileImageName,
-                    title: avatar.name,
-                    subTitle: avatar.characterDescription
-                )
-                .anyButton(.highlight, action: {})
-                .removeListRowFormatting()
-            }
-        } header: {
-            Text("Popular")
-        }
-    }
-    
+
     private var featuredSection: some View {
         Section {
             ZStack {
@@ -49,6 +35,9 @@ struct ExploreView: View {
                         subTitle: avatar.characterDescription,
                         imageName: avatar.profileImageName
                     )
+                    .anyButton {
+                        onAvatarPressed(avatar: avatar)
+                    }
                 }
             }
             .removeListRowFormatting()
@@ -56,19 +45,24 @@ struct ExploreView: View {
             Text("Featured")
         }
     }
-    
+
     private var categorySection: some View {
         Section {
             ZStack {
                 ScrollView(.horizontal) {
                     HStack {
-                        ForEach(categories, id: \.self) {category in
-                            CategoryCellView(
-                                title: category.plural.capitalized,
-                                imageName: Constants.randomImageUrl
-                            )
+                        ForEach(categories, id: \.self) { category in
+                            let imageName = popularAvatars.first(where: { $0.characterOption == category })?.profileImageName
+                            if let imageName {
+                                CategoryCellView(
+                                    title: category.plural.capitalized,
+                                    imageName: Constants.randomImageUrl
+                                )
+                                .anyButton {
+                                    onCategoryPressed(category: category, imageName: imageName)
+                                }
+                            }
                         }
-                        
                     }
                 }
                 .scrollIndicators(.hidden)
@@ -80,8 +74,38 @@ struct ExploreView: View {
             Text("Categories")
         }
     }
+
+    private var popularSection: some View {
+        Section {
+            ForEach(popularAvatars, id: \.self) { avatar in
+                CustomListCellView(
+                    imageName: avatar.profileImageName,
+                    title: avatar.name,
+                    subTitle: avatar.characterDescription
+                )
+                .anyButton(.highlight, action: {
+                    onAvatarPressed(avatar: avatar)
+                })
+                .removeListRowFormatting()
+            }
+        } header: {
+            Text("Popular")
+        }
+    }
 }
 
 #Preview {
     ExploreView()
+}
+
+// MARK: 事件
+
+extension ExploreView {
+    private func onAvatarPressed(avatar: AvatarModel) {
+        path.append(.chatView(avatarId: avatar.avatarId))
+    }
+
+    private func onCategoryPressed(category: CharacterOption, imageName: String) {
+        path.append(.categoryListView(category: category, imageName: imageName))
+    }
 }

@@ -18,6 +18,8 @@ struct ChatView: View {
     @State private var dialogItem: AnyAppAlertItem?
 
     @State private var showProfileModalView: Bool = false
+    
+    var avatarId: String = AvatarModel.mock.avatarId
 
     var body: some View {
         VStack {
