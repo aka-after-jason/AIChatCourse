@@ -35,12 +35,9 @@ extension ChatsView {
     private var chatsSection: some View {
         Section {
             if chats.isEmpty {
-                Text("Your chats will appear here!")
-                    .font(.title3)
+                ContentUnavailableView("Empty Chats", systemImage: "text.bubble", description: Text("Your chats will appear here!"))
                     .foregroundStyle(.secondary)
                     .padding(40)
-                    .frame(maxWidth: .infinity)
-                    .multilineTextAlignment(.center)
                     .removeListRowFormatting()
             } else {
                 ForEach(chats) { chat in
