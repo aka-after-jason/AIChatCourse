@@ -11,13 +11,13 @@ import SwiftUI
 @Observable
 final class AuthManager { // 实现 AuthService 协议中的所有方法
     
-    private(set) var currentUser: UserAuthInfoModel? // stored in memory
+    private(set) var authUser: UserAuthInfoModel? // stored in memory
     private var service: AuthService
     private var listener: (any NSObjectProtocol)?
     
     init(service: AuthService) {
         self.service = service
-        self.currentUser = service.getAuthenticatedUser() // 获取 currentUser
+        self.authUser = service.getAuthenticatedUser() // 获取 currentUser
         self.addAuthListener()
     }
     
@@ -26,14 +26,14 @@ final class AuthManager { // 实现 AuthService 协议中的所有方法
             for await value in service.addAuthenticatedUserListener(onListenerAttached: { listener in
                 self.listener = listener
             }) {
-                self.currentUser = value
+                self.authUser = value
                 print("CurrentUser listener success: \(value?.uid ?? "no uid")")
             }
         }
     }
     
     func getCurrentUserId() throws -> String {
-        guard let uid = currentUser?.uid else {
+        guard let uid = authUser?.uid else {
             throw AuthError.notSignedIn
         }
         return uid
@@ -49,12 +49,12 @@ final class AuthManager { // 实现 AuthService 协议中的所有方法
 
     func signOut() throws {
         try service.signOut()
-        currentUser = nil
+        authUser = nil
     }
 
     func deleteAccount() async throws {
         try await service.deleteAccount()
-        currentUser = nil
+        authUser = nil
     }
     
     enum AuthError: LocalizedError {

@@ -10,6 +10,7 @@ import AuthenticationServices
 
 struct CreateAccountView: View {
     @Environment(AuthManager.self) private var authManager
+    @Environment(UserManager.self) private var userManager
     @Environment(\.dismiss) private var dismiss
     var title: String = "Create Account?"
     var subtitle: String = "Don't lose your data! Connect to an SSO provider to save your account."
@@ -53,8 +54,9 @@ extension CreateAccountView {
         Task {
             do {
                 let (userAuthInfo, isNewUser) = try await authManager.signInApple()
-                onDidSignIn?(isNewUser)
                 print("Did sign in with apple success! uid: \(userAuthInfo.uid) -- isNewUser: \(isNewUser.description)")
+                try await userManager.login(auth: userAuthInfo, isNewUser: isNewUser)
+                onDidSignIn?(isNewUser)
                 dismiss()
             } catch {
                 print("Failed to sign in with apple: \(error.localizedDescription)")

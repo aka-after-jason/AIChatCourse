@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AF05D9542F9D006F00ECB7AD /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = AF05D9532F9D006F00ECB7AD /* FirebaseFirestore */; };
 		AF2A19B22F9B8BD100E51154 /* SignInAppleAsync in Frameworks */ = {isa = PBXBuildFile; productRef = AF2A19B12F9B8BD100E51154 /* SignInAppleAsync */; };
 		AF639B9D2F6F977F00979BBA /* SwiftfulUtilities in Frameworks */ = {isa = PBXBuildFile; productRef = AF639B9C2F6F977F00979BBA /* SwiftfulUtilities */; };
 		AFED45292F9B09EE0060CA90 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = AFED45282F9B09EE0060CA90 /* FirebaseAuth */; };
@@ -62,6 +63,7 @@
 				AF2A19B22F9B8BD100E51154 /* SignInAppleAsync in Frameworks */,
 				AFF87AF42F6809A900595BD1 /* SDWebImageSwiftUI in Frameworks */,
 				AFED45292F9B09EE0060CA90 /* FirebaseAuth in Frameworks */,
+				AF05D9542F9D006F00ECB7AD /* FirebaseFirestore in Frameworks */,
 				AF639B9D2F6F977F00979BBA /* SwiftfulUtilities in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -83,12 +85,20 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		AF05D9522F9D006F00ECB7AD /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		AFB9EACE2F66B7A500EB3ED3 = {
 			isa = PBXGroup;
 			children = (
 				AFB9EAD92F66B7A500EB3ED3 /* AIChatCourse */,
 				AFB9EAE72F66B7A700EB3ED3 /* AIChatCourseTests */,
 				AFB9EAF12F66B7A700EB3ED3 /* AIChatCourseUITests */,
+				AF05D9522F9D006F00ECB7AD /* Frameworks */,
 				AFB9EAD82F66B7A500EB3ED3 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -128,6 +138,7 @@
 				AF639B9C2F6F977F00979BBA /* SwiftfulUtilities */,
 				AFED45282F9B09EE0060CA90 /* FirebaseAuth */,
 				AF2A19B12F9B8BD100E51154 /* SignInAppleAsync */,
+				AF05D9532F9D006F00ECB7AD /* FirebaseFirestore */,
 			);
 			productName = AIChatCourse;
 			productReference = AFB9EAD72F66B7A500EB3ED3 /* AIChatCourse.app */;
@@ -681,6 +692,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		AF05D9532F9D006F00ECB7AD /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AFED45272F9B09EE0060CA90 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
 		AF2A19B12F9B8BD100E51154 /* SignInAppleAsync */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = AF2A19B02F9B8BD100E51154 /* XCRemoteSwiftPackageReference "SignInAppleAsync" */;

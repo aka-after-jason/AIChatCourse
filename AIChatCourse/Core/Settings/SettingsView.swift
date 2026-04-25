@@ -156,7 +156,7 @@ private extension View {
 
 extension SettingsView {
     private func setAnonymousAccountStatus() {
-        isAnonymousUser = authManager.currentUser?.isAnonymous == true
+        isAnonymousUser = authManager.authUser?.isAnonymous == true
     }
 
     private func onSignOutButtonPressed() {

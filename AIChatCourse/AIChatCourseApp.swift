@@ -9,6 +9,7 @@ import FirebaseCore
 import SwiftUI
 
 // MARK: SwiftUI advanced architecture
+// MARK: Firestore 创建在台湾直连
 
 /*
  module1: view layers
@@ -32,6 +33,7 @@ struct EnvironmentBuilderView<Content: View>: View {
     var body: some View {
         content()
             .environment(AuthManager(service: FirebaseAuthService()))
+            .environment(UserManager(service: FirebaseUserService()))
     }
 }
 

@@ -8,22 +8,56 @@
 import Foundation
 import SwiftUI
 
-struct UserModel {
+struct UserModel: Codable {
     let userId: String
-    let dateCreated: Date?
+    let email: String?
+    let isAnonymous: Bool?
+    let creationVersion: String?
+    let creationDate: Date?
+    let lastSignInDate: Date?
     let didCompletedOnboarding: Bool?
     let profileColorHex: String?
 
     init(
         userId: String,
-        dateCreated: Date? = nil,
+        email: String? = nil,
+        isAnonymous: Bool? = nil,
+        creationVersion: String? = nil,
+        creationDate: Date? = nil,
+        lastSignInDate: Date? = nil,
         didCompletedOnboarding: Bool? = nil,
         profileColorHex: String? = nil
     ) {
         self.userId = userId
-        self.dateCreated = dateCreated
+        self.email = email
+        self.isAnonymous = isAnonymous
+        self.creationVersion = creationVersion
+        self.creationDate = creationDate
+        self.lastSignInDate = lastSignInDate
         self.didCompletedOnboarding = didCompletedOnboarding
         self.profileColorHex = profileColorHex
+    }
+    
+    init(auth: UserAuthInfoModel, creationVersion: String?) {
+        self.init(
+            userId: auth.uid,
+            email: auth.email,
+            isAnonymous: auth.isAnonymous,
+            creationVersion: creationVersion,
+            creationDate: auth.creationDate,
+            lastSignInDate: auth.lastSignInDate
+        )
+    }
+    
+    enum CodingKeys:String, CodingKey { // snake_case
+        case userId = "user_id"
+        case email
+        case isAnonymous = "is_anonymous"
+        case creationVersion = "creation_version"
+        case creationDate = "creation_date"
+        case lastSignInDate = "last_sign_in_date"
+        case didCompletedOnboarding = "did_complete_onboarding"
+        case profileColorHex = "profile_color_hex"
     }
     
     // 提供一个计算属性: 将profileColorHex转成Color
@@ -42,25 +76,25 @@ struct UserModel {
         return [
             UserModel(
                 userId: "user1",
-                dateCreated: now,
+                creationDate: now,
                 didCompletedOnboarding: true,
                 profileColorHex: "#FF5733"
             ),
             UserModel(
                 userId: "user2",
-                dateCreated: now.addingTimeInterval(days: -1),
+                creationDate: now.addingTimeInterval(days: -1),
                 didCompletedOnboarding: false,
                 profileColorHex: "#33A1FF"
             ),
             UserModel(
                 userId: "user3",
-                dateCreated: now.addingTimeInterval(days: -3, hours: -2),
+                creationDate: now.addingTimeInterval(days: -3, hours: -2),
                 didCompletedOnboarding: true,
                 profileColorHex: "#7DFF33"
             ),
             UserModel(
                 userId: "user4",
-                dateCreated: now.addingTimeInterval(days: -5, hours: -4),
+                creationDate: now.addingTimeInterval(days: -5, hours: -4),
                 didCompletedOnboarding: false,
                 profileColorHex: "#FF33A1"
             )
