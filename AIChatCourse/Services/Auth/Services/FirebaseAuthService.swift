@@ -7,15 +7,10 @@
 
 import FirebaseAuth
 import Foundation
-import SwiftUI
 import SignInAppleAsync
+import SwiftUI
 
-/// 扩展一个 keypath
-extension EnvironmentValues {
-    @Entry var authService: FirebaseAuthService = .init()
-}
-
-struct FirebaseAuthService {
+struct FirebaseAuthService: AuthService {
     func getAuthenticatedUser() -> UserAuthInfoModel? {
         guard let user = Auth.auth().currentUser else { return nil }
         return UserAuthInfoModel(user: user)
@@ -67,7 +62,7 @@ struct FirebaseAuthService {
     func signOut() throws {
         do {
             try Auth.auth().signOut()
-        } catch let error {
+        } catch {
             print("Failed to sign out: \(error.localizedDescription)")
         }
     }
@@ -92,8 +87,9 @@ struct FirebaseAuthService {
 }
 
 // MARK: 对 firebase 提供的 AuthDataResult 扩展
+
 extension AuthDataResult {
-    // 将 AuthDataResult 转成 自己定义的 UserAuthInfoModel
+    /// 将 AuthDataResult 转成 自己定义的 UserAuthInfoModel
     var asUserAuthInfo: (user: UserAuthInfoModel, isNewUser: Bool) {
         let userAuthInfo = UserAuthInfoModel(user: user)
         let isNewUser = additionalUserInfo?.isNewUser ?? true

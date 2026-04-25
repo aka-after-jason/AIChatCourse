@@ -27,4 +27,15 @@ struct UserAuthInfoModel {
         self.creationDate = creationDate
         self.lastSignInDate = lastSignInDate
     }
+    
+    // mock data
+    static func mock(isAnonymous: Bool) -> Self {
+        UserAuthInfoModel(
+            uid: "mock_user_123",
+            email: "hello@test.com",
+            isAnonymous: isAnonymous,
+            creationDate: .now,
+            lastSignInDate: .now
+        )
+    }
 }
