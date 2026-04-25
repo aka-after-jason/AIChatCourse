@@ -43,7 +43,7 @@ struct OnboardingCompletedView: View {
         // other logic to complete onboarding
         isCompletingProfileSetup = true
         Task {
-            try await Task.sleep(for: .seconds(3))
+            try await Task.sleep(for: .seconds(1))
             isCompletingProfileSetup = false
             appState.updateViewState(showTabBarView: true)
         }

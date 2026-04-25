@@ -5,15 +5,17 @@
 //  Created by Elaine on 2026/3/16.
 //
 
-import SwiftUI
 import SwiftfulUtilities
+import SwiftUI
 
 struct SettingsView: View {
     @Environment(AppState.self) private var appState
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.authService) private var authService
     @State private var isPremium: Bool = false
     @State private var isAnonymousUser: Bool = false
     @State private var showCreateAccountView: Bool = false
+    @State private var showAlert: AnyAppAlertItem?
     var body: some View {
         NavigationStack {
             List {
@@ -22,26 +24,28 @@ struct SettingsView: View {
                 applicationSection
             }
             .navigationTitle("Settings")
-            .sheet(isPresented: $showCreateAccountView) {
+            .sheet(isPresented: $showCreateAccountView, onDismiss: {
+                setAnonymousAccountStatus()
+            }, content: {
                 CreateAccountView()
                     .presentationDetents([.medium])
+            })
+            .showCustomAlert(alertItem: $showAlert)
+            .onAppear {
+                setAnonymousAccountStatus()
             }
         }
     }
+}
 
-    private func onSignOutButtonPressed() {
-        // do some logic to sign out of app!
-        dismiss()
-        Task {
-            try? await Task.sleep(nanoseconds: 1_000_000_000)
-            appState.updateViewState(showTabBarView: false)
-        }
-    }
-    
-    private func onCreateAccountPressed() {
-        showCreateAccountView.toggle()
-    }
+#Preview {
+    SettingsView()
+        .environment(AppState())
+}
 
+// MARK: 抽取属性
+
+extension SettingsView {
     private var accountSection: some View {
         Section(content: {
             if isAnonymousUser {
@@ -63,7 +67,9 @@ struct SettingsView: View {
             Text("Delete Account")
                 .foregroundStyle(.red)
                 .rowFormatting()
-                .anyButton(.highlight, action: {})
+                .anyButton(.highlight, action: {
+                    onDeleteAccountPressed()
+                })
                 .removeListRowFormatting()
         }, header: {
             Text("Account")
@@ -124,11 +130,6 @@ struct SettingsView: View {
     }
 }
 
-#Preview {
-    SettingsView()
-        .environment(AppState())
-}
-
 private extension View {
     func rowFormatting() -> some View {
         padding(.vertical, 12)
@@ -136,4 +137,62 @@ private extension View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(Color(uiColor: .systemBackground))
     }
+}
+
+// MARK: 事件
+
+extension SettingsView {
+    private func setAnonymousAccountStatus() {
+        isAnonymousUser = authService.getAuthenticatedUser()?.isAnonymous == true
+    }
+
+    private func onSignOutButtonPressed() {
+        // do some logic to sign out of app!
+        Task {
+            do {
+                try authService.signOut()
+                await dismissScreen()
+            } catch {
+                showAlert = AnyAppAlertItem(error: error)
+            }
+        }
+    }
+    
+    private func onDeleteAccountPressed() {
+        showAlert = AnyAppAlertItem(
+            title: "Delete Account?",
+            subtitle: "This action is permanent and cannot be undone. Your data will be deleted from our server forever.",
+            buttons: {
+                AnyView(
+                    Group {
+                        Button("Delete", role: .destructive, action: {
+                            onDeleteAccountConfirmed()
+                        })
+                    }
+                )
+            }
+        )
+    }
+    
+    private func onDeleteAccountConfirmed() {
+        Task {
+            do {
+                try await authService.deleteAccount()
+                await dismissScreen()
+            } catch {
+                showAlert = AnyAppAlertItem(error: error)
+            }
+        }
+    }
+    
+    private func dismissScreen() async {
+        dismiss()
+        try? await Task.sleep(nanoseconds: 1_000_000_000)
+        appState.updateViewState(showTabBarView: false)
+    }
+
+    private func onCreateAccountPressed() {
+        showCreateAccountView.toggle()
+    }
+    
 }

@@ -10,6 +10,7 @@ import SwiftUI
 struct WelcomeView: View {
     @State var imageName: String = Constants.randomImageUrl
     @State private var showSignIn: Bool = false
+    @Environment(AppState.self) private var appState
     var body: some View {
         NavigationStack {
             VStack(spacing: 8) {
@@ -28,9 +29,12 @@ struct WelcomeView: View {
         .sheet(isPresented: $showSignIn) {
             CreateAccountView(
                 title: "Sign in",
-                subtitle: "Connect to an existing account."
+                subtitle: "Connect to an existing account.",
+                onDidSignIn: { isNewUser in
+                    handleDidSignIn(isNewUser: isNewUser)
+                }
             )
-                .presentationDetents([.medium])
+            .presentationDetents([.medium])
         }
     }
 }
@@ -70,7 +74,7 @@ extension WelcomeView {
                 }
         }
     }
-    
+
     private func onSignInPressed() {
         showSignIn = true
     }
@@ -86,6 +90,19 @@ extension WelcomeView {
             Link(destination: URL(string: Constants.privacyPolicyUrl)!) {
                 Text("Privacy Policy")
             }
+        }
+    }
+}
+
+// MARK: 事件
+
+extension WelcomeView {
+    private func handleDidSignIn(isNewUser: Bool) {
+        if isNewUser {
+            // do nothing, user gose through onboading
+        } else {
+            // push into tabbar view
+            appState.updateViewState(showTabBarView: true)
         }
     }
 }

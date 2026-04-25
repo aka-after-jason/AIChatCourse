@@ -12,7 +12,7 @@ import SwiftUI
 
 struct AppView: View {
     // 由于使用了 @Observable, 这里需要使用 @State
-    @State var appState: AppState = AppState()
+    @State var appState: AppState = .init()
     @Environment(\.authService) private var authService
     var body: some View {
         AppViewBuilder(
@@ -30,6 +30,12 @@ struct AppView: View {
         // .environment(<#T##keyPath: WritableKeyPath<EnvironmentValues, V>##WritableKeyPath<EnvironmentValues, V>#>, <#T##value: V##V#>) // 用于struct
         .task {
             await checkUserStatus()
+        }
+        // 监听 appState 中的 showTabBar
+        .onChange(of: appState.showTabBar) { _, showTabBar in
+            if !showTabBar {
+                Task { await checkUserStatus() }
+            }
         }
     }
 }
@@ -52,7 +58,7 @@ extension AppView {
             do {
                 let (user, isNewUser) = try await authService.signInAnonymously()
                 print("Sign in anonymous success: \(user.uid) -- isNewUser:\(isNewUser.description)")
-            } catch let error {
+            } catch {
                 print("Failed to signInAnonymously: \(error.localizedDescription)")
             }
         }
