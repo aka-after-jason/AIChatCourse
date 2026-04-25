@@ -13,7 +13,7 @@ import SwiftUI
 struct AppView: View {
     // 由于使用了 @Observable, 这里需要使用 @State
     @State var appState: AppState = .init()
-    @Environment(\.authService) private var authService
+    @Environment(AuthManager.self) private var authManager
     var body: some View {
         AppViewBuilder(
             showTabBar: appState.showTabBar,
@@ -50,13 +50,13 @@ struct AppView: View {
 
 extension AppView {
     private func checkUserStatus() async {
-        if let user = authService.getAuthenticatedUser() {
+        if let user = authManager.currentUser {
             // user is authenticated
             print("User already authenticated: \(user.uid)")
         } else {
             // user is not authenticated
             do {
-                let (user, isNewUser) = try await authService.signInAnonymously()
+                let (user, isNewUser) = try await authManager.signInAnonymously()
                 print("Sign in anonymous success: \(user.uid) -- isNewUser:\(isNewUser.description)")
             } catch {
                 print("Failed to signInAnonymously: \(error.localizedDescription)")

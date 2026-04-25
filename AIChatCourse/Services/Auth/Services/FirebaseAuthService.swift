@@ -1,5 +1,5 @@
 //
-//  FirebaseAuthService.swift
+//  FirebaseauthManager.swift
 //  AIChatCourse
 //
 //  Created by Elaine on 2026/4/24.
@@ -11,6 +11,21 @@ import SignInAppleAsync
 import SwiftUI
 
 struct FirebaseAuthService: AuthService {
+    
+    func addAuthenticatedUserListener(onListenerAttached: (any NSObjectProtocol) -> Void) -> AsyncStream<UserAuthInfoModel?> {
+        AsyncStream { continuation in
+            let listener = Auth.auth().addStateDidChangeListener { _, currentUser in
+                if let currentUser {
+                    let user = UserAuthInfoModel(user: currentUser)
+                    continuation.yield(user)
+                } else {
+                    continuation.yield(nil)
+                }
+            }
+            onListenerAttached(listener)
+        }
+    }
+    
     func getAuthenticatedUser() -> UserAuthInfoModel? {
         guard let user = Auth.auth().currentUser else { return nil }
         return UserAuthInfoModel(user: user)

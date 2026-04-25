@@ -11,7 +11,7 @@ import SwiftUI
 struct SettingsView: View {
     @Environment(AppState.self) private var appState
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.authService) private var authService
+    @Environment(AuthManager.self) private var authManager
     @State private var isPremium: Bool = false
     @State private var isAnonymousUser: Bool = false
     @State private var showCreateAccountView: Bool = false
@@ -40,19 +40,19 @@ struct SettingsView: View {
 
 #Preview("No auth") {
     SettingsView()
-        .environment(\.authService, MockAuthService(currentUser: nil))
+        .environment(AuthManager(service: MockAuthService(currentUser: nil)))
         .environment(AppState())
 }
 
 #Preview("Anonymous") {
     SettingsView()
-        .environment(\.authService, MockAuthService(currentUser: UserAuthInfoModel.mock(isAnonymous: true)))
+        .environment(AuthManager(service: MockAuthService(currentUser: UserAuthInfoModel.mock(isAnonymous: true))))
         .environment(AppState())
 }
 
 #Preview("Not anonymous") {
     SettingsView()
-        .environment(\.authService, MockAuthService(currentUser: UserAuthInfoModel.mock(isAnonymous: false)))
+        .environment(AuthManager(service: MockAuthService(currentUser: UserAuthInfoModel.mock(isAnonymous: false))))
         .environment(AppState())
 }
 
@@ -156,14 +156,14 @@ private extension View {
 
 extension SettingsView {
     private func setAnonymousAccountStatus() {
-        isAnonymousUser = authService.getAuthenticatedUser()?.isAnonymous == true
+        isAnonymousUser = authManager.currentUser?.isAnonymous == true
     }
 
     private func onSignOutButtonPressed() {
         // do some logic to sign out of app!
         Task {
             do {
-                try authService.signOut()
+                try authManager.signOut()
                 await dismissScreen()
             } catch {
                 showAlert = AnyAppAlertItem(error: error)
@@ -190,7 +190,7 @@ extension SettingsView {
     private func onDeleteAccountConfirmed() {
         Task {
             do {
-                try await authService.deleteAccount()
+                try await authManager.deleteAccount()
                 await dismissScreen()
             } catch {
                 showAlert = AnyAppAlertItem(error: error)

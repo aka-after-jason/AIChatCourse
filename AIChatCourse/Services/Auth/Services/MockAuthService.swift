@@ -1,5 +1,5 @@
 //
-//  MockAuthService.swift
+//  MockauthManager.swift
 //  AIChatCourse
 //
 //  Created by Elaine on 2026/4/25.
@@ -10,6 +10,12 @@ struct MockAuthService: AuthService {
     let currentUser: UserAuthInfoModel?
     init(currentUser: UserAuthInfoModel? = nil) {
         self.currentUser = currentUser
+    }
+    
+    func addAuthenticatedUserListener(onListenerAttached: (any NSObjectProtocol) -> Void) -> AsyncStream<UserAuthInfoModel?> {
+        AsyncStream { continuation in
+            continuation.yield(currentUser)
+        }
     }
     
     func getAuthenticatedUser() -> UserAuthInfoModel? {
@@ -33,6 +39,4 @@ struct MockAuthService: AuthService {
     func deleteAccount() async throws {
         
     }
-    
-    
 }
