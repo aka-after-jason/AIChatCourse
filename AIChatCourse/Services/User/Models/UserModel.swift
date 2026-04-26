@@ -37,7 +37,7 @@ struct UserModel: Codable {
         self.didCompletedOnboarding = didCompletedOnboarding
         self.profileColorHex = profileColorHex
     }
-    
+
     init(auth: UserAuthInfoModel, creationVersion: String?) {
         self.init(
             userId: auth.uid,
@@ -48,8 +48,8 @@ struct UserModel: Codable {
             lastSignInDate: auth.lastSignInDate
         )
     }
-    
-    enum CodingKeys:String, CodingKey { // snake_case
+
+    enum CodingKeys: String, CodingKey { // snake_case
         case userId = "user_id"
         case email
         case isAnonymous = "is_anonymous"
@@ -59,10 +59,10 @@ struct UserModel: Codable {
         case didCompletedOnboarding = "did_complete_onboarding"
         case profileColorHex = "profile_color_hex"
     }
-    
+
     // 提供一个计算属性: 将profileColorHex转成Color
     var profileColorCalculated: Color {
-        guard let profileColorHex else {return .accent}
+        guard let profileColorHex else { return .accent }
         return Color(hex: profileColorHex)
     }
 

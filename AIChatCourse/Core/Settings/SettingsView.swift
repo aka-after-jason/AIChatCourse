@@ -12,6 +12,7 @@ struct SettingsView: View {
     @Environment(AppState.self) private var appState
     @Environment(\.dismiss) private var dismiss
     @Environment(AuthManager.self) private var authManager
+    @Environment(UserManager.self) private var userManager
     @State private var isPremium: Bool = false
     @State private var isAnonymousUser: Bool = false
     @State private var showCreateAccountView: Bool = false
@@ -41,18 +42,21 @@ struct SettingsView: View {
 #Preview("No auth") {
     SettingsView()
         .environment(AuthManager(service: MockAuthService(currentUser: nil)))
+        .environment(UserManager(service: MockUserService(currentUser: nil)))
         .environment(AppState())
 }
 
 #Preview("Anonymous") {
     SettingsView()
         .environment(AuthManager(service: MockAuthService(currentUser: UserAuthInfoModel.mock(isAnonymous: true))))
+        .environment(UserManager(service: MockUserService(currentUser: .mock)))
         .environment(AppState())
 }
 
 #Preview("Not anonymous") {
     SettingsView()
         .environment(AuthManager(service: MockAuthService(currentUser: UserAuthInfoModel.mock(isAnonymous: false))))
+        .environment(UserManager(service: MockUserService(currentUser: .mock)))
         .environment(AppState())
 }
 
@@ -164,6 +168,7 @@ extension SettingsView {
         Task {
             do {
                 try authManager.signOut()
+                userManager.signOut()
                 await dismissScreen()
             } catch {
                 showAlert = AnyAppAlertItem(error: error)
@@ -191,6 +196,7 @@ extension SettingsView {
         Task {
             do {
                 try await authManager.deleteAccount()
+                try await userManager.deleteUser()
                 await dismissScreen()
             } catch {
                 showAlert = AnyAppAlertItem(error: error)
