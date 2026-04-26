@@ -8,8 +8,8 @@ import Foundation
 
 struct MockAuthService: AuthService {
     let currentUser: UserAuthInfoModel?
-    init(currentUser: UserAuthInfoModel? = nil) {
-        self.currentUser = currentUser
+    init(user: UserAuthInfoModel? = nil) {
+        self.currentUser = user
     }
     
     func addAuthenticatedUserListener(onListenerAttached: (any NSObjectProtocol) -> Void) -> AsyncStream<UserAuthInfoModel?> {

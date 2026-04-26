@@ -136,7 +136,7 @@ struct ProfileView: View {
 #Preview {
     ProfileView()
         .environment(AppState())
-        .environment(UserManager(service: MockUserService(currentUser: .mock)))
+        .environment(UserManager(services: MockUserServices(user: .mock)))
 }
 
 // MARK: 事件
