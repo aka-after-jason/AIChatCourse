@@ -9,6 +9,7 @@ import FirebaseCore
 import SwiftUI
 
 // MARK: SwiftUI advanced architecture
+
 // MARK: Firestore 创建在台湾直连
 
 /*
@@ -44,12 +45,25 @@ struct Dependencies {
     let userManager: UserManager
     let aiManager: AIManager
     let avatarManager: AvatarManager
-    
+
     init() {
         // 放在这里只会初始化一次
         authManager = AuthManager(service: FirebaseAuthService())
         userManager = UserManager(services: ProductionUserServices())
         aiManager = AIManager(service: OpenAIService())
         avatarManager = AvatarManager(service: FirebaseAvatarService(), local: SwiftDataLocalAvatarPersistence())
+    }
+}
+
+// MARK: 将所有的 environment 都放在这里, 用于 preview
+
+extension View {
+    func previewEnvironment(isSignedIn: Bool = true) -> some View {
+        self
+            .environment(AIManager(service: MockAIService()))
+            .environment(AvatarManager(service: MockAvatarService()))
+            .environment(UserManager(services: MockUserServices(user: isSignedIn ? .mock : nil)))
+            .environment(AuthManager(service: MockAuthService(user: isSignedIn ? .mock(isAnonymous: false) : nil)))
+            .environment(AppState())
     }
 }

@@ -9,20 +9,26 @@ import SwiftUI
 
 struct ExploreView: View {
     @Environment(AvatarManager.self) private var avatarManager
-    // mock data
+    @State private var categories: [CharacterOption] = CharacterOption.allCases
     let avatar = AvatarModel.mock
     @State private var featuredAvatars: [AvatarModel] = []
-    @State private var categories: [CharacterOption] = CharacterOption.allCases
     @State private var popularAvatars: [AvatarModel] = []
+    @State private var isLoadingFeatured: Bool = true
+    @State private var isLoadingPopular: Bool = true
     @State private var path: [NavigationPathOption] = []
     var body: some View {
         NavigationStack(path: $path) {
             List {
                 if featuredAvatars.isEmpty && popularAvatars.isEmpty {
-                    ProgressView()
-                        .padding(40)
-                        .frame(maxWidth: .infinity)
-                        .removeListRowFormatting()
+                    ZStack {
+                        if isLoadingFeatured || isLoadingPopular {
+                            loadingIndicator
+                        } else {
+                            // for edge case 边缘测试
+                            errorMessageView
+                        }
+                    }
+                    .removeListRowFormatting()
                 }
                 if !featuredAvatars.isEmpty {
                     featuredSection
@@ -45,22 +51,50 @@ struct ExploreView: View {
 
     private func loadFeaturedAvatars() async {
         // If already loaded, no need to fetch again
-        guard featuredAvatars.isEmpty else {return}
+        guard featuredAvatars.isEmpty else { return }
         do {
             featuredAvatars = try await avatarManager.getFeaturedAvatars()
         } catch {
             print("Failed to load Featured avatars: \(error)")
         }
+        isLoadingFeatured = false
     }
 
     private func loadPopularAvatars() async {
         // If already loaded, no need to fetch again
-        guard popularAvatars.isEmpty else {return}
+        guard popularAvatars.isEmpty else { return }
         do {
             popularAvatars = try await avatarManager.getPopularAvatars()
         } catch {
             print("Failed to load Popular avatars: \(error)")
         }
+        isLoadingPopular = false
+    }
+}
+
+// MARK: 抽取属性view
+extension ExploreView {
+    private var loadingIndicator: some View {
+        ProgressView()
+            .padding(40)
+            .frame(maxWidth: .infinity)
+    }
+    
+    private var errorMessageView: some View {
+        VStack(alignment: .center, spacing: 8) {
+            Text("Error")
+                .font(.headline)
+            Text("Please check your internet connection and try again.")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+            Button("Try again") {
+                onTryAgainPressed()
+            }
+            .foregroundStyle(.blue)
+        }
+        .frame(maxWidth: .infinity)
+        .multilineTextAlignment(.center)
+        .padding(40)
     }
 
     private var featuredSection: some View {
@@ -131,11 +165,6 @@ struct ExploreView: View {
     }
 }
 
-#Preview {
-    ExploreView()
-        .environment(AvatarManager(service: MockAvatarService()))
-}
-
 // MARK: 事件
 
 extension ExploreView {
@@ -146,4 +175,32 @@ extension ExploreView {
     private func onCategoryPressed(category: CharacterOption, imageName: String) {
         path.append(.categoryListView(category: category, imageName: imageName))
     }
+    
+    private func onTryAgainPressed() {
+        isLoadingFeatured = true
+        isLoadingPopular = true
+        Task {
+            await loadFeaturedAvatars() // 没有先后顺序
+        }
+        Task {
+            await loadPopularAvatars() // 没有先后顺序
+        }
+    }
+}
+
+// MARK: Previews
+
+#Preview("Has data") {
+    ExploreView()
+        .environment(AvatarManager(service: MockAvatarService()))
+}
+
+#Preview("No data") {
+    ExploreView()
+        .environment(AvatarManager(service: MockAvatarService(avatars: [], delay: 1.0)))
+}
+
+#Preview("Slow loading") {
+    ExploreView()
+        .environment(AvatarManager(service: MockAvatarService()))
 }
