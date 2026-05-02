@@ -9,6 +9,8 @@ import SwiftUI
 
 struct CreateAvatarView: View {
     @Environment(AIManager.self) private var aiManager
+    @Environment(AuthManager.self) private var authManager
+    @Environment(AvatarManager.self) private var avatarManager
     @Environment(\.dismiss) private var dismiss
     @State private var avatarName: String = ""
     @State private var characterOption: CharacterOption = .default
@@ -17,6 +19,7 @@ struct CreateAvatarView: View {
     @State private var isGenerating: Bool = false
     @State private var generatedImage: UIImage?
     @State private var isSvaing: Bool = false
+    @State private var showAlert: AnyAppAlertItem?
     var body: some View {
         NavigationStack {
             List {
@@ -26,6 +29,7 @@ struct CreateAvatarView: View {
                 saveSection
             }
             .navigationTitle("Create Avatar")
+            .showCustomAlert(type: .alert, alertItem: $showAlert)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     backButton
@@ -146,10 +150,31 @@ struct CreateAvatarView: View {
     }
 
     private func onSavePressed() {
+        guard let generatedImage else {return}
         isSvaing = true
         Task {
-            try? await Task.sleep(for: .seconds(3))
-            dismiss()
+            do {
+                try TextValidationHelper.checkIfTextIsValid(text: avatarName, minimumCharacterCount: 3)
+                let uid = try authManager.getCurrentUserId()
+                let avatar = AvatarModel(
+                    avatarId: UUID().uuidString,
+                    name: avatarName,
+                    characterOption: characterOption,
+                    characterAction: characterAction,
+                    characterLocation: characterLocation,
+                    profileImageName: nil,
+                    authorId: uid,
+                    dateCreated: .now
+                )
+                
+                // UPLOAD!
+                try await avatarManager.createAvatar(avatar: avatar, image: generatedImage)
+                
+                // dismiss screen
+                dismiss()
+            } catch {
+                showAlert = AnyAppAlertItem(error: error)
+            }
             isSvaing = false
         }
     }
@@ -158,4 +183,6 @@ struct CreateAvatarView: View {
 #Preview {
     CreateAvatarView()
         .environment(AIManager(service: MockAIService()))
+        .environment(AvatarManager(service: MockAvatarService()))
+        .environment(AuthManager(service: MockAuthService(user: .mock(isAnonymous: false))))
 }

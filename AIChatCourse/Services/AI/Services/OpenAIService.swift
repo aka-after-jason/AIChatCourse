@@ -16,25 +16,30 @@ struct OpenAIService: AIService {
     func generateImage(prompt: String) async throws -> UIImage {
         let query = ImagesQuery(
             prompt: prompt, // 提示词
-            model: .gpt4, // 模型
+            model: .gpt_image_1,
             n: 1, // 1张图片
-            quality: .hd, // 高清
-            responseFormat: .b64_json, // 返回 b64_json 格式数据
-            size: ._512, // 图片大小
-            style: .natural,
-            user: nil
+            quality: .low,
+            size: ._1024 // 图片大小
         )
+        
         let result = try await openAI.images(query: query)
         guard let b64Json = result.data.first?.b64Json,
               let data = Data(base64Encoded: b64Json),
               let uiImage = UIImage(data: data)
         else {
-            throw OpenAIError.invalidResponse
+            throw OpenAIError.invalidResponse("没有拿到 b64Json，可能是模型/SDK版本/账单额度问题")
         }
         return uiImage
     }
 
     enum OpenAIError: LocalizedError {
-        case invalidResponse
+        case invalidResponse(String)
+
+        var errorDescription: String? {
+            switch self {
+            case .invalidResponse(let message):
+                return message
+            }
+        }
     }
 }
