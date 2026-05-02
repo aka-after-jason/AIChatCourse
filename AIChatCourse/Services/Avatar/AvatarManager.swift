@@ -50,8 +50,9 @@ final class AvatarManager {
     }
     
     // MARK: SwfitData
-    func addRecentAvatar(avatar: AvatarModel) throws {
+    func addRecentAvatar(avatar: AvatarModel) async throws {
         try local.addRecentAvatar(avatar: avatar)
+        try await remote.incrementAvatarClickCount(avatarId: avatar.id)
     }
     
     func getRecentAvatars() throws -> [AvatarModel] {

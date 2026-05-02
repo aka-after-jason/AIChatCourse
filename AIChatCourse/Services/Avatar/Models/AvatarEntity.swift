@@ -17,6 +17,7 @@ class AvatarEntity { // 必须是class
     var profileImageName: String?
     var authorId: String?
     var dateCreated: Date?
+    var clickCount: Int?
     var dateAdded: Date
     init(from model: AvatarModel) {
         self.avatarId = model.avatarId
@@ -27,6 +28,7 @@ class AvatarEntity { // 必须是class
         self.profileImageName = model.profileImageName
         self.authorId = model.authorId
         self.dateCreated = model.dateCreated
+        self.clickCount = model.clickCount
         self.dateAdded = .now
     }
     
@@ -40,7 +42,8 @@ class AvatarEntity { // 必须是class
             characterLocation: characterLocation,
             profileImageName: profileImageName,
             authorId: authorId,
-            dateCreated: dateCreated
+            dateCreated: dateCreated,
+            clickCount: clickCount
         )
     }
 }

@@ -57,7 +57,7 @@ struct ChatView: View {
             let avatar = try await avatarManager.getAvatar(id: avatarId)
             // 添加到 SwiftData
             self.avatar = avatar
-            try? avatarManager.addRecentAvatar(avatar: avatar)
+            try? await avatarManager.addRecentAvatar(avatar: avatar)
         } catch {
             print("Failed to load avatar: \(error)")
         }

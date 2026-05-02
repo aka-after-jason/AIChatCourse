@@ -20,6 +20,7 @@ struct AvatarModel: Codable, Hashable, StringIdentifiable {
     private(set) var profileImageName: String?
     let authorId: String?
     let dateCreated: Date?
+    let clickCount: Int?
 
     init(
         avatarId: String,
@@ -29,7 +30,8 @@ struct AvatarModel: Codable, Hashable, StringIdentifiable {
         characterLocation: CharacterLocation? = nil,
         profileImageName: String? = nil,
         authorId: String? = nil,
-        dateCreated: Date? = nil
+        dateCreated: Date? = nil,
+        clickCount: Int? = nil
     ) {
         self.avatarId = avatarId
         self.name = name
@@ -39,6 +41,7 @@ struct AvatarModel: Codable, Hashable, StringIdentifiable {
         self.profileImageName = profileImageName
         self.authorId = authorId
         self.dateCreated = dateCreated
+        self.clickCount = clickCount
     }
 
     enum CodingKeys: String, CodingKey {
@@ -50,6 +53,7 @@ struct AvatarModel: Codable, Hashable, StringIdentifiable {
         case profileImageName = "profile_image_name"
         case authorId = "author_id"
         case dateCreated = "date_created"
+        case clickCount = "click_count"
     }
 
     var characterDescription: String {
@@ -76,7 +80,8 @@ struct AvatarModel: Codable, Hashable, StringIdentifiable {
                 characterLocation: .park,
                 profileImageName: Constants.randomImageUrl,
                 authorId: UUID().uuidString,
-                dateCreated: .now
+                dateCreated: .now,
+                clickCount: 10
             ),
             AvatarModel(
                 avatarId: UUID().uuidString,
@@ -86,7 +91,8 @@ struct AvatarModel: Codable, Hashable, StringIdentifiable {
                 characterLocation: .forest,
                 profileImageName: Constants.randomImageUrl,
                 authorId: UUID().uuidString,
-                dateCreated: .now
+                dateCreated: .now,
+                clickCount: 9
             ),
             AvatarModel(
                 avatarId: UUID().uuidString,
@@ -96,7 +102,8 @@ struct AvatarModel: Codable, Hashable, StringIdentifiable {
                 characterLocation: .museum,
                 profileImageName: Constants.randomImageUrl,
                 authorId: UUID().uuidString,
-                dateCreated: .now
+                dateCreated: .now,
+                clickCount: 4
             ),
             AvatarModel(
                 avatarId: UUID().uuidString,
@@ -106,7 +113,8 @@ struct AvatarModel: Codable, Hashable, StringIdentifiable {
                 characterLocation: .park,
                 profileImageName: Constants.randomImageUrl,
                 authorId: UUID().uuidString,
-                dateCreated: .now
+                dateCreated: .now,
+                clickCount: 100
             )
         ]
     }
