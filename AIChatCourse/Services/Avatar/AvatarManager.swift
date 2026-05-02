@@ -16,29 +16,45 @@ import SwiftUI
 @MainActor
 @Observable
 final class AvatarManager {
-    private let service: AvatarService
+    private let remote: RemoteAvatarService
+    private let local: LocalAvatarPersistence
     
-    init(service: AvatarService) {
-        self.service = service
+    init(service: RemoteAvatarService, local: LocalAvatarPersistence = MockLocalAvatarPersistence()) {
+        self.remote = service
+        self.local = local
     }
     
+    // MARK: Remote
     func createAvatar(avatar: AvatarModel, image: UIImage) async throws {
-        try await service.createAvatar(avatar: avatar, image: image)
+        try await remote.createAvatar(avatar: avatar, image: image)
     }
     
     func getFeaturedAvatars() async throws -> [AvatarModel] {
-        try await service.getFeaturedAvatars()
+        try await remote.getFeaturedAvatars()
     }
     
     func getPopularAvatars() async throws -> [AvatarModel] {
-        try await service.getPopularAvatars()
+        try await remote.getPopularAvatars()
     }
     
     func getAvatarsForCategory(category: CharacterOption) async throws -> [AvatarModel] {
-        try await service.getAvatarsForCategory(category: category)
+        try await remote.getAvatarsForCategory(category: category)
     }
     
     func getAvatarsForAuthor(userId: String) async throws -> [AvatarModel] {
-        try await service.getAvatarsForAuthor(userId: userId)
+        try await remote.getAvatarsForAuthor(userId: userId)
+    }
+    
+    func getAvatar(id: String) async throws -> AvatarModel {
+        try await remote.getAvatar(id: id)
+    }
+    
+    // MARK: SwfitData
+    func addRecentAvatar(avatar: AvatarModel) throws {
+        try local.addRecentAvatar(avatar: avatar)
+    }
+    
+    func getRecentAvatars() throws -> [AvatarModel] {
+        try local.getRecentAvatars()
     }
 }
