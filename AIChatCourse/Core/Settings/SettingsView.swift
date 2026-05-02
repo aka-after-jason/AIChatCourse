@@ -13,6 +13,7 @@ struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(AuthManager.self) private var authManager
     @Environment(UserManager.self) private var userManager
+    @Environment(AvatarManager.self) private var avatarManager
     @State private var isPremium: Bool = false
     @State private var isAnonymousUser: Bool = false
     @State private var showCreateAccountView: Bool = false
@@ -37,27 +38,6 @@ struct SettingsView: View {
             }
         }
     }
-}
-
-#Preview("No auth") {
-    SettingsView()
-        .environment(AuthManager(service: MockAuthService(user: nil)))
-        .environment(UserManager(services: MockUserServices(user: nil)))
-        .environment(AppState())
-}
-
-#Preview("Anonymous") {
-    SettingsView()
-        .environment(AuthManager(service: MockAuthService(user: UserAuthInfoModel.mock(isAnonymous: true))))
-        .environment(UserManager(services: MockUserServices(user: .mock)))
-        .environment(AppState())
-}
-
-#Preview("Not anonymous") {
-    SettingsView()
-        .environment(AuthManager(service: MockAuthService(user: UserAuthInfoModel.mock(isAnonymous: false))))
-        .environment(UserManager(services: MockUserServices(user: .mock)))
-        .environment(AppState())
 }
 
 // MARK: 抽取属性
@@ -195,8 +175,19 @@ extension SettingsView {
     private func onDeleteAccountConfirmed() {
         Task {
             do {
+                let uid = try authManager.getCurrentUserId()
+                /*
                 try await authManager.deleteAccount()
                 try await userManager.deleteUser()
+                try await avatarManager.removeAuthorIdFromAllUserAvatars(userId: uid)
+                 */
+                
+                // 使用 async let
+                async let deleteAuth: () = authManager.deleteAccount()
+                async let deleteUser: () = userManager.deleteUser()
+                async let deleteAvatar: () = avatarManager.removeAuthorIdFromAllUserAvatars(userId: uid)
+                let (_, _, _) = await (try deleteAuth, try deleteUser, try deleteAvatar)
+                
                 await dismissScreen()
             } catch {
                 showAlert = AnyAppAlertItem(error: error)
@@ -214,4 +205,29 @@ extension SettingsView {
         showCreateAccountView.toggle()
     }
     
+}
+
+// MARK: Previews
+#Preview("No auth") {
+    SettingsView()
+        .environment(AvatarManager(service: MockAvatarService()))
+        .environment(AuthManager(service: MockAuthService(user: nil)))
+        .environment(UserManager(services: MockUserServices(user: nil)))
+        .environment(AppState())
+}
+
+#Preview("Anonymous") {
+    SettingsView()
+        .environment(AvatarManager(service: MockAvatarService()))
+        .environment(AuthManager(service: MockAuthService(user: UserAuthInfoModel.mock(isAnonymous: true))))
+        .environment(UserManager(services: MockUserServices(user: .mock)))
+        .environment(AppState())
+}
+
+#Preview("Not anonymous") {
+    SettingsView()
+        .environment(AvatarManager(service: MockAvatarService()))
+        .environment(AuthManager(service: MockAuthService(user: UserAuthInfoModel.mock(isAnonymous: false))))
+        .environment(UserManager(services: MockUserServices(user: .mock)))
+        .environment(AppState())
 }

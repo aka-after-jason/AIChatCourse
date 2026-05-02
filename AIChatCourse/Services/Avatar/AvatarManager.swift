@@ -58,4 +58,12 @@ final class AvatarManager {
     func getRecentAvatars() throws -> [AvatarModel] {
         try local.getRecentAvatars()
     }
+    
+    func removeAuthorIdFromAvatar(avatarId: String) async throws {
+        try await remote.removeAuthorIdFromAvatar(avatarId: avatarId)
+    }
+    
+    func removeAuthorIdFromAllUserAvatars(userId: String) async throws {
+        try await remote.removeAuthorIdFromAllUserAvatars(userId: userId)
+    }
 }

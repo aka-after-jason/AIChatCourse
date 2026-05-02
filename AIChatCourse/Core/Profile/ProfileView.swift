@@ -16,6 +16,7 @@ struct ProfileView: View {
     @State private var currentUser: UserModel?
     @State private var myAvatars: [AvatarModel] = []
     @State private var isLoading: Bool = true
+    @State private var showAlert: AnyAppAlertItem?
     @State private var path: [NavigationPathOption] = []
     var body: some View {
         NavigationStack(path: $path) {
@@ -34,6 +35,7 @@ struct ProfileView: View {
         .sheet(isPresented: $showSettingsView) {
             SettingsView()
         }
+        .showCustomAlert(alertItem: $showAlert)
         .fullScreenCover(isPresented: $showCreateAvatarView, onDismiss: {
             Task {
                 await loadData() // avatar 创建完成, 自动刷新
@@ -139,7 +141,15 @@ struct ProfileView: View {
 
     private func onDeleteAvatar(indexSet: IndexSet) {
         guard let index = indexSet.first else { return }
-        myAvatars.remove(at: index)
+        let avatar = myAvatars[index]
+        Task {
+            do {
+                try await avatarManager.removeAuthorIdFromAvatar(avatarId: avatar.id)
+                myAvatars.remove(at: index)
+            } catch {
+                showAlert = AnyAppAlertItem(title: "Unable to delete avatar.", subtitle: "Please try again.")
+            }
+        }
     }
 }
 
