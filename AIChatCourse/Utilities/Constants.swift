@@ -16,6 +16,7 @@ struct Constants {
     static let userCollectionName = "users"
     static let avatarCollectionName = "avatars"
     static let userDocumentKey = "current_user"
+    static let chatCollectionName = "chats"
     
     // storage
     static let storageAvatarsFolderName = "/avatars/"

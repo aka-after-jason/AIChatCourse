@@ -156,20 +156,10 @@ struct CreateAvatarView: View {
             do {
                 try TextValidationHelper.checkIfTextIsValid(text: avatarName, minimumCharacterCount: 3)
                 let uid = try authManager.getCurrentUserId()
-                let avatar = AvatarModel(
-                    avatarId: UUID().uuidString,
-                    name: avatarName,
-                    characterOption: characterOption,
-                    characterAction: characterAction,
-                    characterLocation: characterLocation,
-                    profileImageName: nil,
-                    authorId: uid,
-                    dateCreated: .now,
-                    clickCount: 0 // 初始值为0
-                )
+                let newAvatar = AvatarModel.newAvatar(name: avatarName, option: characterOption, action: characterAction, location: characterLocation, authorId: uid)
                 
                 // UPLOAD!
-                try await avatarManager.createAvatar(avatar: avatar, image: generatedImage)
+                try await avatarManager.createAvatar(avatar: newAvatar, image: generatedImage)
                 
                 // dismiss screen
                 dismiss()

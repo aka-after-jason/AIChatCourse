@@ -64,6 +64,20 @@ struct AvatarModel: Codable, Hashable, StringIdentifiable {
     mutating func updateProfileImage(imageName: String) {
         profileImageName = imageName
     }
+    
+    static func newAvatar(name: String, option: CharacterOption, action: CharacterAction, location: CharacterLocation, authorId: String) -> Self {
+        AvatarModel(
+            avatarId: UUID().uuidString,
+            name: name,
+            characterOption: option,
+            characterAction: action,
+            characterLocation: location,
+            profileImageName: nil,
+            authorId: authorId,
+            dateCreated: .now,
+            clickCount: 0 // 初始值为0
+        )
+    }
 
     /// 提供一些 mock 数据
     static var mock: AvatarModel {

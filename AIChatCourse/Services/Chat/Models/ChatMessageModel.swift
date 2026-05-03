@@ -35,6 +35,30 @@ struct ChatMessageModel: Identifiable {
         guard let seenByIds else {return false}
         return seenByIds.contains(userId)
     }
+    
+    /// 用户发送的消息封装到这里
+    static func newUserMessage(chatId: String, userId: String, message: AIChatModel) -> ChatMessageModel {
+        ChatMessageModel(
+            id: UUID().uuidString,
+            chatId: chatId,
+            authorId: userId,
+            content: message,
+            seenByIds: [userId],
+            dateCreated: .now
+        )
+    }
+    
+    /// AI发送的消息封装到这里
+    static func newAIMessage(chatId: String, userId: String, message: AIChatModel) -> ChatMessageModel {
+        ChatMessageModel(
+            id: UUID().uuidString,
+            chatId: chatId,
+            authorId: userId,
+            content: message,
+            seenByIds: [],
+            dateCreated: .now
+        )
+    }
 
     static var mock: ChatMessageModel {
         mocks[0]

@@ -27,6 +27,7 @@ struct AIChatCourseApp: App {
                 .environment(delegate.dependencies.avatarManager)
                 .environment(delegate.dependencies.userManager)
                 .environment(delegate.dependencies.authManager)
+                .environment(delegate.dependencies.chatManager)
         }
     }
 }
@@ -45,6 +46,7 @@ struct Dependencies {
     let userManager: UserManager
     let aiManager: AIManager
     let avatarManager: AvatarManager
+    let chatManager: ChatManager
 
     init() {
         // 放在这里只会初始化一次
@@ -52,6 +54,7 @@ struct Dependencies {
         userManager = UserManager(services: ProductionUserServices())
         aiManager = AIManager(service: OpenAIService())
         avatarManager = AvatarManager(service: FirebaseAvatarService(), local: SwiftDataLocalAvatarPersistence())
+        chatManager = ChatManager(service: FirebaseChatService())
     }
 }
 
@@ -64,6 +67,7 @@ extension View {
             .environment(AvatarManager(service: MockAvatarService()))
             .environment(UserManager(services: MockUserServices(user: isSignedIn ? .mock : nil)))
             .environment(AuthManager(service: MockAuthService(user: isSignedIn ? .mock(isAnonymous: false) : nil)))
+            .environment(ChatManager(service: MockChatService()))
             .environment(AppState())
     }
 }
