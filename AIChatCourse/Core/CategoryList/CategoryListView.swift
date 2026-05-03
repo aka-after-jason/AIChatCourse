@@ -75,7 +75,7 @@ struct CategoryListView: View {
 
 extension CategoryListView {
     private func onAvatarPressed(avatar: AvatarModel) {
-        path.append(.chatView(avatarId: avatar.avatarId))
+        path.append(.chatView(avatarId: avatar.avatarId, chat: nil))
     }
 }
 

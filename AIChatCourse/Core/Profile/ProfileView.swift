@@ -161,6 +161,6 @@ struct ProfileView: View {
 // MARK: 事件
 extension ProfileView {
     private func onAvatarPressed(avatar: AvatarModel) {
-        path.append(.chatView(avatarId: avatar.avatarId))
+        path.append(.chatView(avatarId: avatar.avatarId, chat: nil))
     }
 }

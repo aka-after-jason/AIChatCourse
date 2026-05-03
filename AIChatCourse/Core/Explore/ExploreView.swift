@@ -169,7 +169,7 @@ extension ExploreView {
 
 extension ExploreView {
     private func onAvatarPressed(avatar: AvatarModel) {
-        path.append(.chatView(avatarId: avatar.avatarId))
+        path.append(.chatView(avatarId: avatar.avatarId, chat: nil))
     }
 
     private func onCategoryPressed(category: CharacterOption, imageName: String) {

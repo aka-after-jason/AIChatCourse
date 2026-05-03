@@ -14,7 +14,7 @@ struct ChatView: View {
     @Environment(AIManager.self) private var aiManager
     @Environment(ChatManager.self) private var chatManager
     @State private var chatMessages: [ChatMessageModel] = [] // ChatMessageModel.mocks
-    @State private var chat: ChatModel?
+    @State var chat: ChatModel? // public, 让外面传进来
     @State private var avatar: AvatarModel? // = .mock
     @State private var currentUser: UserModel?
     @State private var textfieldText: String = ""

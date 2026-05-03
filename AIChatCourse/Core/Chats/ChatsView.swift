@@ -8,9 +8,11 @@
 import SwiftUI
 
 struct ChatsView: View {
+    @Environment(AuthManager.self) private var authManager
+    @Environment(ChatManager.self) private var chatManager
     @Environment(AvatarManager.self) private var avatarManager
-    @State private var chats: [ChatModel] = ChatModel.mocks
-    @State private var recentAvatars: [AvatarModel] = AvatarModel.mocks
+    @State private var chats: [ChatModel] = []
+    @State private var recentAvatars: [AvatarModel] = []
     @State private var path: [NavigationPathOption] = []
     var body: some View {
         NavigationStack(path: $path) {
@@ -22,12 +24,26 @@ struct ChatsView: View {
             }
             .navigationTitle("Chats")
             .customNavigationDestinationForCoreModule(path: $path)
+            .task {
+                await loadChats()
+            }
             .onAppear {
                 loadRecentAvatars()
             }
         }
     }
-    
+
+    private func loadChats() async {
+        do {
+            let uid = try authManager.getCurrentUserId()
+            chats = try await chatManager.getAllChats(userId: uid)
+                // .sorted(by: { $0.dateModified > $1.dateModified }) // 排序
+                .sortedByKeyPath(keyPath: \.dateModified, ascending: false)
+        } catch {
+            print("Failed to load chats: \(error)")
+        }
+    }
+
     private func loadRecentAvatars() {
         do {
             recentAvatars = try avatarManager.getRecentAvatars()
@@ -39,7 +55,7 @@ struct ChatsView: View {
 
 #Preview {
     ChatsView()
-        .environment(AvatarManager(service: MockAvatarService()))
+        .previewEnvironment()
 }
 
 // MARK: 抽取属性
@@ -55,15 +71,13 @@ extension ChatsView {
             } else {
                 ForEach(chats) { chat in
                     ChatRowCellViewBuilder(
-                        currentUserId: nil,
+                        currentUserId: authManager.authUser?.uid,
                         chat: chat,
                         getAvatar: {
-                            try? await Task.sleep(for: .seconds(1))
-                            return AvatarModel.mocks.randomElement()!
+                            try? await avatarManager.getAvatar(id: chat.avatarId)
                         },
                         getLastChatMessage: {
-                            try? await Task.sleep(for: .seconds(1))
-                            return ChatMessageModel.mocks.randomElement()!
+                            try? await chatManager.getLastChatMessage(chatId: chat.id)
                         }
                     )
                     .anyButton(.highlight, action: {
@@ -119,10 +133,10 @@ struct RecentAvatarView: View {
 
 extension ChatsView {
     private func onChatPressed(chat: ChatModel) {
-        path.append(.chatView(avatarId: chat.avatarId))
+        path.append(.chatView(avatarId: chat.avatarId, chat: chat))
     }
-    
+
     private func onAvatarPressed(avatar: AvatarModel) {
-        path.append(.chatView(avatarId: avatar.avatarId))
+        path.append(.chatView(avatarId: avatar.avatarId, chat: nil))
     }
 }
