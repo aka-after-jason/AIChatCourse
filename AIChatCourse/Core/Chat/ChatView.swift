@@ -160,33 +160,56 @@ extension ChatView {
         let content = textfieldText
         Task {
             do {
+                // get userId
                 let uid = try authManager.getCurrentUserId()
+                
+                // validate textField text
                 try TextValidationHelper.checkIfTextIsValid(text: content)
                 
+                // if chat is nil, then create a new chat
                 if chat == nil {
-                    // if chat is nil, then create a new chat
-                    let newChat = ChatModel.newChat(userId: uid, avatarId: avatarId)
-                    try await chatManager.createNewChat(chat: newChat)
-                    chat = newChat
+                    chat = try await createNewChat(uid: uid)
                 }
                 
-                // 我发送的消息
+                // If there is no chat, throw error (should never happen)
+                guard let chat else {
+                    throw CustomError.errorMessage(message: "No chat")
+                }
+                
+                // Create user chat
                 let newChatMessage = AIChatModel(role: .user, message: content)
-                let chatId = UUID().uuidString
-                let newUserMessage = ChatMessageModel.newUserMessage(chatId: chatId, userId: uid, message: newChatMessage)
+                let newUserMessage = ChatMessageModel.newUserMessage(chatId: chat.id, userId: uid, message: newChatMessage)
+                
+                // Upload user chat to the firestore
+                try await chatManager.addChatMessage(chatId: chat.id, message: newUserMessage)
+                
                 chatMessages.append(newUserMessage) // 拼接到数组中
+                
+                // Clear the textField & scroll to the bottom
                 scrollPosition = newUserMessage.id
                 textfieldText = ""
                 
-                // AI 发送的消息
+                // Generate AI Response
                 let aiChats = chatMessages.compactMap({ $0.content })
                 let aiResponse = try await aiManager.generateText(chats: aiChats)
-                let newAIMessage = ChatMessageModel.newAIMessage(chatId: chatId, userId: avatarId, message: aiResponse)
+                
+                // Create AI Chat
+                let newAIMessage = ChatMessageModel.newAIMessage(chatId: chat.id, userId: avatarId, message: aiResponse)
+                
+                // Upload AI chat to the firestore
+                try await chatManager.addChatMessage(chatId: chat.id, message: newAIMessage)
+                
                 chatMessages.append(newAIMessage) // 拼接到数组中
             } catch {
                 alertItem = AnyAppAlertItem(error: error)
             }
         }
+    }
+    
+    private func createNewChat(uid: String) async throws -> ChatModel {
+        let newChat = ChatModel.newChat(userId: uid, avatarId: avatarId)
+        try await chatManager.createNewChat(chat: newChat)
+        return newChat
     }
 
     private func onChatSettingsPressed() {

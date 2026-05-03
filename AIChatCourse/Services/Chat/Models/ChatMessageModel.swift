@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct ChatMessageModel: Identifiable {
+struct ChatMessageModel: Identifiable, Codable {
     let id: String
     let chatId: String
     let authorId: String?
@@ -29,6 +29,15 @@ struct ChatMessageModel: Identifiable {
         self.content = content
         self.seenByIds = seenByIds
         self.dateCreated = dateCreated
+    }
+    
+    enum CodingKeys: String, CodingKey {
+        case id
+        case chatId = "chat_id"
+        case authorId = "author_id"
+        case content = "content"
+        case seenByIds = "seen_by_ids"
+        case dateCreated = "date_created"
     }
     
     func hasBeenSeenBy(userId: String) -> Bool {
