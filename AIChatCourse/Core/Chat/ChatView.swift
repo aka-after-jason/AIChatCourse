@@ -13,7 +13,7 @@ struct ChatView: View {
     @Environment(AvatarManager.self) private var avatarManager
     @Environment(AIManager.self) private var aiManager
     @Environment(ChatManager.self) private var chatManager
-    @State private var chatMessages: [ChatMessageModel] = ChatMessageModel.mocks
+    @State private var chatMessages: [ChatMessageModel] = [] // ChatMessageModel.mocks
     @State private var chat: ChatModel?
     @State private var avatar: AvatarModel? // = .mock
     @State private var currentUser: UserModel?
@@ -55,11 +55,46 @@ struct ChatView: View {
         .task {
             await loadAvatar()
         }
+        .task {
+            await loadChat()
+            // 放在下面
+            await listenForChatMessages()
+        }
         .onAppear {
             loadCurrentUser()
         }
     }
-    
+
+    private func getChatId() throws -> String {
+        guard let chat else {
+            throw CustomError.errorMessage(message: "No chat")
+        }
+        return chat.id
+    }
+
+    private func listenForChatMessages() async {
+        do {
+            let chatId = try getChatId()
+            for try await value in chatManager.streamChatMessages(chatId: chatId) {
+                chatMessages = value.sorted(by: { $0.dateCreatedCalculated < $1.dateCreatedCalculated })
+                // 更新 scrollPosition
+                scrollPosition = chatMessages.last?.id
+            }
+        } catch {
+            print("Failed to listen for chat messages: \(error)")
+        }
+    }
+
+    private func loadChat() async {
+        do {
+            let uid = try authManager.getCurrentUserId()
+            chat = try await chatManager.getChat(userId: uid, avatarId: avatarId)
+            print("Success loading chat.")
+        } catch {
+            print("Failed to get chat: \(error)")
+        }
+    }
+
     private func loadCurrentUser() {
         currentUser = userManager.currentUser
     }
@@ -162,53 +197,69 @@ extension ChatView {
             do {
                 // get userId
                 let uid = try authManager.getCurrentUserId()
-                
+
                 // validate textField text
                 try TextValidationHelper.checkIfTextIsValid(text: content)
-                
+
                 // if chat is nil, then create a new chat
                 if chat == nil {
                     chat = try await createNewChat(uid: uid)
                 }
-                
+
                 // If there is no chat, throw error (should never happen)
                 guard let chat else {
                     throw CustomError.errorMessage(message: "No chat")
                 }
-                
+
                 // Create user chat
                 let newChatMessage = AIChatModel(role: .user, message: content)
                 let newUserMessage = ChatMessageModel.newUserMessage(chatId: chat.id, userId: uid, message: newChatMessage)
-                
+
                 // Upload user chat to the firestore
                 try await chatManager.addChatMessage(chatId: chat.id, message: newUserMessage)
-                
-                chatMessages.append(newUserMessage) // 拼接到数组中
-                
+
+                // chatMessages.append(newUserMessage) // 拼接到数组中
+
                 // Clear the textField & scroll to the bottom
-                scrollPosition = newUserMessage.id
+                // scrollPosition = newUserMessage.id
                 textfieldText = ""
-                
+
                 // Generate AI Response
-                let aiChats = chatMessages.compactMap({ $0.content })
+                var aiChats = chatMessages.compactMap { $0.content }
+                if let avatarDescription = avatar?.characterDescription {
+                    // "A cat that is smiling in the park."
+                    let systemMessage = AIChatModel(
+                        role: .system,
+                        message: "You are a \(avatarDescription) with the intelligence of an AI. We are having a VERY casual conversation. You are my friend."
+                    )
+                    aiChats.insert(systemMessage, at: 0)
+                }
                 let aiResponse = try await aiManager.generateText(chats: aiChats)
-                
+
                 // Create AI Chat
                 let newAIMessage = ChatMessageModel.newAIMessage(chatId: chat.id, userId: avatarId, message: aiResponse)
-                
+
                 // Upload AI chat to the firestore
                 try await chatManager.addChatMessage(chatId: chat.id, message: newAIMessage)
-                
-                chatMessages.append(newAIMessage) // 拼接到数组中
+
+                // chatMessages.append(newAIMessage) // 拼接到数组中
             } catch {
                 alertItem = AnyAppAlertItem(error: error)
             }
         }
     }
-    
+
     private func createNewChat(uid: String) async throws -> ChatModel {
         let newChat = ChatModel.newChat(userId: uid, avatarId: avatarId)
         try await chatManager.createNewChat(chat: newChat)
+
+        // defer: 在 createNewChat 函数结束调用
+        defer {
+            Task {
+                await listenForChatMessages()
+            }
+        }
+
         return newChat
     }
 

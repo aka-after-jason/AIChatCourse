@@ -4,29 +4,37 @@
 //
 //  Created by Elaine on 2026/5/3.
 //
-import SwiftUI
 import Combine
+import SwiftUI
 
 protocol ChatService {
     func createNewChat(chat: ChatModel) async throws
+    func getChat(userId: String, avatarId: String) async throws -> ChatModel?
     func addChatMessage(chatId: String, message: ChatMessageModel) async throws
+    func streamChatMessages(chatId: String) -> AsyncThrowingStream<[ChatMessageModel], Error>
 }
 
 struct MockChatService: ChatService {
-    func createNewChat(chat: ChatModel) async throws {
-        
+    func createNewChat(chat: ChatModel) async throws {}
+    func getChat(userId: String, avatarId: String) async throws -> ChatModel? {
+        ChatModel.mock
     }
-    
-    func addChatMessage(chatId: String, message: ChatMessageModel) async throws {
-        
+    func addChatMessage(chatId: String, message: ChatMessageModel) async throws {}
+    func streamChatMessages(chatId: String) -> AsyncThrowingStream<[ChatMessageModel], any Error> {
+        AsyncThrowingStream { continuation in
+            
+        }
     }
 }
 
 import FirebaseFirestore
+import SwiftfulFirestore
+
 struct FirebaseChatService: ChatService {
     private var collection: CollectionReference {
         Firestore.firestore().collection(Constants.chatCollectionName)
     }
+
     private func messageCollection(chatId: String) -> CollectionReference {
         collection.document(chatId).collection(Constants.messageCollectionName)
     }
@@ -34,6 +42,20 @@ struct FirebaseChatService: ChatService {
     func createNewChat(chat: ChatModel) async throws {
         // 将 chat.id 作为 document id
         try collection.document(chat.id).setData(from: chat, merge: true)
+    }
+    
+    func getChat(userId: String, avatarId: String) async throws -> ChatModel? {
+        // 这里要用类型接收一下
+        /*
+        let result: [ChatModel] = try await collection
+            .whereField(ChatModel.CodingKeys.userId.rawValue, isEqualTo: userId)
+            .whereField(ChatModel.CodingKeys.avatarId.rawValue, isEqualTo: avatarId)
+            .getAllDocuments()
+        return result.first
+         */
+        
+        // 另一种方式
+        try await collection.getDocument(id: ChatModel.chatId(userId: userId, avatarId: avatarId))
     }
     
     func addChatMessage(chatId: String, message: ChatMessageModel) async throws {
@@ -45,11 +67,15 @@ struct FirebaseChatService: ChatService {
             ChatModel.CodingKeys.dateModified.rawValue: Date.now
         ])
     }
+    
+    func streamChatMessages(chatId: String) -> AsyncThrowingStream<[ChatMessageModel], Error> {
+        messageCollection(chatId: chatId).streamAllDocuments()
+    }
 }
 
-// create manager
-// 2 services
-// add the functions
+/// create manager
+/// 2 services
+/// add the functions
 @MainActor
 @Observable
 final class ChatManager {
@@ -64,5 +90,13 @@ final class ChatManager {
     
     func addChatMessage(chatId: String, message: ChatMessageModel) async throws {
         try await service.addChatMessage(chatId: chatId, message: message)
+    }
+    
+    func getChat(userId: String, avatarId: String) async throws -> ChatModel? {
+        try await service.getChat(userId: userId, avatarId: avatarId)
+    }
+    
+    func streamChatMessages(chatId: String) -> AsyncThrowingStream<[ChatMessageModel], Error> {
+        service.streamChatMessages(chatId: chatId)
     }
 }
