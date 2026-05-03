@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ChatView: View {
     @Environment(AvatarManager.self) private var avatarManager
+    @Environment(AIManager.self) private var aiManager
     @State private var chatMessages: [ChatMessageModel] = ChatMessageModel.mocks
     @State private var avatar: AvatarModel? // = .mock
     @State private var currentUser: UserModel? = .mock
@@ -19,7 +20,7 @@ struct ChatView: View {
     @State private var dialogItem: AnyAppAlertItem?
 
     @State private var showProfileModalView: Bool = false
-    
+
     var avatarId: String = AvatarModel.mock.avatarId
 
     var body: some View {
@@ -51,7 +52,7 @@ struct ChatView: View {
             await loadAvatar()
         }
     }
-    
+
     private func loadAvatar() async {
         do {
             let avatar = try await avatarManager.getAvatar(id: avatarId)
@@ -62,17 +63,18 @@ struct ChatView: View {
             print("Failed to load avatar: \(error)")
         }
     }
-    
+
     private func profileModal(avatar: AvatarModel) -> some View {
         ProfileModalView(
             imageName: avatar.profileImageName,
             title: avatar.name,
             subtitle: avatar.characterOption?.rawValue.capitalized,
-            headline: avatar.characterDescription) {
-                showProfileModalView = false
-            }
-            .padding(40)
-            .transition(.slide)
+            headline: avatar.characterDescription
+        ) {
+            showProfileModalView = false
+        }
+        .padding(40)
+        .transition(.slide)
     }
 
     private var scrollviewSection: some View {
@@ -135,6 +137,7 @@ struct ChatView: View {
     NavigationStack {
         ChatView()
             .environment(AvatarManager(service: MockAvatarService()))
+            .previewEnvironment()
     }
 }
 
@@ -144,21 +147,38 @@ extension ChatView {
     private func onSendMessagePressed() {
         guard let currentUser else { return }
         let content = textfieldText
-        do {
-            try TextValidationHelper.checkIfTextIsValid(text: content)
-            let message = ChatMessageModel(
-                id: UUID().uuidString,
-                chatId: UUID().uuidString,
-                authorId: currentUser.userId,
-                content: content,
-                seenByIds: nil,
-                dateCreated: .now
-            )
-            chatMessages.append(message)
-            scrollPosition = message.id
-            textfieldText = ""
-        } catch {
-            alertItem = AnyAppAlertItem(error: error)
+        Task {
+            do {
+                try TextValidationHelper.checkIfTextIsValid(text: content)
+                // 我发送的消息
+                let newChatMessage = AIChatModel(role: .user, message: content)
+                let message = ChatMessageModel(
+                    id: UUID().uuidString,
+                    chatId: UUID().uuidString,
+                    authorId: currentUser.userId,
+                    content: newChatMessage,
+                    seenByIds: nil,
+                    dateCreated: .now
+                )
+                chatMessages.append(message) // 拼接到数组中
+                scrollPosition = message.id
+                textfieldText = ""
+                
+                // AI 发送的消息
+                let aiChats = chatMessages.compactMap({ $0.content })
+                let aiResponse = try await aiManager.generateText(chats: aiChats)
+                let newAIMessage = ChatMessageModel(
+                    id: UUID().uuidString,
+                    chatId: UUID().uuidString,
+                    authorId: avatarId,
+                    content: aiResponse,
+                    seenByIds: nil,
+                    dateCreated: .now
+                )
+                chatMessages.append(newAIMessage) // 拼接到数组中
+            } catch {
+                alertItem = AnyAppAlertItem(error: error)
+            }
         }
     }
 

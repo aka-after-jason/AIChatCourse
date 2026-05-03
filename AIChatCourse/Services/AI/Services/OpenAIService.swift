@@ -4,8 +4,8 @@
 //
 //  Created by Elaine on 2026/4/26.
 //
-import SwiftUI
 import OpenAI // Swift 操作 OpenAI 的 api
+import SwiftUI
 
 struct OpenAIService: AIService {
     var openAI: OpenAI {
@@ -21,25 +21,86 @@ struct OpenAIService: AIService {
             quality: .low,
             size: ._1024 // 图片大小
         )
-        
+
         let result = try await openAI.images(query: query)
         guard let b64Json = result.data.first?.b64Json,
               let data = Data(base64Encoded: b64Json),
               let uiImage = UIImage(data: data)
         else {
-            throw OpenAIError.invalidResponse("没有拿到 b64Json，可能是模型/SDK版本/账单额度问题")
+            throw CustomError.errorMessage(message: "没有拿到 b64Json，可能是模型/SDK版本/账单额度问题")
         }
         return uiImage
     }
 
-    enum OpenAIError: LocalizedError {
-        case invalidResponse(String)
+    /// 调用 OpenAI api 生成chat
+    func generateText(chats: [AIChatModel]) async throws -> AIChatModel {
+        let messages = chats.compactMap { $0.toOpenAIModel() }
+        let query = ChatQuery(messages: messages, model: .gpt4_o)
+        let result = try await openAI.chats(query: query)
+        guard let chat = result.choices.first?.message,
+              let model = AIChatModel(chat: chat)
+        else {
+            throw CustomError.errorMessage(message: "Failed to generate text from OpenAI")
+        }
+        return model
+    }
+}
 
-        var errorDescription: String? {
-            switch self {
-            case .invalidResponse(let message):
-                return message
-            }
+struct AIChatModel {
+    let role: AIChatRole
+    let message: String
+
+    init(role: AIChatRole, message: String) {
+        self.role = role
+        self.message = message
+    }
+
+    init?(chat: ChatResult.Choice.Message) {
+        self.role = AIChatRole(role: chat.role)
+        guard let string = chat.content?.description else { return nil }
+        self.message = string
+    }
+
+    func toOpenAIModel() -> ChatQuery.ChatCompletionMessageParam? {
+        ChatQuery.ChatCompletionMessageParam(
+            role: role.openAIRole,
+            content: message
+        )
+    }
+}
+
+enum AIChatRole {
+    case system, user, assistant, tool, developer
+
+    init(role: String) {
+        switch role {
+        case "system":
+            self = .system
+        case "user":
+            self = .user
+        case "assistant":
+            self = .assistant
+        case "tool":
+            self = .tool
+        case "developer":
+            self = .developer
+        default:
+            self = .developer
+        }
+    }
+
+    var openAIRole: ChatQuery.ChatCompletionMessageParam.Role {
+        switch self {
+        case .system:
+            return .system
+        case .user:
+            return .user
+        case .assistant:
+            return .assistant
+        case .tool:
+            return .tool
+        case .developer:
+            return .developer
         }
     }
 }

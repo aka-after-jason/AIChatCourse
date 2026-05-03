@@ -15,7 +15,7 @@ struct ChatBubbleViewBuilder: View {
     var body: some View {
         ZStack {
             ChatBubbleView(
-                text: message.content ?? "",
+                text: message.content?.message ?? "",
                 textColor: isCurrentUser ? .white : .primary,
                 backgroundColor: isCurrentUser ? .accent : Color(uiColor: .systemGray6),
                 imageName: imageName,
@@ -39,7 +39,7 @@ struct ChatBubbleViewBuilder: View {
                     id: UUID().uuidString,
                     chatId: UUID().uuidString,
                     authorId: UUID().uuidString,
-                    content: "ChatBubbleViewBuilder()ChatBubbleViewBuilder()ChatBubbleViewBuilder()ChatBubbleViewBuilder()ChatBubbleViewBuilder()ChatBubbleViewBuilder()ChatBubbleViewBuilder()ChatBubbleViewBuilder()",
+                    content: AIChatModel(role: .user, message: "ChatBubbleViewBuilder()ChatBubbleViewBuilder()ChatBubbleViewBuilder()ChatBubbleViewBuilder()ChatBubbleViewBuilder()ChatBubbleViewBuilder()ChatBubbleViewBuilder()ChatBubbleViewBuilder()"),
                     seenByIds: nil,
                     dateCreated: .now
                 ),
@@ -50,7 +50,7 @@ struct ChatBubbleViewBuilder: View {
                     id: UUID().uuidString,
                     chatId: UUID().uuidString,
                     authorId: UUID().uuidString,
-                    content: "ChatBubbleViewBuilder()ChatBubbleViewBuilder()ChatBubbleViewBuilder()ChatBubbleViewBuilder()ChatBubbleViewBuilder()ChatBubbleViewBuilder()ChatBubbleViewBuilder()ChatBubbleViewBuilder()",
+                    content: AIChatModel(role: .assistant, message: "ChatBubbleViewBuilder()ChatBubbleViewBuilder()ChatBubbleViewBuilder()ChatBubbleViewBuilder()ChatBubbleViewBuilder()ChatBubbleViewBuilder()ChatBubbleViewBuilder()ChatBubbleViewBuilder()"),
                     seenByIds: nil,
                     dateCreated: .now
                 ),

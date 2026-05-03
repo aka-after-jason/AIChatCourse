@@ -19,4 +19,8 @@ final class AIManager {
     func generateImage(prompt: String) async throws -> UIImage {
         try await service.generateImage(prompt: prompt)
     }
+    
+    func generateText(chats: [AIChatModel]) async throws -> AIChatModel {
+        try await service.generateText(chats: chats)
+    }
 }
