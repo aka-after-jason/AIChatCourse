@@ -28,6 +28,7 @@ struct AIChatCourseApp: App {
                 .environment(delegate.dependencies.userManager)
                 .environment(delegate.dependencies.authManager)
                 .environment(delegate.dependencies.chatManager)
+                .environment(delegate.dependencies.logManager)
         }
     }
 }
@@ -82,6 +83,7 @@ struct Dependencies {
     let aiManager: AIManager
     let avatarManager: AvatarManager
     let chatManager: ChatManager
+    let logManager: LogManager
 
     init(config: BuildConfiguration) {
         // Multiple schemes
@@ -112,6 +114,9 @@ struct Dependencies {
             aiManager = AIManager(service: MockAIService())
             avatarManager = AvatarManager(service: MockAvatarService(), local: MockLocalAvatarPersistence())
             chatManager = ChatManager(service: MockChatService())
+            logManager = LogManager(services: [
+                ConsoleService()
+            ])
         case .dev:
             // DEV
             authManager = AuthManager(service: FirebaseAuthService())
@@ -119,6 +124,9 @@ struct Dependencies {
             aiManager = AIManager(service: OpenAIService())
             avatarManager = AvatarManager(service: FirebaseAvatarService(), local: SwiftDataLocalAvatarPersistence())
             chatManager = ChatManager(service: FirebaseChatService())
+            logManager = LogManager(services: [
+                ConsoleService()
+            ])
         case .prod:
             // Production
             authManager = AuthManager(service: FirebaseAuthService())
@@ -126,6 +134,8 @@ struct Dependencies {
             aiManager = AIManager(service: OpenAIService())
             avatarManager = AvatarManager(service: FirebaseAvatarService(), local: SwiftDataLocalAvatarPersistence())
             chatManager = ChatManager(service: FirebaseChatService())
+            logManager = LogManager(services: [
+            ])
             print("This is Production env!") // 这里添加打印, 因为 release 环境取消了 debug executable, 断点没有用
         }
     }
@@ -140,6 +150,7 @@ extension View {
             .environment(UserManager(services: MockUserServices(user: isSignedIn ? .mock : nil)))
             .environment(AuthManager(service: MockAuthService(user: isSignedIn ? .mock(isAnonymous: false) : nil)))
             .environment(ChatManager(service: MockChatService()))
+            .environment(LogManager(services: []))
             .environment(AppState())
     }
 }
