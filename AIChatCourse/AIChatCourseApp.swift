@@ -35,9 +35,8 @@ struct AIChatCourseApp: App {
 class AppDelegate: NSObject, UIApplicationDelegate {
     var dependencies: Dependencies!
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
-        
         let config: BuildConfiguration
-        
+
         #if MOCK
         config = .mock(isSignedIn: true) // isSignedIn: default by true
         #elseif DEV
@@ -45,10 +44,10 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         #else
         config = .prod
         #endif
-        
+
         config.configure() // 先执行 FirebaseApp.configure()
         dependencies = Dependencies(config: config)
-        
+
         return true
     }
 }
@@ -57,10 +56,10 @@ enum BuildConfiguration {
     case mock(isSignedIn: Bool)
     case dev
     case prod
-    
+
     func configure() {
         switch self {
-        case .mock(_):
+        case .mock:
             // Mock build does NOT run Firebase.
             break
         case .dev:

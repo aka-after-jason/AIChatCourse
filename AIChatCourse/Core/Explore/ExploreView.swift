@@ -16,6 +16,14 @@ struct ExploreView: View {
     @State private var isLoadingFeatured: Bool = true
     @State private var isLoadingPopular: Bool = true
     @State private var path: [NavigationPathOption] = []
+    @State private var showDevSettings: Bool = false
+    private var showDevSettingsButton: Bool {
+        #if DEV || MOCK
+        return true
+        #else
+        return false
+        #endif
+    }
     var body: some View {
         NavigationStack(path: $path) {
             List {
@@ -39,6 +47,16 @@ struct ExploreView: View {
                 }
             }
             .navigationTitle("Explore")
+            .toolbar(content: {
+                ToolbarItem(placement: .topBarLeading) {
+                    if showDevSettingsButton {
+                        devSettingsButton
+                    }
+                }
+            })
+            .sheet(isPresented: $showDevSettings, content: {
+                DevSettingsView()
+            })
             .customNavigationDestinationForCoreModule(path: $path)
             .task {
                 await loadFeaturedAvatars() // 没有先后顺序
@@ -47,6 +65,18 @@ struct ExploreView: View {
                 await loadPopularAvatars() // 没有先后顺序
             }
         }
+    }
+    
+    private var devSettingsButton: some View {
+        Button(action: {
+            onDevSettingsButtonPressed()
+        }, label: {
+            Text("DEV 🤫")
+        })
+    }
+    
+    private func onDevSettingsButtonPressed() {
+        showDevSettings = true
     }
 
     private func loadFeaturedAvatars() async {

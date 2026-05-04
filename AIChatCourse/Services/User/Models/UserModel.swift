@@ -60,6 +60,20 @@ struct UserModel: Codable {
         case profileColorHex = "profile_color_hex"
     }
 
+    var eventParams: [String: Any] {
+        let dict: [String: Any?] = [
+            "user_\(CodingKeys.userId.rawValue)": userId,
+            "user_\(CodingKeys.email.rawValue)": email,
+            "user_\(CodingKeys.isAnonymous.rawValue)": isAnonymous,
+            "user_\(CodingKeys.creationDate.rawValue)": creationDate,
+            "user_\(CodingKeys.creationVersion.rawValue)": creationVersion,
+            "user_\(CodingKeys.lastSignInDate.rawValue)": lastSignInDate,
+            "user_\(CodingKeys.didCompletedOnboarding.rawValue)": didCompletedOnboarding,
+            "user_\(CodingKeys.profileColorHex.rawValue)": profileColorHex
+        ]
+        return dict.compactMapValues { $0 } // drop the nil value
+    }
+
     // 提供一个计算属性: 将profileColorHex转成Color
     var profileColorCalculated: Color {
         guard let profileColorHex else { return .accent }
