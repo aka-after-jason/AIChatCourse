@@ -12,6 +12,8 @@ struct MockChatService: ChatService {
     }
 
     func addChatMessage(chatId: String, message: ChatMessageModel) async throws {}
+    func markChatMessageAsSeen(chatId: String, messageId: String, userId: String) async throws {}
+
     func streamChatMessages(chatId: String) -> AsyncThrowingStream<[ChatMessageModel], any Error> {
         AsyncThrowingStream { continuation in
             continuation.yield(ChatMessageModel.mocks)

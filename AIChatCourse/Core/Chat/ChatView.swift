@@ -128,6 +128,10 @@ struct ChatView: View {
         ScrollView {
             LazyVStack(spacing: 24) {
                 ForEach(chatMessages) { message in
+                    // 45 分钟 才显示时间
+                    if messageIsDelayed(message: message) {
+                        timestampView(date: message.dateCreatedCalculated)
+                    }
                     let isCurrentUser = message.authorId == authManager.authUser?.uid // currentUser?.userId
                     ChatBubbleViewBuilder(
                         message: message,
@@ -136,6 +140,9 @@ struct ChatView: View {
                         imageName: avatar?.profileImageName,
                         onImagePressed: onAvatarImagePressed
                     )
+                    .onAppear(perform: {
+                        onMessageDidAppear(message: message)
+                    })
                     .id(message.id)
                 }
             }
@@ -148,6 +155,44 @@ struct ChatView: View {
         .scrollPosition(id: $scrollPosition, anchor: .center)
         // .default 动画 搭配scrollview 绝配
         .animation(.default, value: chatMessages.count)
+    }
+    
+    private func onMessageDidAppear(message: ChatMessageModel) {
+        Task {
+            do {
+                let uid = try authManager.getCurrentUserId()
+                let chatId = try getChatId()
+                guard !message.hasBeenSeenBy(userId: uid) else {return}
+                try await chatManager.markChatMessageAsSeen(chatId: chatId, messageId: message.id, userId: uid)
+            } catch {
+                print("Failed to mark message as seen: \(error)")
+            }
+        }
+    }
+    
+    /// 大于 45 分钟 返回true
+    private func messageIsDelayed(message: ChatMessageModel) -> Bool {
+        let currentMessageDate = message.dateCreatedCalculated
+        guard let index = chatMessages.firstIndex(where: { $0.id == message.id }), chatMessages.indices.contains(index - 1) else {
+            return false
+        }
+        let previousMessageDate = chatMessages[index - 1].dateCreatedCalculated
+        let timeDiff = currentMessageDate.timeIntervalSince(previousMessageDate)
+        // threshold = 60 seconds * 45 minutes
+        let threshold: TimeInterval = 60 * 45
+        return timeDiff > threshold
+    }
+
+    private func timestampView(date: Date) -> some View {
+        Group {
+            Text(date.formatted(date: .abbreviated, time: .omitted))
+                +
+                Text(" • ")
+                +
+                Text(date.formatted(date: .omitted, time: .shortened))
+        }
+        .foregroundStyle(.secondary)
+        .font(.callout)
     }
 
     private var textFieldSection: some View {
@@ -178,14 +223,6 @@ struct ChatView: View {
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
             .background(Color(uiColor: .secondarySystemBackground))
-    }
-}
-
-#Preview {
-    NavigationStack {
-        ChatView()
-            .environment(AvatarManager(service: MockAvatarService()))
-            .previewEnvironment()
     }
 }
 
@@ -282,7 +319,7 @@ extension ChatView {
             }
         )
     }
-    
+
     private func onReportChatPressed() {
         Task {
             do {
@@ -302,7 +339,7 @@ extension ChatView {
             }
         }
     }
-    
+
     private func onDeleteChatPressed() {
         Task {
             do {
@@ -321,5 +358,12 @@ extension ChatView {
 
     private func onAvatarImagePressed() {
         showProfileModalView = true
+    }
+}
+
+#Preview {
+    NavigationStack {
+        ChatView()
+            .previewEnvironment()
     }
 }
