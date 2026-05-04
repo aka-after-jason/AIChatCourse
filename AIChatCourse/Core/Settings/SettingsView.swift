@@ -14,6 +14,7 @@ struct SettingsView: View {
     @Environment(AuthManager.self) private var authManager
     @Environment(UserManager.self) private var userManager
     @Environment(AvatarManager.self) private var avatarManager
+    @Environment(ChatManager.self) private var chatManager
     @State private var isPremium: Bool = false
     @State private var isAnonymousUser: Bool = false
     @State private var showCreateAccountView: Bool = false
@@ -186,7 +187,8 @@ extension SettingsView {
                 async let deleteAuth: () = authManager.deleteAccount()
                 async let deleteUser: () = userManager.deleteUser()
                 async let deleteAvatar: () = avatarManager.removeAuthorIdFromAllUserAvatars(userId: uid)
-                let (_, _, _) = await (try deleteAuth, try deleteUser, try deleteAvatar)
+                async let deleteChats: () = chatManager.deleteAllChatsForUser(userId: uid)
+                let (_, _, _, _) = await (try deleteAuth, try deleteUser, try deleteAvatar, try deleteChats)
                 
                 await dismissScreen()
             } catch {
@@ -213,7 +215,7 @@ extension SettingsView {
         .environment(AvatarManager(service: MockAvatarService()))
         .environment(AuthManager(service: MockAuthService(user: nil)))
         .environment(UserManager(services: MockUserServices(user: nil)))
-        .environment(AppState())
+        .previewEnvironment()
 }
 
 #Preview("Anonymous") {
@@ -221,7 +223,7 @@ extension SettingsView {
         .environment(AvatarManager(service: MockAvatarService()))
         .environment(AuthManager(service: MockAuthService(user: UserAuthInfoModel.mock(isAnonymous: true))))
         .environment(UserManager(services: MockUserServices(user: .mock)))
-        .environment(AppState())
+        .previewEnvironment()
 }
 
 #Preview("Not anonymous") {
@@ -229,5 +231,5 @@ extension SettingsView {
         .environment(AvatarManager(service: MockAvatarService()))
         .environment(AuthManager(service: MockAuthService(user: UserAuthInfoModel.mock(isAnonymous: false))))
         .environment(UserManager(services: MockUserServices(user: .mock)))
-        .environment(AppState())
+        .previewEnvironment()
 }

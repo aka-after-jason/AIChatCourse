@@ -8,12 +8,13 @@
 import SwiftUI
 
 struct ChatView: View {
+    @Environment(\.dismiss) private var dismiss
     @Environment(UserManager.self) private var userManager
     @Environment(AuthManager.self) private var authManager
     @Environment(AvatarManager.self) private var avatarManager
     @Environment(AIManager.self) private var aiManager
     @Environment(ChatManager.self) private var chatManager
-    @State private var chatMessages: [ChatMessageModel] = [] // ChatMessageModel.mocks
+    @State private var chatMessages: [ChatMessageModel] = []
     @State var chat: ChatModel? // public, 让外面传进来
     @State private var avatar: AvatarModel? // = .mock
     @State private var currentUser: UserModel?
@@ -270,12 +271,52 @@ extension ChatView {
             buttons: {
                 AnyView(
                     Group {
-                        Button("Report User / Chat", role: .destructive) {}
-                        Button("Delete Chat", role: .destructive) {}
+                        Button("Report User / Chat", role: .destructive) {
+                            onReportChatPressed()
+                        }
+                        Button("Delete Chat", role: .destructive) {
+                            onDeleteChatPressed()
+                        }
                     }
                 )
             }
         )
+    }
+    
+    private func onReportChatPressed() {
+        Task {
+            do {
+                let chatId = try getChatId()
+                let uid = try authManager.getCurrentUserId()
+                try await chatManager.reportChat(chatId: chatId, userId: uid)
+                alertItem = AnyAppAlertItem(
+                    title: "👮🏻 Reported 👮🏻",
+                    subtitle: "We will review the chat shortly. You may leave the chat at any time. Thanks for bringing this to our attention!"
+                )
+            } catch {
+                print("Failed to report chat: \(error)")
+                alertItem = AnyAppAlertItem(
+                    title: "Something went wrong",
+                    subtitle: "Please check your internet connection and try again."
+                )
+            }
+        }
+    }
+    
+    private func onDeleteChatPressed() {
+        Task {
+            do {
+                let chatId = try getChatId()
+                try await chatManager.deleteChat(chatId: chatId)
+                dismiss()
+            } catch {
+                print("Failed to delete chat: \(error)")
+                alertItem = AnyAppAlertItem(
+                    title: "Something went wrong",
+                    subtitle: "Please check your internet connection and try again."
+                )
+            }
+        }
     }
 
     private func onAvatarImagePressed() {
