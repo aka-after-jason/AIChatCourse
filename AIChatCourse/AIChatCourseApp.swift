@@ -35,15 +35,20 @@ struct AIChatCourseApp: App {
 class AppDelegate: NSObject, UIApplicationDelegate {
     var dependencies: Dependencies!
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
-        FirebaseApp.configure()
-
+        
+        let config: BuildConfiguration
+        
         #if MOCK
-        dependencies = Dependencies(config: .mock(isSignedIn: true)) // isSignedIn default by true
+        config = .mock(isSignedIn: true) // isSignedIn: default by true
         #elseif DEV
-        dependencies = Dependencies(config: .dev)
+        config = .dev
         #else
-        dependencies = Dependencies(config: .prod)
+        config = .prod
         #endif
+        
+        config.configure() // 先执行 FirebaseApp.configure()
+        dependencies = Dependencies(config: config)
+        
         return true
     }
 }
@@ -52,6 +57,24 @@ enum BuildConfiguration {
     case mock(isSignedIn: Bool)
     case dev
     case prod
+    
+    func configure() {
+        switch self {
+        case .mock(_):
+            // Mock build does NOT run Firebase.
+            break
+        case .dev:
+            // 加载plist
+            let plist = Bundle.main.path(forResource: "GoogleService-Info-Dev", ofType: "plist")!
+            let options = FirebaseOptions(contentsOfFile: plist)!
+            FirebaseApp.configure(options: options)
+        case .prod:
+            // 加载plist
+            let plist = Bundle.main.path(forResource: "GoogleService-Info-Prod", ofType: "plist")!
+            let options = FirebaseOptions(contentsOfFile: plist)!
+            FirebaseApp.configure(options: options)
+        }
+    }
 }
 
 struct Dependencies {
@@ -75,7 +98,7 @@ struct Dependencies {
         // 设置编译标识- go to build Settings -> Other Swift Flags
         // 添加 Debug 对应 -DDEV (-D 表示编译参数, 必须要加)
         // 添加 Mock 对应 -DMOCK (-D 表示编译参数, 必须要加)
-        
+
         // 创建三个bundle id
         // com.aka.AIChat.mock 对应 mock
         // com.aka.AIChat.dev 对应 development
