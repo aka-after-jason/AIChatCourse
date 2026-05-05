@@ -1,0 +1,36 @@
+# --- macOS ---
+.DS_Store
+
+# --- Xcode ---
+build/
+DerivedData/
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+xcuserdata/
+*.xccheckout
+*.moved-aside
+*.xcuserstate
+*.hmap
+*.ipa
+
+# 忽略存储敏感信息的 Keys 文件
+utils/Keys.swift
+
+# --- Swift Package Manager ---
+# 忽略 SPM 编译产生的二进制文件和构建目录
+.build/
+# 忽略本地克隆的依赖包（让每个开发者自行下载）
+.swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
+# 如果你不想提交具体的包状态，也可以考虑忽略以下文件（视团队协作习惯而定）
+# Packages/
+# Package.resolved
+
+# --- 自动生成 ---
+# 如果你使用了其他工具，可以参考 Toptal 提供的标准模板
+# [Source: https://www.toptal.com/developers/gitignore/api/swiftpackagemanager]
