@@ -43,8 +43,54 @@ struct AppView: View {
             // 用于测试logManager
             logManager.identifyUser(userId: "abc123", name: "Jason", email: "hello@test.com")
             logManager.addUserProperties(dict: UserModel.mock.eventParams)
+            logManager.trackEvent(event: Event.alpha)
+            logManager.trackEvent(event: Event.beta)
+            logManager.trackEvent(event: Event.gamma)
+            logManager.trackEvent(event: Event.delta)
         }
     }
+}
+
+enum Event: LoggableEvent {
+    case alpha, beta, gamma, delta
+    var eventName: String {
+        switch self {
+        case .alpha:
+            return "Event_Alpha"
+        case .beta:
+            return "Event_Beta"
+        case .gamma:
+            return "Event_Gamma"
+        case .delta:
+            return "Event_Delta"
+        }
+    }
+    
+    var parameters: [String: Any]? {
+        switch self {
+        case .alpha, .beta:
+            return [
+                "name": "Jason",
+                "age": 18
+            ]
+        default:
+            return nil
+        }
+    }
+    
+    var type: CustomLogType {
+        switch self {
+        case .alpha:
+            return .info
+        case .beta:
+            return .analytic
+        case .gamma:
+            return .warning
+        case .delta:
+            return .severe
+        }
+    }
+    
 }
 
 #Preview("AppView Tabbar") {
