@@ -127,7 +127,8 @@ struct Dependencies {
             logManager = LogManager(services: [
                 ConsoleService(),
                 FirebaseAnalyticsService(),
-                MixpanelService(token: Keys.mixpanelToken, loggingEnabled: false)
+                MixpanelService(token: Keys.mixpanelToken, loggingEnabled: false),
+                FirebaseCrashlyticsService()
             ])
         case .prod:
             // Production
@@ -138,7 +139,8 @@ struct Dependencies {
             chatManager = ChatManager(service: FirebaseChatService())
             logManager = LogManager(services: [
                 FirebaseAnalyticsService(),
-                MixpanelService(token: Keys.mixpanelToken)
+                MixpanelService(token: Keys.mixpanelToken),
+                FirebaseCrashlyticsService()
             ])
             print("This is Production env!") // 这里添加打印, 因为 release 环境取消了 debug executable, 断点没有用
         }
