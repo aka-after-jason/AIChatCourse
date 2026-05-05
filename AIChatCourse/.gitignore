@@ -20,7 +20,7 @@ xcuserdata/
 *.ipa
 
 # 忽略存储敏感信息的 Keys 文件
-utils/Keys.swift
+Utilities/Keys.swift
 
 # --- Swift Package Manager ---
 # 忽略 SPM 编译产生的二进制文件和构建目录
