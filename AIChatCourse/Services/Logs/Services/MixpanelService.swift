@@ -43,6 +43,8 @@ struct MixpanelService: LogService {
     }
     
     func trackEvent(event: any LoggableEvent) {
+        // 当 type 是 info 的时候不track
+        guard event.type != .info else { return }
         var eventProperties: [String: MixpanelType] = [:]
         if let parameters = event.parameters {
             for (key, value) in parameters {

@@ -34,6 +34,9 @@ struct FirebaseAnalyticsService: LogService {
     func deleteUserProfile() {}
 
     func trackEvent(event: any LoggableEvent) {
+        // 当 type 是 info 的时候不track
+        guard event.type != .info else { return }
+        
         var parameters = event.parameters ?? [:]
         // Fix any values that are bad types
         for (key, value) in parameters {

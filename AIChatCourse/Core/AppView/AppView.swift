@@ -26,6 +26,7 @@ struct AppView: View {
                 WelcomeView()
             }
         )
+        .appearAnalyticsViewModifier(name: "AppView")
         // 由于使用了 @Observable, 这里需要使用 environment,不是 environmentObject
         .environment(appState) // TabBarView 和 WelcomeView 都能访问
         // .environment(<#T##object: (Observable & AnyObject)?##(Observable & AnyObject)?#>) // 用于class, 且遵循了 @Observable
@@ -39,42 +40,29 @@ struct AppView: View {
                 Task { await checkUserStatus() }
             }
         }
-        .onAppear {
-            // 用于测试logManager
-            logManager.identifyUser(userId: "abc123", name: "Jason", email: "hello@test.com")
-            logManager.addUserProperties(dict: UserModel.mock.eventParams, isHighPriority: false)
-            logManager.trackEvent(event: Event.alpha)
-            logManager.trackEvent(event: Event.beta)
-            logManager.trackEvent(event: Event.gamma)
-            logManager.trackEvent(event: Event.delta)
-            
-            logManager.trackEvent(eventName: "MyNewEvent", parameters: UserModel.mock.eventParams, type: .analytic)
-        }
     }
 }
 
 enum Event: LoggableEvent {
-    case alpha, beta, gamma, delta
+    case existingAuthStart
+    case existingAuthFail(error: Error)
+    case anonymousAuthStart
+    case anonymousAuthSuccess
+    case anonymousAuthFail(error: Error)
     var eventName: String {
         switch self {
-        case .alpha:
-            return "Event_Alpha"
-        case .beta:
-            return "Event_Beta"
-        case .gamma:
-            return "Event_Gamma"
-        case .delta:
-            return "Event_Delta"
+        case .existingAuthStart:    return "AppView_ExistingAuth_Start"
+        case .existingAuthFail:     return "AppView_ExistingAuth_Fail"
+        case .anonymousAuthStart:   return "AppView_AnonymousAuth_Start"
+        case .anonymousAuthSuccess: return "AppView_AnonymousAuth_Success"
+        case .anonymousAuthFail:    return "AppView_AnonymousAuth_Fail"
         }
     }
     
     var parameters: [String: Any]? {
         switch self {
-        case .alpha, .beta:
-            return [
-                "name": "Jason",
-                "age": 18
-            ]
+        case .existingAuthFail(error: let error), .anonymousAuthFail(error: let error):
+            return error.eventParameters
         default:
             return nil
         }
@@ -82,17 +70,42 @@ enum Event: LoggableEvent {
     
     var type: CustomLogType {
         switch self {
-        case .alpha:
-            return .info
-        case .beta:
-            return .analytic
-        case .gamma:
-            return .warning
-        case .delta:
+        case .existingAuthFail, .anonymousAuthFail:
             return .severe
+        default:
+            return .analytic
         }
     }
     
+}
+
+
+extension AppView {
+    private func checkUserStatus() async {
+        if let user = authManager.authUser {
+            // user is authenticated
+            logManager.trackEvent(event: Event.existingAuthStart)
+            do {
+                try await userManager.login(auth: user, isNewUser: false)
+            } catch let error {
+                logManager.trackEvent(event: Event.existingAuthFail(error: error))
+                try? await Task.sleep(for: .seconds(3))
+                await checkUserStatus()
+            }
+        } else {
+            // user is not authenticated
+            logManager.trackEvent(event: Event.anonymousAuthStart)
+            do {
+                let (user, isNewUser) = try await authManager.signInAnonymously()
+                try await userManager.login(auth: user, isNewUser: isNewUser)
+                logManager.trackEvent(event: Event.anonymousAuthSuccess)
+            } catch {
+                logManager.trackEvent(event: Event.anonymousAuthFail(error: error))
+                try? await Task.sleep(for: .seconds(3))
+                await checkUserStatus()
+            }
+        }
+    }
 }
 
 #Preview("AppView Tabbar") {
@@ -105,31 +118,4 @@ enum Event: LoggableEvent {
     AppView(appState: AppState(showTabBar: false))
         .environment(UserManager(services: MockUserServices(user: nil)))
         .environment(AuthManager(service: MockAuthService(user: nil)))
-}
-
-extension AppView {
-    private func checkUserStatus() async {
-        if let user = authManager.authUser {
-            // user is authenticated
-            print("User already authenticated: \(user.uid)")
-            do {
-                try await userManager.login(auth: user, isNewUser: false)
-            } catch let error {
-                print("Failed to log into auth for existing user: \(error)")
-                try? await Task.sleep(for: .seconds(3))
-                await checkUserStatus()
-            }
-        } else {
-            // user is not authenticated
-            do {
-                let (user, isNewUser) = try await authManager.signInAnonymously()
-                try await userManager.login(auth: user, isNewUser: isNewUser)
-                print("Sign in anonymous success: \(user.uid) -- isNewUser:\(isNewUser.description)")
-            } catch {
-                print("Failed to signInAnonymously: \(error.localizedDescription)")
-                try? await Task.sleep(for: .seconds(3))
-                await checkUserStatus()
-            }
-        }
-    }
 }

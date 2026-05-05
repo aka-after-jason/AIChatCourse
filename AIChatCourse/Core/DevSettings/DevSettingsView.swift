@@ -47,7 +47,7 @@ struct DevSettingsView: View {
     private var userInfoSection: some View {
         Section {
             // 将字典转成数组, 因为这里的 Foreach 遍历需要有序
-            let array = userManager.currentUser?.eventParams.asAlphabeticalArray ?? []
+            let array = userManager.currentUser?.eventParameters.asAlphabeticalArray ?? []
             ForEach(array, id: \.key) { item in
                 itemRow(item: item)
             }
