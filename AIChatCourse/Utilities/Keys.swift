@@ -7,4 +7,5 @@
 
 struct Keys {
     static let openAI = ""
+    static let mixpanelToken = ""
 }
