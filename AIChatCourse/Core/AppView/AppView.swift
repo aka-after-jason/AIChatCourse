@@ -42,11 +42,13 @@ struct AppView: View {
         .onAppear {
             // 用于测试logManager
             logManager.identifyUser(userId: "abc123", name: "Jason", email: "hello@test.com")
-            logManager.addUserProperties(dict: UserModel.mock.eventParams)
+            logManager.addUserProperties(dict: UserModel.mock.eventParams, isHighPriority: false)
             logManager.trackEvent(event: Event.alpha)
             logManager.trackEvent(event: Event.beta)
             logManager.trackEvent(event: Event.gamma)
             logManager.trackEvent(event: Event.delta)
+            
+            logManager.trackEvent(eventName: "MyNewEvent", parameters: UserModel.mock.eventParams, type: .analytic)
         }
     }
 }

@@ -11,6 +11,7 @@
 		AF1479542FA573D800B0C58E /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = AF1479532FA573D800B0C58E /* FirebaseStorage */; };
 		AF2A19B22F9B8BD100E51154 /* SignInAppleAsync in Frameworks */ = {isa = PBXBuildFile; productRef = AF2A19B12F9B8BD100E51154 /* SignInAppleAsync */; };
 		AF639B9D2F6F977F00979BBA /* SwiftfulUtilities in Frameworks */ = {isa = PBXBuildFile; productRef = AF639B9C2F6F977F00979BBA /* SwiftfulUtilities */; };
+		AFCBC2242FA9A54D00ACA3CE /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = AFCBC2232FA9A54D00ACA3CE /* FirebaseAnalytics */; };
 		AFE9585F2F9D75B400DB6D49 /* SwiftfulFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = AFE9585E2F9D75B400DB6D49 /* SwiftfulFirestore */; };
 		AFE9587E2F9DBEE800DB6D49 /* OpenAI in Frameworks */ = {isa = PBXBuildFile; productRef = AFE9587D2F9DBEE800DB6D49 /* OpenAI */; };
 		AFED45292F9B09EE0060CA90 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = AFED45282F9B09EE0060CA90 /* FirebaseAuth */; };
@@ -40,9 +41,22 @@
 		AFB9EAEE2F66B7A700EB3ED3 /* AIChatCourseUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AIChatCourseUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		AFCBC2262FA9A86000ACA3CE /* Exceptions for "AIChatCourse" folder in "AIChatCourse" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = AFB9EAD62F66B7A500EB3ED3 /* AIChatCourse */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		AFB9EAD92F66B7A500EB3ED3 /* AIChatCourse */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				AFCBC2262FA9A86000ACA3CE /* Exceptions for "AIChatCourse" folder in "AIChatCourse" target */,
+			);
 			path = AIChatCourse;
 			sourceTree = "<group>";
 		};
@@ -71,6 +85,7 @@
 				AF1479542FA573D800B0C58E /* FirebaseStorage in Frameworks */,
 				AF05D9542F9D006F00ECB7AD /* FirebaseFirestore in Frameworks */,
 				AF639B9D2F6F977F00979BBA /* SwiftfulUtilities in Frameworks */,
+				AFCBC2242FA9A54D00ACA3CE /* FirebaseAnalytics in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -148,6 +163,7 @@
 				AFE9585E2F9D75B400DB6D49 /* SwiftfulFirestore */,
 				AFE9587D2F9DBEE800DB6D49 /* OpenAI */,
 				AF1479532FA573D800B0C58E /* FirebaseStorage */,
+				AFCBC2232FA9A54D00ACA3CE /* FirebaseAnalytics */,
 			);
 			productName = AIChatCourse;
 			productReference = AFB9EAD72F66B7A500EB3ED3 /* AIChatCourse.app */;
@@ -472,6 +488,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = AIChatCourse/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "AI Chat-Dev";
 				INFOPLIST_KEY_NSCalendarsUsageDescription = "We need to access your Calendar";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -515,6 +532,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = AIChatCourse/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "AI Chat-Dev";
 				INFOPLIST_KEY_NSCalendarsUsageDescription = "We need to access your Calendar";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -708,6 +726,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = AIChatCourse/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "AI Chat-Dev";
 				INFOPLIST_KEY_NSCalendarsUsageDescription = "We need to access your Calendar";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -896,6 +915,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = AF639B9B2F6F977F00979BBA /* XCRemoteSwiftPackageReference "SwiftfulUtilities" */;
 			productName = SwiftfulUtilities;
+		};
+		AFCBC2232FA9A54D00ACA3CE /* FirebaseAnalytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AFED45272F9B09EE0060CA90 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalytics;
 		};
 		AFE9585E2F9D75B400DB6D49 /* SwiftfulFirestore */ = {
 			isa = XCSwiftPackageProductDependency;

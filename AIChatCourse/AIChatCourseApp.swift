@@ -115,7 +115,7 @@ struct Dependencies {
             avatarManager = AvatarManager(service: MockAvatarService(), local: MockLocalAvatarPersistence())
             chatManager = ChatManager(service: MockChatService())
             logManager = LogManager(services: [
-                ConsoleService(printParameters: false)
+                ConsoleService(printParameters: true)
             ])
         case .dev:
             // DEV
@@ -125,7 +125,8 @@ struct Dependencies {
             avatarManager = AvatarManager(service: FirebaseAvatarService(), local: SwiftDataLocalAvatarPersistence())
             chatManager = ChatManager(service: FirebaseChatService())
             logManager = LogManager(services: [
-                ConsoleService()
+                ConsoleService(),
+                FirebaseAnalyticsService()
             ])
         case .prod:
             // Production
@@ -135,6 +136,7 @@ struct Dependencies {
             avatarManager = AvatarManager(service: FirebaseAvatarService(), local: SwiftDataLocalAvatarPersistence())
             chatManager = ChatManager(service: FirebaseChatService())
             logManager = LogManager(services: [
+                FirebaseAnalyticsService()
             ])
             print("This is Production env!") // 这里添加打印, 因为 release 环境取消了 debug executable, 断点没有用
         }
