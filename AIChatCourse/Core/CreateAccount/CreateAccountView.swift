@@ -12,6 +12,7 @@ struct CreateAccountView: View {
     @Environment(AuthManager.self) private var authManager
     @Environment(UserManager.self) private var userManager
     @Environment(\.dismiss) private var dismiss
+    @Environment(LogManager.self) private var logManager
     var title: String = "Create Account?"
     var subtitle: String = "Don't lose your data! Connect to an SSO provider to save your account."
     var onDidSignIn: ((_ isNewUser: Bool) -> Void)?
@@ -41,6 +42,7 @@ struct CreateAccountView: View {
         }
         .padding(16)
         .padding(.top, 40)
+        .appearAnalyticsViewModifier(name: "CreateAccountView")
     }
 }
 
@@ -51,15 +53,59 @@ struct CreateAccountView: View {
 // MARK: 事件
 extension CreateAccountView {
     private func onSignInApplePressed() {
+        logManager.trackEvent(event: Event.appleAuthStart)
         Task {
             do {
                 let (userAuthInfo, isNewUser) = try await authManager.signInApple()
-                print("Did sign in with apple success! uid: \(userAuthInfo.uid) -- isNewUser: \(isNewUser.description)")
+                logManager.trackEvent(event: Event.appleAuthSuccess(user: userAuthInfo, isNewUser: isNewUser))
                 try await userManager.login(auth: userAuthInfo, isNewUser: isNewUser)
+                logManager.trackEvent(event: Event.appleAuthLoginSuccess(user: userAuthInfo, isNewUser: isNewUser))
                 onDidSignIn?(isNewUser)
                 dismiss()
             } catch {
-                print("Failed to sign in with apple: \(error.localizedDescription)")
+                logManager.trackEvent(event: Event.appleAuthFail(error: error))
+            }
+        }
+    }
+}
+
+extension CreateAccountView {
+    
+    enum Event: LoggableEvent {
+        
+        case appleAuthStart
+        case appleAuthSuccess(user: UserAuthInfoModel, isNewUser: Bool)
+        case appleAuthFail(error: Error)
+        case appleAuthLoginSuccess(user: UserAuthInfoModel, isNewUser: Bool)
+        
+        var eventName: String {
+            switch self {
+            case .appleAuthStart: return "CreateAccountView_AppleAuth_Start"
+            case .appleAuthSuccess: return "CreateAccountView_AppleAuth_Success"
+            case .appleAuthFail: return "CreateAccountView_AppleAuth_Fail"
+            case .appleAuthLoginSuccess: return "CreateAccountView_AppleAuth_LoginSuccess"
+            }
+        }
+        
+        var parameters: [String: Any]? {
+            switch self {
+            case .appleAuthSuccess(user: let user, isNewUser: let isNewUser), .appleAuthLoginSuccess(user: let user, isNewUser: let isNewUser):
+                var dict = user.eventParams
+                dict["is_new_user"] = isNewUser
+                return dict
+            case .appleAuthFail(error: let error):
+                return error.eventParameters
+            default:
+                return nil
+            }
+        }
+        
+        var type: CustomLogType {
+            switch self {
+            case .appleAuthFail:
+                return .severe
+            default:
+                return .analytic
             }
         }
     }

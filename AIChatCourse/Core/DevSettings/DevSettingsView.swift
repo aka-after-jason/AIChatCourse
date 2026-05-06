@@ -21,6 +21,7 @@ struct DevSettingsView: View {
                 deviceInfoSection
             }
             .navigationTitle("Dev Settings 🤗")
+            .appearAnalyticsViewModifier(name: "DevSettings")
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button(action: {
