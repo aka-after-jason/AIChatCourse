@@ -62,7 +62,30 @@ struct CategoryListView: View {
             await loadAvatars()
         }
     }
-    
+
+    private func loadAvatars() async {
+        logManager.trackEvent(event: Event.loadAvatarsStart)
+        do {
+            avatars = try await avatarManager.getAvatarsForCategory(category: category)
+            logManager.trackEvent(event: Event.loadAvatarsSuccess)
+        } catch {
+            showAlert = AnyAppAlertItem(error: error)
+            logManager.trackEvent(event: Event.loadAvatarsFail(error: error))
+        }
+        isLoading = false
+    }
+}
+
+// MARK: 事件
+
+extension CategoryListView {
+    private func onAvatarPressed(avatar: AvatarModel) {
+        path.append(.chatView(avatarId: avatar.avatarId, chat: nil))
+        logManager.trackEvent(event: Event.avatarPressed(avatar: avatar))
+    }
+}
+
+extension CategoryListView {
     enum Event: LoggableEvent {
         case loadAvatarsStart
         case loadAvatarsSuccess
@@ -96,27 +119,6 @@ struct CategoryListView: View {
                 return .analytic
             }
         }
-    }
-
-    private func loadAvatars() async {
-        logManager.trackEvent(event: Event.loadAvatarsStart)
-        do {
-            avatars = try await avatarManager.getAvatarsForCategory(category: category)
-            logManager.trackEvent(event: Event.loadAvatarsSuccess)
-        } catch {
-            showAlert = AnyAppAlertItem(error: error)
-            logManager.trackEvent(event: Event.loadAvatarsFail(error: error))
-        }
-        isLoading = false
-    }
-}
-
-// MARK: 事件
-
-extension CategoryListView {
-    private func onAvatarPressed(avatar: AvatarModel) {
-        path.append(.chatView(avatarId: avatar.avatarId, chat: nil))
-        logManager.trackEvent(event: Event.avatarPressed(avatar: avatar))
     }
 }
 

@@ -14,6 +14,7 @@ struct ChatView: View {
     @Environment(AvatarManager.self) private var avatarManager
     @Environment(AIManager.self) private var aiManager
     @Environment(ChatManager.self) private var chatManager
+    @Environment(LogManager.self) private var logManager
     @State private var chatMessages: [ChatMessageModel] = []
     @State var chat: ChatModel? // public, 让外面传进来
     @State private var avatar: AvatarModel? // = .mock
@@ -46,6 +47,7 @@ struct ChatView: View {
                 })
             }
         }
+        .appearAnalyticsViewModifier(name: "ChatView")
         .showCustomAlert(type: .confirmationDialog, alertItem: $dialogItem)
         .showCustomAlert(type: .alert, alertItem: $alertItem)
         .showModal(showModal: $showProfileModalView) {
@@ -74,6 +76,7 @@ struct ChatView: View {
     }
 
     private func listenForChatMessages() async {
+        logManager.trackEvent(event: Event.loadMessagesStart)
         do {
             let chatId = try getChatId()
             for try await value in chatManager.streamChatMessages(chatId: chatId) {
@@ -82,17 +85,18 @@ struct ChatView: View {
                 scrollPosition = chatMessages.last?.id
             }
         } catch {
-            print("Failed to listen for chat messages: \(error)")
+            logManager.trackEvent(event: Event.loadMessagesFail(error: error))
         }
     }
 
     private func loadChat() async {
+        logManager.trackEvent(event: Event.loadChatStart)
         do {
             let uid = try authManager.getCurrentUserId()
             chat = try await chatManager.getChat(userId: uid, avatarId: avatarId)
-            print("Success loading chat.")
+            logManager.trackEvent(event: Event.loadChatSuccess(chat: chat))
         } catch {
-            print("Failed to get chat: \(error)")
+            logManager.trackEvent(event: Event.loadChatFail(error: error))
         }
     }
 
@@ -101,13 +105,15 @@ struct ChatView: View {
     }
 
     private func loadAvatar() async {
+        logManager.trackEvent(event: Event.loadAvatarStart)
         do {
             let avatar = try await avatarManager.getAvatar(id: avatarId)
             // 添加到 SwiftData
             self.avatar = avatar
             try? await avatarManager.addRecentAvatar(avatar: avatar)
+            logManager.trackEvent(event: Event.loadAvatarSuccess(avatar: avatar))
         } catch {
-            print("Failed to load avatar: \(error)")
+            logManager.trackEvent(event: Event.loadAvatarFail(error: error))
         }
     }
 
@@ -156,20 +162,20 @@ struct ChatView: View {
         // .default 动画 搭配scrollview 绝配
         .animation(.default, value: chatMessages.count)
     }
-    
+
     private func onMessageDidAppear(message: ChatMessageModel) {
         Task {
             do {
                 let uid = try authManager.getCurrentUserId()
                 let chatId = try getChatId()
-                guard !message.hasBeenSeenBy(userId: uid) else {return}
+                guard !message.hasBeenSeenBy(userId: uid) else { return }
                 try await chatManager.markChatMessageAsSeen(chatId: chatId, messageId: message.id, userId: uid)
             } catch {
-                print("Failed to mark message as seen: \(error)")
+                logManager.trackEvent(event: Event.messageSeenFail(error: error))
             }
         }
     }
-    
+
     /// 大于 45 分钟 返回true
     private func messageIsDelayed(message: ChatMessageModel) -> Bool {
         let currentMessageDate = message.dateCreatedCalculated
@@ -231,6 +237,7 @@ struct ChatView: View {
 extension ChatView {
     private func onSendMessagePressed() {
         let content = textfieldText
+        logManager.trackEvent(event: Event.sendMessageStart(chat: chat, avatar: avatar))
         Task {
             do {
                 // get userId
@@ -256,10 +263,9 @@ extension ChatView {
                 // Upload user chat to the firestore
                 try await chatManager.addChatMessage(chatId: chat.id, message: newUserMessage)
 
-                // chatMessages.append(newUserMessage) // 拼接到数组中
+                logManager.trackEvent(event: Event.sendMessageSent(chat: chat, avatar: avatar, message: newUserMessage))
 
                 // Clear the textField & scroll to the bottom
-                // scrollPosition = newUserMessage.id
                 textfieldText = ""
 
                 // Generate AI Response
@@ -277,17 +283,21 @@ extension ChatView {
                 // Create AI Chat
                 let newAIMessage = ChatMessageModel.newAIMessage(chatId: chat.id, userId: avatarId, message: aiResponse)
 
+                logManager.trackEvent(event: Event.sendMessageResponse(chat: chat, avatar: avatar, message: newAIMessage))
+
                 // Upload AI chat to the firestore
                 try await chatManager.addChatMessage(chatId: chat.id, message: newAIMessage)
 
-                // chatMessages.append(newAIMessage) // 拼接到数组中
+                logManager.trackEvent(event: Event.sendMessageResponseSent(chat: chat, avatar: avatar, message: newAIMessage))
             } catch {
                 alertItem = AnyAppAlertItem(error: error)
+                logManager.trackEvent(event: Event.sendMessageFail(error: error))
             }
         }
     }
 
     private func createNewChat(uid: String) async throws -> ChatModel {
+        logManager.trackEvent(event: Event.createChatStart)
         let newChat = ChatModel.newChat(userId: uid, avatarId: avatarId)
         try await chatManager.createNewChat(chat: newChat)
 
@@ -302,6 +312,7 @@ extension ChatView {
     }
 
     private func onChatSettingsPressed() {
+        logManager.trackEvent(event: Event.chatSettingsPressed)
         dialogItem = AnyAppAlertItem(
             title: "",
             subtitle: "What would you like to do?",
@@ -321,6 +332,7 @@ extension ChatView {
     }
 
     private func onReportChatPressed() {
+        logManager.trackEvent(event: Event.reportChatStart)
         Task {
             do {
                 let chatId = try getChatId()
@@ -330,34 +342,150 @@ extension ChatView {
                     title: "👮🏻 Reported 👮🏻",
                     subtitle: "We will review the chat shortly. You may leave the chat at any time. Thanks for bringing this to our attention!"
                 )
+                logManager.trackEvent(event: Event.reportChatSuccess)
             } catch {
-                print("Failed to report chat: \(error)")
                 alertItem = AnyAppAlertItem(
                     title: "Something went wrong",
                     subtitle: "Please check your internet connection and try again."
                 )
+                logManager.trackEvent(event: Event.reportChatFail(error: error))
             }
         }
     }
 
     private func onDeleteChatPressed() {
+        logManager.trackEvent(event: Event.deleteChatStart)
         Task {
             do {
                 let chatId = try getChatId()
                 try await chatManager.deleteChat(chatId: chatId)
                 dismiss()
+                logManager.trackEvent(event: Event.deleteChatSuccess)
             } catch {
                 print("Failed to delete chat: \(error)")
                 alertItem = AnyAppAlertItem(
                     title: "Something went wrong",
                     subtitle: "Please check your internet connection and try again."
                 )
+                logManager.trackEvent(event: Event.deleteChatFail(error: error))
             }
         }
     }
 
     private func onAvatarImagePressed() {
         showProfileModalView = true
+        logManager.trackEvent(event: Event.avatarImagePressed(avatar: avatar))
+    }
+}
+
+extension ChatView {
+    enum Event: LoggableEvent {
+        case loadAvatarStart
+        case loadAvatarSuccess(avatar: AvatarModel)
+        case loadAvatarFail(error: Error)
+
+        case loadChatStart
+        case loadChatSuccess(chat: ChatModel?)
+        case loadChatFail(error: Error)
+
+        case loadMessagesStart
+        case loadMessagesFail(error: Error)
+
+        case messageSeenFail(error: Error)
+
+        case sendMessageStart(chat: ChatModel?, avatar: AvatarModel?)
+        case sendMessageFail(error: Error)
+        case sendMessageSent(chat: ChatModel?, avatar: AvatarModel?, message: ChatMessageModel)
+        case sendMessageResponse(chat: ChatModel?, avatar: AvatarModel?, message: ChatMessageModel)
+        case sendMessageResponseSent(chat: ChatModel?, avatar: AvatarModel?, message: ChatMessageModel)
+
+        case createChatStart
+
+        case chatSettingsPressed
+
+        case reportChatStart
+        case reportChatSuccess
+        case reportChatFail(error: Error)
+
+        case deleteChatStart
+        case deleteChatSuccess
+        case deleteChatFail(error: Error)
+
+        case avatarImagePressed(avatar: AvatarModel?)
+
+        var eventName: String {
+            switch self {
+            case .loadAvatarStart: return "ChatView_LoadAvatar_Start"
+            case .loadAvatarSuccess: return "ChatView_LoadAvatar_Success"
+            case .loadAvatarFail: return "ChatView_LoadAvatar_Fail"
+            case .loadChatStart: return "ChatView_LoadChat_Start"
+            case .loadChatSuccess: return "ChatView_LoadChat_Success"
+            case .loadChatFail: return "ChatView_LoadChat_Fail"
+            case .loadMessagesStart: return "ChatView_LoadMessages_Start"
+            case .loadMessagesFail: return "ChatView_LoadMessages_Fail"
+            case .messageSeenFail: return "ChatView_MessageSeen_Fail"
+            case .sendMessageStart: return "ChatView_SendMessage_Start"
+            case .sendMessageFail: return "ChatView_SendMessage_Fail"
+            case .sendMessageSent: return "ChatView_SentMessage_Sent"
+            case .sendMessageResponse: return "ChatView_SentMessage_Response"
+            case .sendMessageResponseSent: return "ChatView_SentMessage_Response_Sent"
+            case .createChatStart: return "ChatView_CreateChat_Start"
+            case .chatSettingsPressed: return "ChatView_ChatSettings_Pressed"
+            case .reportChatStart: return "ChatView_ReportChat_Start"
+            case .reportChatSuccess: return "ChatView_ReportChat_Success"
+            case .reportChatFail: return "ChatView_ReportChat_Fail"
+            case .deleteChatStart: return "ChatView_DeleteChat_Start"
+            case .deleteChatSuccess: return "ChatView_DeleteChat_Success"
+            case .deleteChatFail: return "ChatView_DeleteChat_Fail"
+            case .avatarImagePressed: return "ChatView_AvatarImage_Pressed"
+            }
+        }
+
+        var parameters: [String: Any]? {
+            switch self {
+            case .loadAvatarFail(error: let error),
+                 .loadChatFail(error: let error),
+                 .loadMessagesFail(error: let error),
+                 .sendMessageFail(error: let error),
+                 .reportChatFail(error: let error),
+                 .deleteChatFail(error: let error):
+                return error.eventParameters
+            case .loadAvatarSuccess(avatar: let avatar):
+                return avatar.eventParameters
+            case .loadChatSuccess(chat: let chat):
+                return chat?.eventParameters
+            case .sendMessageStart(chat: let chat, avatar: let avatar):
+                var dict = chat?.eventParameters ?? [:]
+                dict.merge(avatar?.eventParameters)
+                return dict
+            case .sendMessageSent(chat: let chat, avatar: let avatar, message: let message),
+                 .sendMessageResponse(chat: let chat, avatar: let avatar, message: let message),
+                 .sendMessageResponseSent(chat: let chat, avatar: let avatar, message: let message):
+                var dict = chat?.eventParameters ?? [:]
+                dict.merge(avatar?.eventParameters)
+                dict.merge(message.eventParameters)
+                return dict
+            case .avatarImagePressed(avatar: let avatar):
+                return avatar?.eventParameters
+            default:
+                return nil
+            }
+        }
+
+        var type: CustomLogType {
+            switch self {
+            case .loadAvatarFail,
+                 .loadMessagesFail,
+                 .messageSeenFail,
+                 .reportChatFail,
+                 .deleteChatFail:
+                return .severe
+            case .loadChatFail, .sendMessageFail:
+                return .warning
+            default:
+                return .analytic
+            }
+        }
     }
 }
 

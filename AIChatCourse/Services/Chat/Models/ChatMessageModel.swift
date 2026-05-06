@@ -31,25 +31,37 @@ struct ChatMessageModel: Identifiable, Codable, StringIdentifiable {
         self.seenByIds = seenByIds
         self.dateCreated = dateCreated
     }
-    
+
     var dateCreatedCalculated: Date {
         dateCreated ?? .distantPast
     }
-    
+
     enum CodingKeys: String, CodingKey {
         case id
         case chatId = "chat_id"
         case authorId = "author_id"
-        case content = "content"
+        case content
         case seenByIds = "seen_by_ids"
         case dateCreated = "date_created"
     }
-    
+
+    var eventParameters: [String: Any] {
+        var dict: [String: Any?] = [
+            "message_\(CodingKeys.id.rawValue)": id,
+            "message_\(CodingKeys.chatId.rawValue)": chatId,
+            "message_\(CodingKeys.authorId.rawValue)": authorId,
+            "message_\(CodingKeys.seenByIds.rawValue)": seenByIds?.sorted().joined(separator: ", "),
+            "message_\(CodingKeys.dateCreated.rawValue)": dateCreated
+        ]
+        dict.merge(content?.eventParameters)
+        return dict.compactMapValues { $0 } // drop the nil value
+    }
+
     func hasBeenSeenBy(userId: String) -> Bool {
-        guard let seenByIds else {return false}
+        guard let seenByIds else { return false }
         return seenByIds.contains(userId)
     }
-    
+
     /// 用户发送的消息封装到这里
     static func newUserMessage(chatId: String, userId: String, message: AIChatModel) -> ChatMessageModel {
         ChatMessageModel(
@@ -61,7 +73,7 @@ struct ChatMessageModel: Identifiable, Codable, StringIdentifiable {
             dateCreated: .now
         )
     }
-    
+
     /// AI发送的消息封装到这里
     static func newAIMessage(chatId: String, userId: String, message: AIChatModel) -> ChatMessageModel {
         ChatMessageModel(

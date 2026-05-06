@@ -25,3 +25,14 @@ extension Dictionary where Key == String {
         }
     }
 }
+
+extension Dictionary {
+    mutating func merge(_ other: Dictionary?, conflictTakeExisting: Bool = true) {
+        if let other {
+            self.merge(other, uniquingKeysWith: { (existing, new) in
+                // 如果键名相同, 发生冲突, 则选择 existing
+                return conflictTakeExisting ? existing : new
+            })
+        }
+    }
+}
