@@ -35,6 +35,7 @@ struct OnboardingColorView: View {
             )
             .toolbar(.hidden, for: .navigationBar)
             .animation(.bouncy, value: selectedColor)
+            .appearAnalyticsViewModifier(name: "OnboardingColorView")
         }
     }
 }

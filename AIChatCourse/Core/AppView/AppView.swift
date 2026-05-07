@@ -26,7 +26,6 @@ struct AppView: View {
                 WelcomeView()
             }
         )
-        .appearAnalyticsViewModifier(name: "AppView")
         // 由于使用了 @Observable, 这里需要使用 environment,不是 environmentObject
         .environment(appState) // TabBarView 和 WelcomeView 都能访问
         // .environment(<#T##object: (Observable & AnyObject)?##(Observable & AnyObject)?#>) // 用于class, 且遵循了 @Observable

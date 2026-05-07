@@ -22,6 +22,7 @@ struct OnboardingIntroView: View {
         }
         .toolbar(.hidden, for: .navigationBar)
         .padding(24)
+        .appearAnalyticsViewModifier(name: "OnboardingIntroView")
     }
 
     /// 使用富文本的方式

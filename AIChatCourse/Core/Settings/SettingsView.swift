@@ -15,6 +15,7 @@ struct SettingsView: View {
     @Environment(UserManager.self) private var userManager
     @Environment(AvatarManager.self) private var avatarManager
     @Environment(ChatManager.self) private var chatManager
+    @Environment(LogManager.self) private var logManager
     @State private var isPremium: Bool = false
     @State private var isAnonymousUser: Bool = false
     @State private var showCreateAccountView: Bool = false
@@ -27,6 +28,7 @@ struct SettingsView: View {
                 applicationSection
             }
             .navigationTitle("Settings")
+            .appearAnalyticsViewModifier(name: "SettingsView")
             .sheet(isPresented: $showCreateAccountView, onDismiss: {
                 setAnonymousAccountStatus()
             }, content: {
@@ -146,18 +148,22 @@ extension SettingsView {
 
     private func onSignOutButtonPressed() {
         // do some logic to sign out of app!
+        logManager.trackEvent(event: Event.signOutStart)
         Task {
             do {
                 try authManager.signOut()
                 userManager.signOut()
                 await dismissScreen()
+                logManager.trackEvent(event: Event.signOutSuccess)
             } catch {
                 showAlert = AnyAppAlertItem(error: error)
+                logManager.trackEvent(event: Event.signOutFail(error: error))
             }
         }
     }
     
     private func onDeleteAccountPressed() {
+        logManager.trackEvent(event: Event.deleteAccountStart)
         showAlert = AnyAppAlertItem(
             title: "Delete Account?",
             subtitle: "This action is permanent and cannot be undone. Your data will be deleted from our server forever.",
@@ -174,6 +180,7 @@ extension SettingsView {
     }
     
     private func onDeleteAccountConfirmed() {
+        logManager.trackEvent(event: Event.deleteAccountStartConfirm)
         Task {
             do {
                 let uid = try authManager.getCurrentUserId()
@@ -189,10 +196,12 @@ extension SettingsView {
                 async let deleteAvatar: () = avatarManager.removeAuthorIdFromAllUserAvatars(userId: uid)
                 async let deleteChats: () = chatManager.deleteAllChatsForUser(userId: uid)
                 let (_, _, _, _) = await (try deleteAuth, try deleteUser, try deleteAvatar, try deleteChats)
-                
+                logManager.deleteUserProfile()
+                logManager.trackEvent(event: Event.deleteAccountSuccess)
                 await dismissScreen()
             } catch {
                 showAlert = AnyAppAlertItem(error: error)
+                logManager.trackEvent(event: Event.deleteAccountFail(error: error))
             }
         }
     }
@@ -204,10 +213,56 @@ extension SettingsView {
     }
 
     private func onCreateAccountPressed() {
+        logManager.trackEvent(event: Event.createAccountPressed)
         showCreateAccountView.toggle()
     }
     
 }
+
+extension SettingsView {
+    
+    enum Event: LoggableEvent {
+        case signOutStart
+        case signOutSuccess
+        case signOutFail(error: Error)
+        case deleteAccountStart
+        case deleteAccountStartConfirm
+        case deleteAccountSuccess
+        case deleteAccountFail(error: Error)
+        case createAccountPressed
+        var eventName: String {
+            switch self {
+            case .signOutStart: return "SettingsView_SignOut_Start"
+            case .signOutSuccess: return "SettingsView_SignOut_Success"
+            case .signOutFail: return "SettingsView_SignOut_Fail"
+            case .deleteAccountStart: return "SettingsView_DeleteAccount_Start"
+            case .deleteAccountStartConfirm: return "SettingsView_DeleteAccount_Start_Confirm"
+            case .deleteAccountSuccess: return "SettingsView_DeleteAccount_Success"
+            case .deleteAccountFail: return "SettingsView_DeleteAccount_Fail"
+            case .createAccountPressed: return "SettingsView_CreateAccount_Pressed"
+            }
+        }
+        
+        var parameters: [String: Any]? {
+            switch self {
+            case .signOutFail(error: let error), .deleteAccountFail(error: let error):
+                return error.eventParameters
+            default:
+                return nil
+            }
+        }
+        
+        var type: CustomLogType {
+            switch self {
+            case .signOutFail, .deleteAccountFail:
+                return .severe
+            default:
+                return .analytic
+            }
+        }
+    }
+}
+
 
 // MARK: Previews
 #Preview("No auth") {

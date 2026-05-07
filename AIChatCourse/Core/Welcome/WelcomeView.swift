@@ -11,6 +11,7 @@ struct WelcomeView: View {
     @State var imageName: String = Constants.randomImageUrl
     @State private var showSignIn: Bool = false
     @Environment(AppState.self) private var appState
+    @Environment(LogManager.self) private var logManager
     var body: some View {
         NavigationStack {
             VStack(spacing: 8) {
@@ -36,11 +37,8 @@ struct WelcomeView: View {
             )
             .presentationDetents([.medium])
         }
+        .appearAnalyticsViewModifier(name: "WelcomeView")
     }
-}
-
-#Preview {
-    WelcomeView()
 }
 
 extension WelcomeView {
@@ -76,6 +74,7 @@ extension WelcomeView {
     }
 
     private func onSignInPressed() {
+        logManager.trackEvent(event: Event.signInPressed)
         showSignIn = true
     }
 
@@ -98,6 +97,7 @@ extension WelcomeView {
 
 extension WelcomeView {
     private func handleDidSignIn(isNewUser: Bool) {
+        logManager.trackEvent(event: Event.didSignIn(isNewUser: isNewUser))
         if isNewUser {
             // do nothing, user gose through onboading
         } else {
@@ -105,4 +105,39 @@ extension WelcomeView {
             appState.updateViewState(showTabBarView: true)
         }
     }
+}
+
+extension WelcomeView {
+    
+    enum Event: LoggableEvent {
+        case didSignIn(isNewUser: Bool)
+        case signInPressed
+        var eventName: String {
+            switch self {
+            case .didSignIn: return "WelcomeView_DidSignIn"
+            case .signInPressed: return "WelcomeView_SignIn_Pressed"
+            }
+        }
+        
+        var parameters: [String: Any]? {
+            switch self {
+            case .didSignIn(isNewUser: let isNewUser):
+                return ["is_new_user": isNewUser]
+            default:
+                return nil
+            }
+        }
+        
+        var type: CustomLogType {
+            switch self {
+            default:
+                return .analytic
+            }
+        }
+    }
+}
+
+
+#Preview {
+    WelcomeView()
 }
