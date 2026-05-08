@@ -161,7 +161,7 @@ extension SettingsView {
             }
         }
     }
-    
+
     private func onDeleteAccountPressed() {
         logManager.trackEvent(event: Event.deleteAccountStart)
         showAlert = AnyAppAlertItem(
@@ -178,24 +178,24 @@ extension SettingsView {
             }
         )
     }
-    
+
     private func onDeleteAccountConfirmed() {
         logManager.trackEvent(event: Event.deleteAccountStartConfirm)
         Task {
             do {
                 let uid = try authManager.getCurrentUserId()
-                /*
+
                 try await authManager.deleteAccount()
                 try await userManager.deleteUser()
                 try await avatarManager.removeAuthorIdFromAllUserAvatars(userId: uid)
-                 */
-                
+                try await chatManager.deleteAllChatsForUser(userId: uid)
+
                 // 使用 async let
-                async let deleteAuth: () = authManager.deleteAccount()
-                async let deleteUser: () = userManager.deleteUser()
-                async let deleteAvatar: () = avatarManager.removeAuthorIdFromAllUserAvatars(userId: uid)
-                async let deleteChats: () = chatManager.deleteAllChatsForUser(userId: uid)
-                let (_, _, _, _) = await (try deleteAuth, try deleteUser, try deleteAvatar, try deleteChats)
+//                async let deleteAuth: () = authManager.deleteAccount()
+//                async let deleteUser: () = userManager.deleteUser()
+//                async let deleteAvatar: () = avatarManager.removeAuthorIdFromAllUserAvatars(userId: uid)
+//                async let deleteChats: () = chatManager.deleteAllChatsForUser(userId: uid)
+//                let (_, _, _, _) = try await (deleteAuth, deleteUser, deleteAvatar, deleteChats)
                 logManager.deleteUserProfile()
                 logManager.trackEvent(event: Event.deleteAccountSuccess)
                 await dismissScreen()
@@ -205,7 +205,7 @@ extension SettingsView {
             }
         }
     }
-    
+
     private func dismissScreen() async {
         dismiss()
         try? await Task.sleep(nanoseconds: 1_000_000_000)
@@ -216,11 +216,9 @@ extension SettingsView {
         logManager.trackEvent(event: Event.createAccountPressed)
         showCreateAccountView.toggle()
     }
-    
 }
 
 extension SettingsView {
-    
     enum Event: LoggableEvent {
         case signOutStart
         case signOutSuccess
@@ -242,7 +240,7 @@ extension SettingsView {
             case .createAccountPressed: return "SettingsView_CreateAccount_Pressed"
             }
         }
-        
+
         var parameters: [String: Any]? {
             switch self {
             case .signOutFail(error: let error), .deleteAccountFail(error: let error):
@@ -251,7 +249,7 @@ extension SettingsView {
                 return nil
             }
         }
-        
+
         var type: CustomLogType {
             switch self {
             case .signOutFail, .deleteAccountFail:
@@ -263,8 +261,8 @@ extension SettingsView {
     }
 }
 
-
 // MARK: Previews
+
 #Preview("No auth") {
     SettingsView()
         .environment(AvatarManager(service: MockAvatarService()))

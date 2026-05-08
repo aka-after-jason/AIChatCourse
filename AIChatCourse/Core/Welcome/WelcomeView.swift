@@ -108,7 +108,6 @@ extension WelcomeView {
 }
 
 extension WelcomeView {
-    
     enum Event: LoggableEvent {
         case didSignIn(isNewUser: Bool)
         case signInPressed
@@ -118,7 +117,7 @@ extension WelcomeView {
             case .signInPressed: return "WelcomeView_SignIn_Pressed"
             }
         }
-        
+
         var parameters: [String: Any]? {
             switch self {
             case .didSignIn(isNewUser: let isNewUser):
@@ -127,7 +126,7 @@ extension WelcomeView {
                 return nil
             }
         }
-        
+
         var type: CustomLogType {
             switch self {
             default:
@@ -136,7 +135,6 @@ extension WelcomeView {
         }
     }
 }
-
 
 #Preview {
     WelcomeView()

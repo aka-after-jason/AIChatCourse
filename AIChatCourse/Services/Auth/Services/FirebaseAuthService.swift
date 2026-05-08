@@ -26,6 +26,10 @@ struct FirebaseAuthService: AuthService {
         }
     }
     
+    func removeAuthenticatedUserListener(listener: any NSObjectProtocol) {
+        Auth.auth().removeStateDidChangeListener(listener)
+    }
+    
     func getAuthenticatedUser() -> UserAuthInfoModel? {
         guard let user = Auth.auth().currentUser else { return nil }
         return UserAuthInfoModel(user: user)
@@ -86,16 +90,46 @@ struct FirebaseAuthService: AuthService {
         guard let currentUser = Auth.auth().currentUser else {
             throw CustomAuthError.userNotFound
         }
-        try await currentUser.delete()
+        do {
+            try await currentUser.delete()
+        } catch let error as NSError {
+            let authError = AuthErrorCode(rawValue: error.code)
+            switch authError {
+            case .requiresRecentLogin:
+                // Try to reauthenticate user
+                try await reauthenticateUser(error: error)
+                return try await currentUser.delete()
+            default:
+                throw error
+            }
+        }
+    }
+    
+    private func reauthenticateUser(error: Error) async throws {
+        guard let currentUser = Auth.auth().currentUser, let providerId = currentUser.providerData.first?.providerID else {
+            throw CustomAuthError.userNotFound
+        }
+        
+        switch providerId {
+        case "apple.com":
+            let result = try await signInApple()
+            guard currentUser.uid == result.user.uid else {
+                throw CustomAuthError.reauthAccountChanged
+            }
+        default:
+            throw error
+        }
     }
     
     enum CustomAuthError: LocalizedError {
         case userNotFound
-        
+        case reauthAccountChanged
         var errorDescription: String? {
             switch self {
             case .userNotFound:
                 return "Current authenticated user not found."
+            case .reauthAccountChanged:
+                return "Reauthenticated switched accounts. Please check your account."
             }
         }
     }

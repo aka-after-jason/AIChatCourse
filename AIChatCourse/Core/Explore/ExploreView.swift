@@ -25,6 +25,7 @@ struct ExploreView: View {
         return false
         #endif
     }
+
     var body: some View {
         NavigationStack(path: $path) {
             List {
@@ -68,7 +69,7 @@ struct ExploreView: View {
             }
         }
     }
-    
+
     private var devSettingsButton: some View {
         Button(action: {
             onDevSettingsButtonPressed()
@@ -76,7 +77,7 @@ struct ExploreView: View {
             Text("DEV 🤫")
         })
     }
-    
+
     private func onDevSettingsButtonPressed() {
         showDevSettings = true
         logManager.trackEvent(event: Event.devSettingsPressed)
@@ -110,13 +111,14 @@ struct ExploreView: View {
 }
 
 // MARK: 抽取属性view
+
 extension ExploreView {
     private var loadingIndicator: some View {
         ProgressView()
             .padding(40)
             .frame(maxWidth: .infinity)
     }
-    
+
     private var errorMessageView: some View {
         VStack(alignment: .center, spacing: 8) {
             Text("Error")
@@ -214,7 +216,7 @@ extension ExploreView {
         logManager.trackEvent(event: Event.categoryPressed(category: category))
         path.append(.categoryListView(category: category, imageName: imageName))
     }
-    
+
     private func onTryAgainPressed() {
         logManager.trackEvent(event: Event.tryAgainPressed)
         isLoadingFeatured = true
@@ -229,7 +231,6 @@ extension ExploreView {
 }
 
 extension ExploreView {
-    
     enum Event: LoggableEvent {
         case devSettingsPressed
         case tryAgainPressed
@@ -241,7 +242,7 @@ extension ExploreView {
         case loadPopularAvatarsStart
         case loadPopularAvatarsSuccess(count: Int)
         case loadPopularAvatarsFail(error: Error)
-        
+
         var eventName: String {
             switch self {
             case .devSettingsPressed: return "ExploreView_DevSettings_Pressed"
@@ -256,7 +257,7 @@ extension ExploreView {
             case .loadPopularAvatarsFail: return "ExploreView_LoadPopularAvatar_Fail"
             }
         }
-        
+
         var parameters: [String: Any]? {
             switch self {
             case .avatarPressed(avatar: let avatar):
@@ -271,7 +272,7 @@ extension ExploreView {
                 return nil
             }
         }
-        
+
         var type: CustomLogType {
             switch self {
             case .loadFeaturedAvatarsFail, .loadPopularAvatarsFail:
@@ -282,7 +283,6 @@ extension ExploreView {
         }
     }
 }
-
 
 // MARK: Previews
 

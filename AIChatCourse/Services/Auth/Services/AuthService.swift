@@ -14,6 +14,7 @@ import SwiftUI
 
 protocol AuthService {
     func addAuthenticatedUserListener(onListenerAttached: (any NSObjectProtocol) -> Void) -> AsyncStream<UserAuthInfoModel?>
+    func removeAuthenticatedUserListener(listener: any NSObjectProtocol)
     func getAuthenticatedUser() -> UserAuthInfoModel?
     func signInAnonymously() async throws -> (user: UserAuthInfoModel, isNewUser: Bool)
     func signInApple() async throws -> (user: UserAuthInfoModel, isNewUser: Bool)

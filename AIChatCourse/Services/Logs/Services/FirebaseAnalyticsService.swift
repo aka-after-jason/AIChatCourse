@@ -23,8 +23,8 @@ struct FirebaseAnalyticsService: LogService {
         for (key, value) in dict {
             // Analytics.setUserProperty(value, forName: key) 只接收 String 类型的valu
             if let string = String.convertToString(value) {
-                // Analytics 对 key 和 string 的长度有要求
-                let key = key.clean(maxCharacters: 40)
+                // Analytics 对 key 和 string 的长度有要求, key最长为 24
+                let key = key.clean(maxCharacters: 24)
                 let string = string.clean(maxCharacters: 100)
                 Analytics.setUserProperty(string, forName: key)
             }

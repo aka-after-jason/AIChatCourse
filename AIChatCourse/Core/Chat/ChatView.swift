@@ -475,12 +475,11 @@ extension ChatView {
         var type: CustomLogType {
             switch self {
             case .loadAvatarFail,
-                 .loadMessagesFail,
                  .messageSeenFail,
                  .reportChatFail,
                  .deleteChatFail:
                 return .severe
-            case .loadChatFail, .sendMessageFail:
+            case .loadChatFail, .sendMessageFail, .loadMessagesFail:
                 return .warning
             default:
                 return .analytic

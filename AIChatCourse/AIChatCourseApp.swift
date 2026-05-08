@@ -109,39 +109,39 @@ struct Dependencies {
         switch config {
         case .mock(isSignedIn: let isSignedIn):
             // Mock
-            authManager = AuthManager(service: MockAuthService(user: isSignedIn ? .mock(isAnonymous: false) : nil))
-            userManager = UserManager(services: MockUserServices(user: isSignedIn ? .mock : nil))
-            aiManager = AIManager(service: MockAIService())
-            avatarManager = AvatarManager(service: MockAvatarService(), local: MockLocalAvatarPersistence())
-            chatManager = ChatManager(service: MockChatService())
             logManager = LogManager(services: [
                 ConsoleService(printParameters: true)
             ])
+            authManager = AuthManager(service: MockAuthService(user: isSignedIn ? .mock(isAnonymous: false) : nil), logManager: logManager)
+            userManager = UserManager(services: MockUserServices(user: isSignedIn ? .mock : nil), logManager: logManager)
+            aiManager = AIManager(service: MockAIService())
+            avatarManager = AvatarManager(service: MockAvatarService(), local: MockLocalAvatarPersistence())
+            chatManager = ChatManager(service: MockChatService())
         case .dev:
             // DEV
-            authManager = AuthManager(service: FirebaseAuthService())
-            userManager = UserManager(services: ProductionUserServices())
-            aiManager = AIManager(service: OpenAIService())
-            avatarManager = AvatarManager(service: FirebaseAvatarService(), local: SwiftDataLocalAvatarPersistence())
-            chatManager = ChatManager(service: FirebaseChatService())
             logManager = LogManager(services: [
                 ConsoleService(),
                 FirebaseAnalyticsService(),
                 MixpanelService(token: Keys.mixpanelToken, loggingEnabled: false),
                 FirebaseCrashlyticsService()
             ])
-        case .prod:
-            // Production
-            authManager = AuthManager(service: FirebaseAuthService())
-            userManager = UserManager(services: ProductionUserServices())
+            authManager = AuthManager(service: FirebaseAuthService(), logManager: logManager)
+            userManager = UserManager(services: ProductionUserServices(), logManager: logManager)
             aiManager = AIManager(service: OpenAIService())
             avatarManager = AvatarManager(service: FirebaseAvatarService(), local: SwiftDataLocalAvatarPersistence())
             chatManager = ChatManager(service: FirebaseChatService())
+        case .prod:
+            // Production
             logManager = LogManager(services: [
                 FirebaseAnalyticsService(),
                 MixpanelService(token: Keys.mixpanelToken),
                 FirebaseCrashlyticsService()
             ])
+            authManager = AuthManager(service: FirebaseAuthService(), logManager: logManager)
+            userManager = UserManager(services: ProductionUserServices(), logManager: logManager)
+            aiManager = AIManager(service: OpenAIService())
+            avatarManager = AvatarManager(service: FirebaseAvatarService(), local: SwiftDataLocalAvatarPersistence())
+            chatManager = ChatManager(service: FirebaseChatService())
             print("This is Production env!") // 这里添加打印, 因为 release 环境取消了 debug executable, 断点没有用
         }
     }

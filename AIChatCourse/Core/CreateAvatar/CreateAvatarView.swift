@@ -156,14 +156,14 @@ struct CreateAvatarView: View {
 
     private func onSavePressed() {
         logManager.trackEvent(event: Event.saveAvatarStart)
-        guard let generatedImage else {return}
+        guard let generatedImage else { return }
         isSvaing = true
         Task {
             do {
                 try TextValidationHelper.checkIfTextIsValid(text: avatarName, minimumCharacterCount: 3)
                 let uid = try authManager.getCurrentUserId()
                 let newAvatar = AvatarModel.newAvatar(name: avatarName, option: characterOption, action: characterAction, location: characterLocation, authorId: uid)
-                
+
                 // UPLOAD!
                 try await avatarManager.createAvatar(avatar: newAvatar, image: generatedImage)
                 logManager.trackEvent(event: Event.saveAvatarSuccess(avatar: newAvatar))
@@ -179,32 +179,29 @@ struct CreateAvatarView: View {
 }
 
 extension CreateAvatarView {
-    
     enum Event: LoggableEvent {
         case backButtonPressed
-        
+
         case generateImageStart
         case generateImageSuccess(avatarDescriptionBuilder: AvatarDescriptionBuilder)
         case generateImageFail(error: Error)
-        
+
         case saveAvatarStart
         case saveAvatarSuccess(avatar: AvatarModel)
         case saveAvatarFail(error: Error)
-        
+
         var eventName: String {
             switch self {
             case .backButtonPressed: return "CreateAvatarView_BackButton_Pressed"
-            
             case .generateImageStart: return "CreateAvatarView_GenerateImage_Start"
             case .generateImageSuccess: return "CreateAvatarView_GenerateImage_Success"
             case .generateImageFail: return "CreateAvatarView_GenerateImage_Fail"
-            
             case .saveAvatarStart: return "CreateAvatarView_SaveAvatar_Start"
             case .saveAvatarSuccess: return "CreateAvatarView_SaveAvatar_Success"
             case .saveAvatarFail: return "CreateAvatarView_SaveAvatar_Fail"
             }
         }
-        
+
         var parameters: [String: Any]? {
             switch self {
             case .generateImageFail(error: let error), .saveAvatarFail(error: let error):
@@ -217,7 +214,7 @@ extension CreateAvatarView {
                 return nil
             }
         }
-        
+
         var type: CustomLogType {
             switch self {
             case .generateImageFail:
@@ -230,7 +227,6 @@ extension CreateAvatarView {
         }
     }
 }
-
 
 #Preview {
     CreateAvatarView()

@@ -26,6 +26,9 @@ final class AuthManager { // 实现 AuthService 协议中的所有方法
     
     private func addAuthListener() {
         logManager?.trackEvent(event: Event.authListenerStart)
+        if let listener {
+            service.removeAuthenticatedUserListener(listener: listener)
+        }
         Task {
             for await value in service.addAuthenticatedUserListener(onListenerAttached: { listener in
                 self.listener = listener
@@ -53,7 +56,10 @@ final class AuthManager { // 实现 AuthService 协议中的所有方法
     }
 
     func signInApple() async throws -> (user: UserAuthInfoModel, isNewUser: Bool) {
-        try await service.signInApple()
+        defer {
+            addAuthListener()
+        }
+        return try await service.signInApple()
     }
 
     func signOut() throws {
