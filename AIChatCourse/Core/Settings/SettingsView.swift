@@ -20,6 +20,7 @@ struct SettingsView: View {
     @State private var isAnonymousUser: Bool = false
     @State private var showCreateAccountView: Bool = false
     @State private var showAlert: AnyAppAlertItem?
+    @State private var showRatingsModal: Bool = false
     var body: some View {
         NavigationStack {
             List {
@@ -29,6 +30,9 @@ struct SettingsView: View {
             }
             .navigationTitle("Settings")
             .appearAnalyticsViewModifier(name: "SettingsView")
+            .showModal(showModal: $showRatingsModal, content: {
+                ratingsModal
+            })
             .sheet(isPresented: $showCreateAccountView, onDismiss: {
                 setAnonymousAccountStatus()
             }, content: {
@@ -97,6 +101,12 @@ extension SettingsView {
 
     private var applicationSection: some View {
         Section(content: {
+            Text("Rete us on the AppStore!")
+                .foregroundStyle(.blue)
+                .rowFormatting()
+                .anyButton(.highlight, action: { onRatingsButtonPressed() })
+                .removeListRowFormatting()
+
             HStack(spacing: 8) {
                 Text("Version")
                 Spacer()
@@ -118,7 +128,7 @@ extension SettingsView {
             Text("Contact us")
                 .foregroundStyle(.blue)
                 .rowFormatting()
-                .anyButton(.highlight) {}
+                .anyButton(.highlight) { onContactUsPressed() }
                 .removeListRowFormatting()
 
         }, header: {
@@ -127,6 +137,17 @@ extension SettingsView {
             Text("Created by Swiftful Thinking.\nLearn more at www.swiftful-thinking.com.")
                 .baselineOffset(6)
         })
+    }
+
+    private var ratingsModal: some View {
+        CustomModalView(
+            title: "Are you enjoying AIChat?",
+            subtitle: "We'd love to hear your feedback!",
+            primaryButtonTitle: "Yes",
+            primaryButtonAction: { onEnjoyAppYesPressed() },
+            secondaryButtonTitle: "No",
+            secondaryButtonAction: { onEnjoyAppNoPressed() }
+        )
     }
 }
 
@@ -216,6 +237,30 @@ extension SettingsView {
         logManager.trackEvent(event: Event.createAccountPressed)
         showCreateAccountView.toggle()
     }
+
+    private func onContactUsPressed() {
+        logManager.trackEvent(event: Event.contactUsPressed)
+        let email = "15021453094@163.com"
+        let emailString = "mailto:\(email)"
+        guard let url = URL(string: emailString), UIApplication.shared.canOpenURL(url) else { return }
+        UIApplication.shared.open(url)
+    }
+
+    private func onRatingsButtonPressed() {
+        logManager.trackEvent(event: Event.ratingPressed)
+        showRatingsModal = true
+    }
+
+    private func onEnjoyAppYesPressed() {
+        logManager.trackEvent(event: Event.ratingYesPressed)
+        showRatingsModal = false
+        AppStoreRatingsHelper.requestRatingsReview()
+    }
+
+    private func onEnjoyAppNoPressed() {
+        logManager.trackEvent(event: Event.ratingNoPressed)
+        showRatingsModal = false
+    }
 }
 
 extension SettingsView {
@@ -228,6 +273,10 @@ extension SettingsView {
         case deleteAccountSuccess
         case deleteAccountFail(error: Error)
         case createAccountPressed
+        case contactUsPressed
+        case ratingPressed
+        case ratingYesPressed
+        case ratingNoPressed
         var eventName: String {
             switch self {
             case .signOutStart: return "SettingsView_SignOut_Start"
@@ -238,6 +287,10 @@ extension SettingsView {
             case .deleteAccountSuccess: return "SettingsView_DeleteAccount_Success"
             case .deleteAccountFail: return "SettingsView_DeleteAccount_Fail"
             case .createAccountPressed: return "SettingsView_CreateAccount_Pressed"
+            case .contactUsPressed: return "SettingsView_ContactUs_Pressed"
+            case .ratingPressed: return "SettingsView_RatingAppStore_Pressed"
+            case .ratingYesPressed: return "SettingsView_RatingYes_Pressed"
+            case .ratingNoPressed: return "SettingsView_RatingNo_Pressed"
             }
         }
 
