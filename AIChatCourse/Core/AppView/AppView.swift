@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftfulUtilities
 
 // tabbar - signed in
 // onboarding - signed out
@@ -32,6 +33,10 @@ struct AppView: View {
         // .environment(<#T##keyPath: WritableKeyPath<EnvironmentValues, V>##WritableKeyPath<EnvironmentValues, V>#>, <#T##value: V##V#>) // 用于struct
         .task {
             await checkUserStatus()
+        }
+        .task {
+            try? await Task.sleep(for: .seconds(2))
+            await showATTPromptIfNeeded()
         }
         // 监听 appState 中的 showTabBar
         .onChange(of: appState.showTabBar) { _, showTabBar in
@@ -68,6 +73,14 @@ extension AppView {
             }
         }
     }
+    
+    /// 苹果审核需要, 没有则不会通过
+    private func showATTPromptIfNeeded() async {
+        #if !DEBUG
+        let status = await AppTrackingTransparencyHelper.requestTrackingAuthorization()
+        logManager.trackEvent(event: Event.attStatus(dict: status.eventParameters))
+        #endif
+    }
 }
 
 extension AppView {
@@ -77,6 +90,7 @@ extension AppView {
         case anonymousAuthStart
         case anonymousAuthSuccess
         case anonymousAuthFail(error: Error)
+        case attStatus(dict: [String: Any])
         var eventName: String {
             switch self {
             case .existingAuthStart: return "AppView_ExistingAuth_Start"
@@ -84,6 +98,7 @@ extension AppView {
             case .anonymousAuthStart: return "AppView_AnonymousAuth_Start"
             case .anonymousAuthSuccess: return "AppView_AnonymousAuth_Success"
             case .anonymousAuthFail: return "AppView_AnonymousAuth_Fail"
+            case .attStatus: return "AppView_ATTStatus"
             }
         }
 
@@ -91,6 +106,8 @@ extension AppView {
             switch self {
             case .existingAuthFail(error: let error), .anonymousAuthFail(error: let error):
                 return error.eventParameters
+            case .attStatus(dict: let dict):
+                return dict
             default:
                 return nil
             }
