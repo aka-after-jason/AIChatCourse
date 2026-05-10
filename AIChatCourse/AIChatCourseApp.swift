@@ -36,6 +36,7 @@ struct AIChatCourseApp: App {
 class AppDelegate: NSObject, UIApplicationDelegate {
     var dependencies: Dependencies!
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
+        // JPushManager.shared.configure(launchOptions: launchOptions)
         let config: BuildConfiguration
 
         #if MOCK
@@ -48,8 +49,35 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 
         config.configure() // 先执行 FirebaseApp.configure()
         dependencies = Dependencies(config: config)
-
         return true
+    }
+
+    /// JPush
+    func application(
+        _ application: UIApplication,
+        didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
+    ) {
+        JPushManager.shared.registerDeviceToken(deviceToken)
+    }
+
+    func application(
+        _ application: UIApplication,
+        didFailToRegisterForRemoteNotificationsWithError error: Error
+    ) {
+        print("APNs 注册失败:", error.localizedDescription)
+    }
+
+    func application(
+        _ application: UIApplication,
+        didReceiveRemoteNotification userInfo: [AnyHashable: Any],
+        fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void
+    ) {
+        JPushManager.shared.handleRemoteNotification(userInfo)
+        completionHandler(.newData)
+    }
+
+    func applicationDidBecomeActive(_ application: UIApplication) {
+        JPushManager.shared.cleanBadge()
     }
 }
 
@@ -120,7 +148,7 @@ struct Dependencies {
         case .dev:
             // DEV
             logManager = LogManager(services: [
-                ConsoleService(),
+                ConsoleService(printParameters: true),
                 FirebaseAnalyticsService(),
                 MixpanelService(token: Keys.mixpanelToken, loggingEnabled: false),
                 FirebaseCrashlyticsService()

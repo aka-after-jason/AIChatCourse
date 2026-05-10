@@ -37,6 +37,8 @@ struct FirebaseAuthService: AuthService {
 
     func signInAnonymously() async throws -> (user: UserAuthInfoModel, isNewUser: Bool) {
         let authDataResult = try await Auth.auth().signInAnonymously()
+         JPushManager.shared.setAlias(authDataResult.user.uid)
+         JPushManager.shared.setTags(["ios", "user"])
         return authDataResult.asUserAuthInfo
     }
     
@@ -81,6 +83,7 @@ struct FirebaseAuthService: AuthService {
     func signOut() throws {
         do {
             try Auth.auth().signOut()
+            JPushManager.shared.deleteAlias()
         } catch {
             print("Failed to sign out: \(error.localizedDescription)")
         }

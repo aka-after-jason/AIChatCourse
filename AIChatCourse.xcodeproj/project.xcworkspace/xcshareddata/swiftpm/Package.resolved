@@ -1,5 +1,5 @@
 {
-  "originHash" : "a99bad1b14e78b8e6cb77578ea2ce4a7b8bdddc91590a0eaa6dcd0cdc7649d93",
+  "originHash" : "f75038d07b30b9271d4bbec1366e5471c572657aa2c6ece68d4726e0b5cd567c",
   "pins" : [
     {
       "identity" : "abseil-cpp-binary",
@@ -98,6 +98,24 @@
       "state" : {
         "revision" : "040d087ac2267d2ddd4cca36c757d1c6a05fdbfe",
         "version" : "101.0.0"
+      }
+    },
+    {
+      "identity" : "jcore-sdk",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/jpush/jcore-sdk.git",
+      "state" : {
+        "revision" : "ce826d7322e8b4dceaae8d57410dea59d6b2dbdb",
+        "version" : "5.4.0"
+      }
+    },
+    {
+      "identity" : "jpush-sdk",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/jpush/jpush-sdk.git",
+      "state" : {
+        "revision" : "b511513a76395fc40b8befcbf38ac24418e75332",
+        "version" : "6.1.0"
       }
     },
     {

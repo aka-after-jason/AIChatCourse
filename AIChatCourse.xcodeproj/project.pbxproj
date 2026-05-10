@@ -11,6 +11,8 @@
 		AF1479542FA573D800B0C58E /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = AF1479532FA573D800B0C58E /* FirebaseStorage */; };
 		AF2A19B22F9B8BD100E51154 /* SignInAppleAsync in Frameworks */ = {isa = PBXBuildFile; productRef = AF2A19B12F9B8BD100E51154 /* SignInAppleAsync */; };
 		AF639B9D2F6F977F00979BBA /* SwiftfulUtilities in Frameworks */ = {isa = PBXBuildFile; productRef = AF639B9C2F6F977F00979BBA /* SwiftfulUtilities */; };
+		AFBE45932FAEC5C1005E02EE /* JPush in Frameworks */ = {isa = PBXBuildFile; productRef = AFBE45922FAEC5C1005E02EE /* JPush */; };
+		AFBE45962FAEC6B8005E02EE /* JCore in Frameworks */ = {isa = PBXBuildFile; productRef = AFBE45952FAEC6B8005E02EE /* JCore */; };
 		AFCBC2242FA9A54D00ACA3CE /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = AFCBC2232FA9A54D00ACA3CE /* FirebaseAnalytics */; };
 		AFCBC22D2FA9BD5A00ACA3CE /* Mixpanel in Frameworks */ = {isa = PBXBuildFile; productRef = AFCBC22C2FA9BD5A00ACA3CE /* Mixpanel */; };
 		AFCBC2312FA9CA2500ACA3CE /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = AFCBC2302FA9CA2500ACA3CE /* FirebaseCrashlytics */; };
@@ -80,8 +82,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				AF2A19B22F9B8BD100E51154 /* SignInAppleAsync in Frameworks */,
+				AFBE45962FAEC6B8005E02EE /* JCore in Frameworks */,
 				AFF87AF42F6809A900595BD1 /* SDWebImageSwiftUI in Frameworks */,
 				AFE9585F2F9D75B400DB6D49 /* SwiftfulFirestore in Frameworks */,
+				AFBE45932FAEC5C1005E02EE /* JPush in Frameworks */,
 				AFED45292F9B09EE0060CA90 /* FirebaseAuth in Frameworks */,
 				AFE9587E2F9DBEE800DB6D49 /* OpenAI in Frameworks */,
 				AFCBC2312FA9CA2500ACA3CE /* FirebaseCrashlytics in Frameworks */,
@@ -171,6 +175,8 @@
 				AFCBC2232FA9A54D00ACA3CE /* FirebaseAnalytics */,
 				AFCBC22C2FA9BD5A00ACA3CE /* Mixpanel */,
 				AFCBC2302FA9CA2500ACA3CE /* FirebaseCrashlytics */,
+				AFBE45922FAEC5C1005E02EE /* JPush */,
+				AFBE45952FAEC6B8005E02EE /* JCore */,
 			);
 			productName = AIChatCourse;
 			productReference = AFB9EAD72F66B7A500EB3ED3 /* AIChatCourse.app */;
@@ -234,6 +240,7 @@
 				TargetAttributes = {
 					AFB9EAD62F66B7A500EB3ED3 = {
 						CreatedOnToolsVersion = 26.3;
+						LastSwiftMigration = 2640;
 					};
 					AFB9EAE32F66B7A700EB3ED3 = {
 						CreatedOnToolsVersion = 26.3;
@@ -262,6 +269,8 @@
 				AFE9585D2F9D75B400DB6D49 /* XCRemoteSwiftPackageReference "SwiftfulFirestore" */,
 				AFE9587C2F9DBEE800DB6D49 /* XCRemoteSwiftPackageReference "OpenAI" */,
 				AFCBC22B2FA9BD5A00ACA3CE /* XCRemoteSwiftPackageReference "mixpanel-swift" */,
+				AFBE45912FAEC5C1005E02EE /* XCRemoteSwiftPackageReference "jpush-sdk" */,
+				AFBE45942FAEC6B8005E02EE /* XCRemoteSwiftPackageReference "jcore-sdk" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = AFB9EAD82F66B7A500EB3ED3 /* Products */;
@@ -511,6 +520,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = AIChatCourse/AIChatCourse.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
@@ -547,6 +557,8 @@
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "AIChatCourse/AIChatCourse-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -558,6 +570,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = AIChatCourse/AIChatCourse.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
@@ -594,6 +607,7 @@
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "AIChatCourse/AIChatCourse-Bridging-Header.h";
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -755,6 +769,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = AIChatCourse/AIChatCourse.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
@@ -791,6 +806,8 @@
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "AIChatCourse/AIChatCourse-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -901,6 +918,22 @@
 				minimumVersion = 1.1.8;
 			};
 		};
+		AFBE45912FAEC5C1005E02EE /* XCRemoteSwiftPackageReference "jpush-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/jpush/jpush-sdk.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 6.1.0;
+			};
+		};
+		AFBE45942FAEC6B8005E02EE /* XCRemoteSwiftPackageReference "jcore-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/jpush/jcore-sdk.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.4.0;
+			};
+		};
 		AFCBC22B2FA9BD5A00ACA3CE /* XCRemoteSwiftPackageReference "mixpanel-swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/mixpanel/mixpanel-swift.git";
@@ -963,6 +996,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = AF639B9B2F6F977F00979BBA /* XCRemoteSwiftPackageReference "SwiftfulUtilities" */;
 			productName = SwiftfulUtilities;
+		};
+		AFBE45922FAEC5C1005E02EE /* JPush */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AFBE45912FAEC5C1005E02EE /* XCRemoteSwiftPackageReference "jpush-sdk" */;
+			productName = JPush;
+		};
+		AFBE45952FAEC6B8005E02EE /* JCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AFBE45942FAEC6B8005E02EE /* XCRemoteSwiftPackageReference "jcore-sdk" */;
+			productName = JCore;
 		};
 		AFCBC2232FA9A54D00ACA3CE /* FirebaseAnalytics */ = {
 			isa = XCSwiftPackageProductDependency;
