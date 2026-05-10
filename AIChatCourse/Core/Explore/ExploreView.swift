@@ -84,17 +84,48 @@ struct ExploreView: View {
             .onFirstAppear {
                 schedulePushNotifications()
             }
+            .onOpenURL { url in
+                handleDeepLink(url: url)
+            }
         }
     }
-    
+
+    /**
+     deeplink
+     1. 创建 deeplink:
+        在 info.plist 里面 创建一个 URL Types, URL Scheme 填写为: aiChat
+     2. 测试 deeplink:
+        在 Calendar 里面创建一个event, URL填写为: aiChat://?category=alien
+     */
+    private func handleDeepLink(url: URL) {
+        logManager.trackEvent(event: Event.deeplinkStart)
+        guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+              let queryItems = components.queryItems
+        else {
+            logManager.trackEvent(event: Event.deeplinkNoQueryItems)
+            return
+        }
+
+        for queryItem in queryItems {
+            // 解析 queryItem
+            if queryItem.name == "category", let value = queryItem.value, let category = CharacterOption(rawValue: value) {
+                let imageName = popularAvatars.first(where: { $0.characterOption == category })?.profileImageName ?? Constants.randomImageUrl
+                path.append(.categoryListView(category: category, imageName: imageName))
+                logManager.trackEvent(event: Event.deeplinkCategory(category: category))
+                return
+            }
+        }
+        logManager.trackEvent(event: Event.deeplinkUnknown)
+    }
+
     private func schedulePushNotifications() {
         pushManager.schedulePushNotificationsForTheNextWeek()
     }
-    
+
     private func handleShowPushNotificationButton() async {
         showNotificationButton = await pushManager.canRequestAuthorization()
     }
-    
+
     private var pushNotificationModal: some View {
         CustomModalView(
             title: "Enable push notifications?",
@@ -109,12 +140,12 @@ struct ExploreView: View {
             }
         )
     }
-    
+
     private func onPushNotificationButtonPressed() {
         showPushNotificationModal = true
         logManager.trackEvent(event: Event.pushNotificationStart)
     }
-    
+
     private func onEnablePushNotificationPressed() {
         showPushNotificationModal = false
         Task {
@@ -123,7 +154,7 @@ struct ExploreView: View {
             await handleShowPushNotificationButton()
         }
     }
-    
+
     private func onCancelPushNotificationPressed() {
         showPushNotificationModal = false
         logManager.trackEvent(event: Event.pushNotificationCancel)
@@ -136,7 +167,7 @@ struct ExploreView: View {
             Text("DEV 🤫")
         })
     }
-    
+
     private var pushNotificationButton: some View {
         Image(systemName: "bell.fill")
             .font(.headline)
@@ -315,6 +346,10 @@ extension ExploreView {
         case pushNotificationStart
         case pushNotificationEnable(isAuthorized: Bool)
         case pushNotificationCancel
+        case deeplinkStart
+        case deeplinkNoQueryItems
+        case deeplinkCategory(category: CharacterOption)
+        case deeplinkUnknown
 
         var eventName: String {
             switch self {
@@ -331,6 +366,10 @@ extension ExploreView {
             case .pushNotificationStart: return "ExploreView_PushNotification_Start"
             case .pushNotificationEnable: return "ExploreView_PushNotification_Enable"
             case .pushNotificationCancel: return "ExploreView_PushNotification_Cancel"
+            case .deeplinkStart: return "ExploreView_DeepLink_Start"
+            case .deeplinkNoQueryItems: return "ExploreView_DeepLink_No_Query_Items"
+            case .deeplinkCategory: return "ExploreView_DeepLink_Category"
+            case .deeplinkUnknown: return "ExploreView_DeepLink_Unknown"
             }
         }
 
@@ -346,6 +385,8 @@ extension ExploreView {
                 return ["avatar_count": count]
             case .pushNotificationEnable(isAuthorized: let isAuthorized):
                 return ["is_authorized": isAuthorized]
+            case .deeplinkCategory(category: let category):
+                return ["category": category.rawValue]
             default:
                 return nil
             }
@@ -353,7 +394,7 @@ extension ExploreView {
 
         var type: CustomLogType {
             switch self {
-            case .loadFeaturedAvatarsFail, .loadPopularAvatarsFail:
+            case .loadFeaturedAvatarsFail, .loadPopularAvatarsFail, .deeplinkUnknown:
                 return .severe
             default:
                 return .analytic
