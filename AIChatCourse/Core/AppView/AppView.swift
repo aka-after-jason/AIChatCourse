@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftfulUtilities
+import SwiftfulUI
 
 // tabbar - signed in
 // onboarding - signed out
@@ -17,33 +18,71 @@ struct AppView: View {
     @Environment(AuthManager.self) private var authManager
     @Environment(UserManager.self) private var userManager
     @Environment(LogManager.self) private var logManager
+    @Environment(\.scenePhase) private var scenePhase // LifeCycle: SwiftUI 使用这个
     var body: some View {
-        AppViewBuilder(
-            showTabBar: appState.showTabBar,
-            tabbarView: {
-                TabBarView()
-            },
-            onboardingView: {
-                WelcomeView()
+        
+        // RootView 来自 SwiftfulUI 框架
+        RootView(
+            delegate: RootDelegate(
+                onApplicationDidAppear: nil,
+                onApplicationWillEnterForeground: { _ in
+                    Task { await checkUserStatus() }
+                },
+                onApplicationDidBecomeActive: nil,
+                onApplicationWillResignActive: nil,
+                onApplicationDidEnterBackground: nil,
+                onApplicationWillTerminate: nil
+            )) {
+                AppViewBuilder(
+                    showTabBar: appState.showTabBar,
+                    tabbarView: {
+                        TabBarView()
+                    },
+                    onboardingView: {
+                        WelcomeView()
+                    }
+                )
+                // 由于使用了 @Observable, 这里需要使用 environment,不是 environmentObject
+                .environment(appState) // TabBarView 和 WelcomeView 都能访问
+                // .environment(<#T##object: (Observable & AnyObject)?##(Observable & AnyObject)?#>) // 用于class, 且遵循了 @Observable
+                // .environment(<#T##keyPath: WritableKeyPath<EnvironmentValues, V>##WritableKeyPath<EnvironmentValues, V>#>, <#T##value: V##V#>) // 用于struct
+                .task {
+                    await checkUserStatus()
+                }
+                .task {
+                    try? await Task.sleep(for: .seconds(2))
+                    await showATTPromptIfNeeded()
+                }
+                // 监听 appState 中的 showTabBar
+                .onChange(of: appState.showTabBar) { _, showTabBar in
+                    if !showTabBar {
+                        Task { await checkUserStatus() }
+                    }
+                }
+                
+                // MARK: 这种方式也不够全面, 推荐使用 NotificationCenter 来处理
+                /*
+                .onChange(of: scenePhase) { _, newValue in
+                    switch newValue {
+                    case .active:
+                        print("App is active")
+                    case .inactive:
+                        print("App is inactive")
+                    case .background:
+                        print("App is background")
+                    @unknown default:
+                        print("Unexpected state")
+                    }
+                }
+                 */
+                
+                // 想要监听哪个, 只需要修改 notificationName 参数
+                /*
+                .onNotificationRecieved(notificationName: UIApplication.willEnterForegroundNotification) { _ in
+                    Task { await checkUserStatus() }
+                }
+                 */
             }
-        )
-        // 由于使用了 @Observable, 这里需要使用 environment,不是 environmentObject
-        .environment(appState) // TabBarView 和 WelcomeView 都能访问
-        // .environment(<#T##object: (Observable & AnyObject)?##(Observable & AnyObject)?#>) // 用于class, 且遵循了 @Observable
-        // .environment(<#T##keyPath: WritableKeyPath<EnvironmentValues, V>##WritableKeyPath<EnvironmentValues, V>#>, <#T##value: V##V#>) // 用于struct
-        .task {
-            await checkUserStatus()
-        }
-        .task {
-            try? await Task.sleep(for: .seconds(2))
-            await showATTPromptIfNeeded()
-        }
-        // 监听 appState 中的 showTabBar
-        .onChange(of: appState.showTabBar) { _, showTabBar in
-            if !showTabBar {
-                Task { await checkUserStatus() }
-            }
-        }
     }
 }
 

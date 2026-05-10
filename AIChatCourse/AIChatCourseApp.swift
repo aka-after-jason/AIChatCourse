@@ -146,10 +146,12 @@ struct Dependencies {
             chatManager = ChatManager(service: FirebaseChatService())
             print("This is Production env!") // 这里添加打印, 因为 release 环境取消了 debug executable, 断点没有用
         }
-        
+
         pushManager = PushManager(logManager: logManager)
     }
 }
+
+// MARK: JPush
 
 extension AppDelegate {
     /// JPush
@@ -179,6 +181,24 @@ extension AppDelegate {
     func applicationDidBecomeActive(_ application: UIApplication) {
         JPushManager.shared.cleanBadge()
     }
+}
+
+// MARK: AppDelegate in SwiftUI, Lifecycle
+
+extension AppDelegate {
+    
+    /**
+     可以在这里添加一系列的生命周期方法
+     使用 AppDelegate 是 OC 或者 UIKit的方式
+     在SwiftUI 中, 苹果推荐使用 scenePhase,但是 scenePhase 不够全面, 目前只有3种状态
+        1. active
+        2. inactive
+        3. background
+     
+     推荐使用 NotificationCenter 来做, 更全面
+     */
+    func applicationDidEnterBackground(_ application: UIApplication) {}
+    func applicationWillTerminate(_ application: UIApplication) {}
 }
 
 // MARK: 将所有的 environment 都放在这里, 用于 preview

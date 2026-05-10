@@ -19,6 +19,7 @@
 		AFE9585F2F9D75B400DB6D49 /* SwiftfulFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = AFE9585E2F9D75B400DB6D49 /* SwiftfulFirestore */; };
 		AFE9587E2F9DBEE800DB6D49 /* OpenAI in Frameworks */ = {isa = PBXBuildFile; productRef = AFE9587D2F9DBEE800DB6D49 /* OpenAI */; };
 		AFED45292F9B09EE0060CA90 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = AFED45282F9B09EE0060CA90 /* FirebaseAuth */; };
+		AFEFB9222FB1471400216A81 /* SwiftfulUI in Frameworks */ = {isa = PBXBuildFile; productRef = AFEFB9212FB1471400216A81 /* SwiftfulUI */; };
 		AFF87AF42F6809A900595BD1 /* SDWebImageSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = AFF87AF32F6809A900595BD1 /* SDWebImageSwiftUI */; };
 /* End PBXBuildFile section */
 
@@ -81,6 +82,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AFEFB9222FB1471400216A81 /* SwiftfulUI in Frameworks */,
 				AF2A19B22F9B8BD100E51154 /* SignInAppleAsync in Frameworks */,
 				AFBE45962FAEC6B8005E02EE /* JCore in Frameworks */,
 				AFF87AF42F6809A900595BD1 /* SDWebImageSwiftUI in Frameworks */,
@@ -177,6 +179,7 @@
 				AFCBC2302FA9CA2500ACA3CE /* FirebaseCrashlytics */,
 				AFBE45922FAEC5C1005E02EE /* JPush */,
 				AFBE45952FAEC6B8005E02EE /* JCore */,
+				AFEFB9212FB1471400216A81 /* SwiftfulUI */,
 			);
 			productName = AIChatCourse;
 			productReference = AFB9EAD72F66B7A500EB3ED3 /* AIChatCourse.app */;
@@ -271,6 +274,7 @@
 				AFCBC22B2FA9BD5A00ACA3CE /* XCRemoteSwiftPackageReference "mixpanel-swift" */,
 				AFBE45912FAEC5C1005E02EE /* XCRemoteSwiftPackageReference "jpush-sdk" */,
 				AFBE45942FAEC6B8005E02EE /* XCRemoteSwiftPackageReference "jcore-sdk" */,
+				AFEFB9202FB1471400216A81 /* XCRemoteSwiftPackageReference "SwiftfulUI" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = AFB9EAD82F66B7A500EB3ED3 /* Products */;
@@ -966,6 +970,14 @@
 				minimumVersion = 12.12.1;
 			};
 		};
+		AFEFB9202FB1471400216A81 /* XCRemoteSwiftPackageReference "SwiftfulUI" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SwiftfulThinking/SwiftfulUI.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.2.4;
+			};
+		};
 		AFF87AF22F6809A900595BD1 /* XCRemoteSwiftPackageReference "SDWebImageSwiftUI" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/SDWebImage/SDWebImageSwiftUI.git";
@@ -1036,6 +1048,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = AFED45272F9B09EE0060CA90 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseAuth;
+		};
+		AFEFB9212FB1471400216A81 /* SwiftfulUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AFEFB9202FB1471400216A81 /* XCRemoteSwiftPackageReference "SwiftfulUI" */;
+			productName = SwiftfulUI;
 		};
 		AFF87AF32F6809A900595BD1 /* SDWebImageSwiftUI */ = {
 			isa = XCSwiftPackageProductDependency;
