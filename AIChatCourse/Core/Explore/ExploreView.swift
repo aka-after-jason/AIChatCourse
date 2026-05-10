@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct ExploreView: View {
+    @Environment(PushManager.self) private var pushManager
     @Environment(AvatarManager.self) private var avatarManager
     @Environment(LogManager.self) private var logManager
     @State private var categories: [CharacterOption] = CharacterOption.allCases
@@ -18,6 +19,8 @@ struct ExploreView: View {
     @State private var isLoadingPopular: Bool = true
     @State private var path: [NavigationPathOption] = []
     @State private var showDevSettings: Bool = false
+    @State private var showNotificationButton: Bool = false
+    @State private var showPushNotificationModal: Bool = false
     private var showDevSettingsButton: Bool {
         #if DEV || MOCK
         return true
@@ -56,9 +59,17 @@ struct ExploreView: View {
                         devSettingsButton
                     }
                 }
+                ToolbarItem(placement: .topBarTrailing) {
+                    if showNotificationButton {
+                        pushNotificationButton
+                    }
+                }
             })
             .sheet(isPresented: $showDevSettings, content: {
                 DevSettingsView()
+            })
+            .showModal(showModal: $showPushNotificationModal, content: {
+                pushNotificationModal
             })
             .customNavigationDestinationForCoreModule(path: $path)
             .task {
@@ -67,7 +78,55 @@ struct ExploreView: View {
             .task {
                 await loadPopularAvatars() // 没有先后顺序
             }
+            .task {
+                await handleShowPushNotificationButton()
+            }
+            .onFirstAppear {
+                schedulePushNotifications()
+            }
         }
+    }
+    
+    private func schedulePushNotifications() {
+        pushManager.schedulePushNotificationsForTheNextWeek()
+    }
+    
+    private func handleShowPushNotificationButton() async {
+        showNotificationButton = await pushManager.canRequestAuthorization()
+    }
+    
+    private var pushNotificationModal: some View {
+        CustomModalView(
+            title: "Enable push notifications?",
+            subtitle: "We'll send you reminders and updates!",
+            primaryButtonTitle: "Enable",
+            primaryButtonAction: {
+                onEnablePushNotificationPressed()
+            },
+            secondaryButtonTitle: "Cancel",
+            secondaryButtonAction: {
+                onCancelPushNotificationPressed()
+            }
+        )
+    }
+    
+    private func onPushNotificationButtonPressed() {
+        showPushNotificationModal = true
+        logManager.trackEvent(event: Event.pushNotificationStart)
+    }
+    
+    private func onEnablePushNotificationPressed() {
+        showPushNotificationModal = false
+        Task {
+            let isAuthorized = try await pushManager.requestAuthorization()
+            logManager.trackEvent(event: Event.pushNotificationEnable(isAuthorized: isAuthorized))
+            await handleShowPushNotificationButton()
+        }
+    }
+    
+    private func onCancelPushNotificationPressed() {
+        showPushNotificationModal = false
+        logManager.trackEvent(event: Event.pushNotificationCancel)
     }
 
     private var devSettingsButton: some View {
@@ -76,6 +135,17 @@ struct ExploreView: View {
         }, label: {
             Text("DEV 🤫")
         })
+    }
+    
+    private var pushNotificationButton: some View {
+        Image(systemName: "bell.fill")
+            .font(.headline)
+            .padding(4)
+            .tappableBackground()
+            .foregroundStyle(.accent)
+            .anyButton {
+                onPushNotificationButtonPressed()
+            }
     }
 
     private func onDevSettingsButtonPressed() {
@@ -242,6 +312,9 @@ extension ExploreView {
         case loadPopularAvatarsStart
         case loadPopularAvatarsSuccess(count: Int)
         case loadPopularAvatarsFail(error: Error)
+        case pushNotificationStart
+        case pushNotificationEnable(isAuthorized: Bool)
+        case pushNotificationCancel
 
         var eventName: String {
             switch self {
@@ -255,6 +328,9 @@ extension ExploreView {
             case .loadPopularAvatarsStart: return "ExploreView_LoadPopularAvatar_Start"
             case .loadPopularAvatarsSuccess: return "ExploreView_LoadPopularAvatar_Success"
             case .loadPopularAvatarsFail: return "ExploreView_LoadPopularAvatar_Fail"
+            case .pushNotificationStart: return "ExploreView_PushNotification_Start"
+            case .pushNotificationEnable: return "ExploreView_PushNotification_Enable"
+            case .pushNotificationCancel: return "ExploreView_PushNotification_Cancel"
             }
         }
 
@@ -268,6 +344,8 @@ extension ExploreView {
                 return error.eventParameters
             case .loadFeaturedAvatarsSuccess(count: let count), .loadPopularAvatarsSuccess(count: let count):
                 return ["avatar_count": count]
+            case .pushNotificationEnable(isAuthorized: let isAuthorized):
+                return ["is_authorized": isAuthorized]
             default:
                 return nil
             }
@@ -289,14 +367,17 @@ extension ExploreView {
 #Preview("Has data") {
     ExploreView()
         .environment(AvatarManager(service: MockAvatarService()))
+        .previewEnvironment()
 }
 
 #Preview("No data") {
     ExploreView()
         .environment(AvatarManager(service: MockAvatarService(avatars: [], delay: 1.0)))
+        .previewEnvironment()
 }
 
 #Preview("Slow loading") {
     ExploreView()
         .environment(AvatarManager(service: MockAvatarService()))
+        .previewEnvironment()
 }

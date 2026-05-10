@@ -29,6 +29,7 @@ struct AIChatCourseApp: App {
                 .environment(delegate.dependencies.authManager)
                 .environment(delegate.dependencies.chatManager)
                 .environment(delegate.dependencies.logManager)
+                .environment(delegate.dependencies.pushManager)
         }
     }
 }
@@ -50,34 +51,6 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         config.configure() // 先执行 FirebaseApp.configure()
         dependencies = Dependencies(config: config)
         return true
-    }
-
-    /// JPush
-    func application(
-        _ application: UIApplication,
-        didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
-    ) {
-        JPushManager.shared.registerDeviceToken(deviceToken)
-    }
-
-    func application(
-        _ application: UIApplication,
-        didFailToRegisterForRemoteNotificationsWithError error: Error
-    ) {
-        print("APNs 注册失败:", error.localizedDescription)
-    }
-
-    func application(
-        _ application: UIApplication,
-        didReceiveRemoteNotification userInfo: [AnyHashable: Any],
-        fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void
-    ) {
-        JPushManager.shared.handleRemoteNotification(userInfo)
-        completionHandler(.newData)
-    }
-
-    func applicationDidBecomeActive(_ application: UIApplication) {
-        JPushManager.shared.cleanBadge()
     }
 }
 
@@ -112,6 +85,7 @@ struct Dependencies {
     let avatarManager: AvatarManager
     let chatManager: ChatManager
     let logManager: LogManager
+    let pushManager: PushManager
 
     init(config: BuildConfiguration) {
         // Multiple schemes
@@ -172,6 +146,38 @@ struct Dependencies {
             chatManager = ChatManager(service: FirebaseChatService())
             print("This is Production env!") // 这里添加打印, 因为 release 环境取消了 debug executable, 断点没有用
         }
+        
+        pushManager = PushManager(logManager: logManager)
+    }
+}
+
+extension AppDelegate {
+    /// JPush
+    func application(
+        _ application: UIApplication,
+        didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
+    ) {
+        JPushManager.shared.registerDeviceToken(deviceToken)
+    }
+
+    func application(
+        _ application: UIApplication,
+        didFailToRegisterForRemoteNotificationsWithError error: Error
+    ) {
+        print("APNs 注册失败:", error.localizedDescription)
+    }
+
+    func application(
+        _ application: UIApplication,
+        didReceiveRemoteNotification userInfo: [AnyHashable: Any],
+        fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void
+    ) {
+        JPushManager.shared.handleRemoteNotification(userInfo)
+        completionHandler(.newData)
+    }
+
+    func applicationDidBecomeActive(_ application: UIApplication) {
+        JPushManager.shared.cleanBadge()
     }
 }
 
@@ -185,6 +191,7 @@ extension View {
             .environment(AuthManager(service: MockAuthService(user: isSignedIn ? .mock(isAnonymous: false) : nil)))
             .environment(ChatManager(service: MockChatService()))
             .environment(LogManager(services: []))
+            .environment(PushManager())
             .environment(AppState())
     }
 }
