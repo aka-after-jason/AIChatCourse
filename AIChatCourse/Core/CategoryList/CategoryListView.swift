@@ -127,19 +127,23 @@ extension CategoryListView {
 #Preview("Has data") {
     CategoryListView(path: .constant([]))
         .environment(AvatarManager(service: MockAvatarService()))
+        .previewEnvironment()
 }
 
 #Preview("No data") {
     CategoryListView(path: .constant([]))
         .environment(AvatarManager(service: MockAvatarService(avatars: [])))
+        .previewEnvironment()
 }
 
 #Preview("Slow loading") {
     CategoryListView(path: .constant([]))
         .environment(AvatarManager(service: MockAvatarService(delay: 2.0)))
+        .previewEnvironment()
 }
 
 #Preview("Error loading") {
     CategoryListView(path: .constant([]))
         .environment(AvatarManager(service: MockAvatarService(delay: 2.0, showError: true)))
+        .previewEnvironment()
 }

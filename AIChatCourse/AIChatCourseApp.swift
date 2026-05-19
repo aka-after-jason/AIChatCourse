@@ -37,7 +37,6 @@ struct AIChatCourseApp: App {
 class AppDelegate: NSObject, UIApplicationDelegate {
     var dependencies: Dependencies!
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
-        // JPushManager.shared.configure(launchOptions: launchOptions)
         let config: BuildConfiguration
 
         #if MOCK
@@ -50,6 +49,10 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 
         config.configure() // 先执行 FirebaseApp.configure()
         dependencies = Dependencies(config: config)
+
+        // JPush
+        // JPushManager.shared.configure(launchOptions: launchOptions)
+
         return true
     }
 }
@@ -93,6 +96,9 @@ struct Dependencies {
         // Development - production denpendencies + some extra dev tools
         // Production - production denpendencies
 
+        // Xcode 左侧点击项目蓝色图标 → 选中 Project → Info → Configurations
+        // 新增一个 mock
+
         // 该项目创建了三个schemes
         // AIChatCourse-Mock 对应 Mock
         // AIChatCourse-Development 对应 debug
@@ -106,7 +112,10 @@ struct Dependencies {
         // com.aka.AIChat.mock 对应 mock
         // com.aka.AIChat.dev 对应 development
         // com.aka.AIChat 对应 production
+
         // 修改对应的 display name
+        // 新增了一个 APP_DISPLAY_NAME 字段: go to target -> build settings -> 点击 + 号, Add User-defined Setting
+        // 在 info.plist 新增 Bundle display name 字段: $(APP_DISPLAY_NAME)
 
         switch config {
         case .mock(isSignedIn: let isSignedIn):
@@ -186,7 +195,6 @@ extension AppDelegate {
 // MARK: AppDelegate in SwiftUI, Lifecycle
 
 extension AppDelegate {
-    
     /**
      可以在这里添加一系列的生命周期方法
      使用 AppDelegate 是 OC 或者 UIKit的方式
@@ -194,7 +202,7 @@ extension AppDelegate {
         1. active
         2. inactive
         3. background
-     
+
      推荐使用 NotificationCenter 来做, 更全面
      */
     func applicationDidEnterBackground(_ application: UIApplication) {}

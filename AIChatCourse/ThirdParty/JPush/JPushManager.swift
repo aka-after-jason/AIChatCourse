@@ -1,6 +1,6 @@
 //
 //  JPushManager.swift
-//  AIChatCourse
+//  TestJPush
 //
 //  Created by Elaine on 2026/5/9.
 //
@@ -14,13 +14,14 @@ final class JPushManager: NSObject {
     static let shared = JPushManager()
     override private init() {}
 
-    private let appKey = Keys.jpushApi
     private let channel = "App Store"
 
     #if DEBUG
     private let isProduction = false
+    private let appKey = Keys.jpushApiDev
     #else
     private let isProduction = true
+    private let appKey = Keys.jpushAPIRelease
     #endif
 
     let notificationTapped = PassthroughSubject<[AnyHashable: Any], Never>()
@@ -51,55 +52,6 @@ final class JPushManager: NSObject {
         )
 
         observeJPushLogin()
-        requestAPNsPermissionAndRegister()
-        checkNotificationPermission()
-    }
-
-    private func requestAPNsPermissionAndRegister() {
-        UNUserNotificationCenter.current().requestAuthorization(
-            options: [.alert, .badge, .sound]
-        ) { granted, error in
-            print("通知授权 granted:", granted)
-            print("通知授权 error:", error?.localizedDescription ?? "nil")
-
-            DispatchQueue.main.async {
-                print("开始 registerForRemoteNotifications")
-                UIApplication.shared.registerForRemoteNotifications()
-            }
-        }
-    }
-
-    func checkNotificationPermission() {
-        UNUserNotificationCenter.current().getNotificationSettings { settings in
-            print("authorizationStatus:", settings.authorizationStatus.rawValue)
-
-            switch settings.authorizationStatus {
-            case .authorized, .provisional, .ephemeral:
-                DispatchQueue.main.async {
-                    UIApplication.shared.registerForRemoteNotifications()
-                }
-
-            case .denied:
-                print("用户已经拒绝通知，需要去系统设置打开")
-
-            case .notDetermined:
-                UNUserNotificationCenter.current().requestAuthorization(
-                    options: [.alert, .badge, .sound]
-                ) { granted, error in
-                    print("通知授权 granted:", granted)
-                    print("通知授权 error:", error?.localizedDescription ?? "nil")
-
-                    if granted {
-                        DispatchQueue.main.async {
-                            UIApplication.shared.registerForRemoteNotifications()
-                        }
-                    }
-                }
-
-            default:
-                break
-            }
-        }
     }
 
     func registerDeviceToken(_ deviceToken: Data) {
@@ -189,13 +141,14 @@ extension JPushManager: JPUSHRegisterDelegate {
 
         print("前台收到推送:", userInfo)
 
-        completionHandler(
-            Int(
-                // UNNotificationPresentationOptions.alert.rawValue |
-                UNNotificationPresentationOptions.sound.rawValue |
-                    UNNotificationPresentationOptions.badge.rawValue
-            )
-        )
+        let presentationOptions: UNNotificationPresentationOptions
+        if #available(iOS 14.0, *) {
+            presentationOptions = [.banner, .list, .sound, .badge]
+        } else {
+            presentationOptions = [.alert, .sound, .badge]
+        }
+
+        completionHandler(Int(presentationOptions.rawValue))
     }
 
     func jpushNotificationCenter(

@@ -104,6 +104,8 @@ extension AppView {
             do {
                 let (user, isNewUser) = try await authManager.signInAnonymously()
                 try await userManager.login(auth: user, isNewUser: isNewUser)
+                JPushManager.shared.setAlias(user.uid)
+                JPushManager.shared.setTags(["ios", "user"])
                 logManager.trackEvent(event: Event.anonymousAuthSuccess)
             } catch {
                 logManager.trackEvent(event: Event.anonymousAuthFail(error: error))
