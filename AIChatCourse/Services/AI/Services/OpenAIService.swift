@@ -4,9 +4,9 @@
 //
 //  Created by Elaine on 2026/4/26.
 //
+import FirebaseFunctions
 import OpenAI // Swift 操作 OpenAI 的 api
 import SwiftUI
-import FirebaseFunctions
 
 struct OpenAIService: AIService {
     var openAI: OpenAI {
@@ -33,8 +33,24 @@ struct OpenAIService: AIService {
         return uiImage
     }
 
-    /// 调用 OpenAI api 生成chat
-    
+    // 读取firebase function
+    /*
+     func generateImage(prompt: String) async throws -> UIImage {
+         let response = try await Functions.functions().httpsCallable("generateOpenAIImage").call([
+             "input": prompt
+         ])
+         guard let b64Json = response.data as? String,
+               let data = Data(base64Encoded: b64Json),
+               let uiImage = UIImage(data: data)
+         else {
+             throw CustomError.errorMessage(message: "没有拿到 b64Json，可能是模型/SDK版本/账单额度问题")
+         }
+         return uiImage
+     }
+      */
+
+    // 调用 OpenAI api 生成chat
+
     func generateText(chats: [AIChatModel]) async throws -> AIChatModel {
         let messages = chats.compactMap { $0.toOpenAIModel() }
         let query = ChatQuery(messages: messages, model: .gpt4_o)
@@ -46,38 +62,37 @@ struct OpenAIService: AIService {
         }
         return model
     }
-     
-    
+
     /*
-    // 读取 firebase functions
-    func generateText(chats: [AIChatModel]) async throws -> AIChatModel {
-        let messages = chats.compactMap { chat in
-            let role = chat.role.rawValue
-            let content = chat.message
-            return ["role": role, "content": content]
-        }
-        let response = try await Functions.functions().httpsCallable("generateOpenAIText").call(["messages": messages])
-        guard
-            let dict = response.data as? [String: Any],
-            let roleString = dict["role"] as? String,
-            let role = AIChatRole(rawValue: roleString),
-            let content = dict["content"] as? String else {
-            throw CustomError.errorMessage(message: "Failed to generate text from OpenAI")
-        }
-        return AIChatModel(role: role, message: content)
-    }
-     */
+     // 读取 firebase functions
+     func generateText(chats: [AIChatModel]) async throws -> AIChatModel {
+         let messages = chats.compactMap { chat in
+             let role = chat.role.rawValue
+             let content = chat.message
+             return ["role": role, "content": content]
+         }
+         let response = try await Functions.functions().httpsCallable("generateOpenAIText").call(["messages": messages])
+         guard
+             let dict = response.data as? [String: Any],
+             let roleString = dict["role"] as? String,
+             let role = AIChatRole(rawValue: roleString),
+             let content = dict["content"] as? String else {
+             throw CustomError.errorMessage(message: "Failed to generate text from OpenAI")
+         }
+         return AIChatModel(role: role, message: content)
+     }
+      */
 }
 
 struct AIChatModel: Codable {
     let role: AIChatRole
     let message: String
-    
+
     enum CodingKeys: String, CodingKey {
         case role
         case message
     }
-    
+
     var eventParameters: [String: Any] {
         let dict: [String: Any?] = [
             "aichat_\(CodingKeys.role.rawValue)": role.rawValue,
