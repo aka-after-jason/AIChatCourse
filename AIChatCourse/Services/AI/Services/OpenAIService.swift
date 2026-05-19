@@ -6,6 +6,7 @@
 //
 import OpenAI // Swift 操作 OpenAI 的 api
 import SwiftUI
+import FirebaseFunctions
 
 struct OpenAIService: AIService {
     var openAI: OpenAI {
@@ -33,6 +34,7 @@ struct OpenAIService: AIService {
     }
 
     /// 调用 OpenAI api 生成chat
+    
     func generateText(chats: [AIChatModel]) async throws -> AIChatModel {
         let messages = chats.compactMap { $0.toOpenAIModel() }
         let query = ChatQuery(messages: messages, model: .gpt4_o)
@@ -44,6 +46,27 @@ struct OpenAIService: AIService {
         }
         return model
     }
+     
+    
+    /*
+    // 读取 firebase functions
+    func generateText(chats: [AIChatModel]) async throws -> AIChatModel {
+        let messages = chats.compactMap { chat in
+            let role = chat.role.rawValue
+            let content = chat.message
+            return ["role": role, "content": content]
+        }
+        let response = try await Functions.functions().httpsCallable("generateOpenAIText").call(["messages": messages])
+        guard
+            let dict = response.data as? [String: Any],
+            let roleString = dict["role"] as? String,
+            let role = AIChatRole(rawValue: roleString),
+            let content = dict["content"] as? String else {
+            throw CustomError.errorMessage(message: "Failed to generate text from OpenAI")
+        }
+        return AIChatModel(role: role, message: content)
+    }
+     */
 }
 
 struct AIChatModel: Codable {
