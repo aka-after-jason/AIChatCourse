@@ -5,9 +5,10 @@
 //  Created by Elaine on 2026/3/16.
 //
 
-import SwiftUI
-import SwiftfulUtilities
+import FirebaseFunctions
 import SwiftfulUI
+import SwiftfulUtilities
+import SwiftUI
 
 // tabbar - signed in
 // onboarding - signed out
@@ -20,7 +21,6 @@ struct AppView: View {
     @Environment(LogManager.self) private var logManager
     @Environment(\.scenePhase) private var scenePhase // LifeCycle: SwiftUI 使用这个
     var body: some View {
-        
         // RootView 来自 SwiftfulUI 框架
         RootView(
             delegate: RootDelegate(
@@ -32,57 +32,77 @@ struct AppView: View {
                 onApplicationWillResignActive: nil,
                 onApplicationDidEnterBackground: nil,
                 onApplicationWillTerminate: nil
-            )) {
-                AppViewBuilder(
-                    showTabBar: appState.showTabBar,
-                    tabbarView: {
-                        TabBarView()
-                    },
-                    onboardingView: {
-                        WelcomeView()
-                    }
-                )
-                // 由于使用了 @Observable, 这里需要使用 environment,不是 environmentObject
-                .environment(appState) // TabBarView 和 WelcomeView 都能访问
-                // .environment(<#T##object: (Observable & AnyObject)?##(Observable & AnyObject)?#>) // 用于class, 且遵循了 @Observable
-                // .environment(<#T##keyPath: WritableKeyPath<EnvironmentValues, V>##WritableKeyPath<EnvironmentValues, V>#>, <#T##value: V##V#>) // 用于struct
-                .task {
-                    await checkUserStatus()
+            )
+        ) {
+            AppViewBuilder(
+                showTabBar: appState.showTabBar,
+                tabbarView: {
+                    TabBarView()
+                },
+                onboardingView: {
+                    WelcomeView()
                 }
-                .task {
-                    try? await Task.sleep(for: .seconds(2))
-                    await showATTPromptIfNeeded()
-                }
-                // 监听 appState 中的 showTabBar
-                .onChange(of: appState.showTabBar) { _, showTabBar in
-                    if !showTabBar {
-                        Task { await checkUserStatus() }
-                    }
-                }
-                
-                // MARK: 这种方式也不够全面, 推荐使用 NotificationCenter 来处理
-                /*
-                .onChange(of: scenePhase) { _, newValue in
-                    switch newValue {
-                    case .active:
-                        print("App is active")
-                    case .inactive:
-                        print("App is inactive")
-                    case .background:
-                        print("App is background")
-                    @unknown default:
-                        print("Unexpected state")
-                    }
-                }
-                 */
-                
-                // 想要监听哪个, 只需要修改 notificationName 参数
-                /*
-                .onNotificationRecieved(notificationName: UIApplication.willEnterForegroundNotification) { _ in
+            )
+            // 由于使用了 @Observable, 这里需要使用 environment,不是 environmentObject
+            .environment(appState) // TabBarView 和 WelcomeView 都能访问
+            // .environment(<#T##object: (Observable & AnyObject)?##(Observable & AnyObject)?#>) // 用于class, 且遵循了 @Observable
+            // .environment(<#T##keyPath: WritableKeyPath<EnvironmentValues, V>##WritableKeyPath<EnvironmentValues, V>#>, <#T##value: V##V#>) // 用于struct
+            .task {
+                await checkUserStatus()
+            }
+            /*
+            .task {
+                await getDataFromMyNewEndpoint()
+            }
+             */
+            .task {
+                try? await Task.sleep(for: .seconds(2))
+                await showATTPromptIfNeeded()
+            }
+            // 监听 appState 中的 showTabBar
+            .onChange(of: appState.showTabBar) { _, showTabBar in
+                if !showTabBar {
                     Task { await checkUserStatus() }
                 }
-                 */
             }
+
+            // MARK: 这种方式也不够全面, 推荐使用 NotificationCenter 来处理
+
+            /*
+             .onChange(of: scenePhase) { _, newValue in
+                 switch newValue {
+                 case .active:
+                     print("App is active")
+                 case .inactive:
+                     print("App is inactive")
+                 case .background:
+                     print("App is background")
+                 @unknown default:
+                     print("Unexpected state")
+                 }
+             }
+              */
+
+            // 想要监听哪个, 只需要修改 notificationName 参数
+            /*
+             .onNotificationRecieved(notificationName: UIApplication.willEnterForegroundNotification) { _ in
+                 Task { await checkUserStatus() }
+             }
+              */
+        }
+    }
+
+    /// Test
+    /// 读取 firebase cloud functions
+    func getDataFromMyNewEndpoint() async {
+        logManager.trackEvent(eventName: "HelloDev:: Start")
+        do {
+            let result = try await Functions.functions().httpsCallable("helloDeveloper").call()
+            let string = result.data as? String
+            logManager.trackEvent(eventName: "HelloDev:: \(string ?? "nostring")")
+        } catch {
+            logManager.trackEvent(eventName: "HelloDev:: Error: \(error.localizedDescription)")
+        }
     }
 }
 
@@ -114,7 +134,7 @@ extension AppView {
             }
         }
     }
-    
+
     /// 苹果审核需要, 没有则不会通过
     private func showATTPromptIfNeeded() async {
         #if !DEBUG

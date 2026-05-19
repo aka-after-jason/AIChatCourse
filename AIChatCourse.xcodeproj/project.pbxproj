@@ -10,6 +10,7 @@
 		AF05D9542F9D006F00ECB7AD /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = AF05D9532F9D006F00ECB7AD /* FirebaseFirestore */; };
 		AF1479542FA573D800B0C58E /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = AF1479532FA573D800B0C58E /* FirebaseStorage */; };
 		AF2A19B22F9B8BD100E51154 /* SignInAppleAsync in Frameworks */ = {isa = PBXBuildFile; productRef = AF2A19B12F9B8BD100E51154 /* SignInAppleAsync */; };
+		AF37E5E62FBC46260022252D /* FirebaseFunctions in Frameworks */ = {isa = PBXBuildFile; productRef = AF37E5E52FBC46260022252D /* FirebaseFunctions */; };
 		AF639B9D2F6F977F00979BBA /* SwiftfulUtilities in Frameworks */ = {isa = PBXBuildFile; productRef = AF639B9C2F6F977F00979BBA /* SwiftfulUtilities */; };
 		AFBE45932FAEC5C1005E02EE /* JPush in Frameworks */ = {isa = PBXBuildFile; productRef = AFBE45922FAEC5C1005E02EE /* JPush */; };
 		AFBE45962FAEC6B8005E02EE /* JCore in Frameworks */ = {isa = PBXBuildFile; productRef = AFBE45952FAEC6B8005E02EE /* JCore */; };
@@ -94,6 +95,7 @@
 				AF1479542FA573D800B0C58E /* FirebaseStorage in Frameworks */,
 				AFCBC22D2FA9BD5A00ACA3CE /* Mixpanel in Frameworks */,
 				AF05D9542F9D006F00ECB7AD /* FirebaseFirestore in Frameworks */,
+				AF37E5E62FBC46260022252D /* FirebaseFunctions in Frameworks */,
 				AF639B9D2F6F977F00979BBA /* SwiftfulUtilities in Frameworks */,
 				AFCBC2242FA9A54D00ACA3CE /* FirebaseAnalytics in Frameworks */,
 			);
@@ -180,6 +182,7 @@
 				AFBE45922FAEC5C1005E02EE /* JPush */,
 				AFBE45952FAEC6B8005E02EE /* JCore */,
 				AFEFB9212FB1471400216A81 /* SwiftfulUI */,
+				AF37E5E52FBC46260022252D /* FirebaseFunctions */,
 			);
 			productName = AIChatCourse;
 			productReference = AFB9EAD72F66B7A500EB3ED3 /* AIChatCourse.app */;
@@ -1009,6 +1012,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = AF2A19B02F9B8BD100E51154 /* XCRemoteSwiftPackageReference "SignInAppleAsync" */;
 			productName = SignInAppleAsync;
+		};
+		AF37E5E52FBC46260022252D /* FirebaseFunctions */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AFED45272F9B09EE0060CA90 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFunctions;
 		};
 		AF639B9C2F6F977F00979BBA /* SwiftfulUtilities */ = {
 			isa = XCSwiftPackageProductDependency;
