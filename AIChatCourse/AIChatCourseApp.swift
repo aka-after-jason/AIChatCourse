@@ -30,6 +30,7 @@ struct AIChatCourseApp: App {
                 .environment(delegate.dependencies.chatManager)
                 .environment(delegate.dependencies.logManager)
                 .environment(delegate.dependencies.pushManager)
+                .environment(delegate.dependencies.abtestManager)
         }
     }
 }
@@ -89,6 +90,7 @@ struct Dependencies {
     let chatManager: ChatManager
     let logManager: LogManager
     let pushManager: PushManager
+    let abtestManager: ABTestManager
 
     init(config: BuildConfiguration) {
         // Multiple schemes
@@ -128,6 +130,7 @@ struct Dependencies {
             aiManager = AIManager(service: MockAIService())
             avatarManager = AvatarManager(service: MockAvatarService(), local: MockLocalAvatarPersistence())
             chatManager = ChatManager(service: MockChatService())
+            abtestManager = ABTestManager(service: MockABTestService(), logManager: logManager)
         case .dev:
             // DEV
             logManager = LogManager(services: [
@@ -141,6 +144,7 @@ struct Dependencies {
             aiManager = AIManager(service: OpenAIService())
             avatarManager = AvatarManager(service: FirebaseAvatarService(), local: SwiftDataLocalAvatarPersistence())
             chatManager = ChatManager(service: FirebaseChatService())
+            abtestManager = ABTestManager(service: MockABTestService(), logManager: logManager)
         case .prod:
             // Production
             logManager = LogManager(services: [
@@ -153,6 +157,7 @@ struct Dependencies {
             aiManager = AIManager(service: OpenAIService())
             avatarManager = AvatarManager(service: FirebaseAvatarService(), local: SwiftDataLocalAvatarPersistence())
             chatManager = ChatManager(service: FirebaseChatService())
+            abtestManager = ABTestManager(service: MockABTestService(), logManager: logManager)
             print("This is Production env!") // 这里添加打印, 因为 release 环境取消了 debug executable, 断点没有用
         }
 
@@ -220,6 +225,7 @@ extension View {
             .environment(ChatManager(service: MockChatService()))
             .environment(LogManager(services: []))
             .environment(PushManager())
+            .environment(ABTestManager(service: MockABTestService()))
             .environment(AppState())
     }
 }

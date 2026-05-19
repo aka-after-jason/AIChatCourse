@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct ExploreView: View {
+    @Environment(AuthManager.self) private var authManager
+    @Environment(ABTestManager.self) private var abtestManager
     @Environment(PushManager.self) private var pushManager
     @Environment(AvatarManager.self) private var avatarManager
     @Environment(LogManager.self) private var logManager
@@ -21,6 +23,7 @@ struct ExploreView: View {
     @State private var showDevSettings: Bool = false
     @State private var showNotificationButton: Bool = false
     @State private var showPushNotificationModal: Bool = false
+    @State private var showCreateAccountView: Bool = false
     private var showDevSettingsButton: Bool {
         #if DEV || MOCK
         return true
@@ -68,6 +71,10 @@ struct ExploreView: View {
             .sheet(isPresented: $showDevSettings, content: {
                 DevSettingsView()
             })
+            .sheet(isPresented: $showCreateAccountView, content: {
+                CreateAccountView()
+                    .presentationDetents([.medium])
+            })
             .showModal(showModal: $showPushNotificationModal, content: {
                 pushNotificationModal
             })
@@ -83,10 +90,24 @@ struct ExploreView: View {
             }
             .onFirstAppear {
                 schedulePushNotifications()
+                showCreateAccountScreenIfNeeded()
             }
             .onOpenURL { url in
                 handleDeepLink(url: url)
             }
+        }
+    }
+
+    private func showCreateAccountScreenIfNeeded() {
+        Task {
+            try? await Task.sleep(for: .seconds(2))
+
+            // If the user doesn't already have an account (Anonymous)
+            // If the user is in our ABTest
+            guard authManager.authUser?.isAnonymous == true && abtestManager.activeABTestModel.createAccountTest == true else {
+                return
+            }
+            showCreateAccountView = true
         }
     }
 
@@ -408,6 +429,14 @@ extension ExploreView {
 #Preview("Has data") {
     ExploreView()
         .environment(AvatarManager(service: MockAvatarService()))
+        .previewEnvironment()
+}
+
+#Preview("Has data With CreateAccount") {
+    ExploreView()
+        .environment(AvatarManager(service: MockAvatarService()))
+        .environment(AuthManager(service: MockAuthService(user: .mock(isAnonymous: true))))
+        .environment(ABTestManager(service: MockABTestService(createAccountTest: true)))
         .previewEnvironment()
 }
 
