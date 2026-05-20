@@ -12,10 +12,13 @@ struct DevSettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(AuthManager.self) private var authManager
     @Environment(UserManager.self) private var userManager
+    @Environment(ABTestManager.self) private var abtestManager
+    @State private var createAccountTest: Bool = false
     var body: some View {
         // This is a sheet, new environment
         NavigationStack {
             List {
+                abtestSection
                 authInfoSection
                 userInfoSection
                 deviceInfoSection
@@ -31,7 +34,37 @@ struct DevSettingsView: View {
                     })
                 }
             }
+            .onFirstAppear {
+                loadABTest()
+            }
         }
+    }
+    
+    private func loadABTest() {
+        createAccountTest = abtestManager.activeABTestModel.createAccountTest
+    }
+    
+    private func handleCreateAccountChange(oldValue: Bool, newValue: Bool) {
+        if newValue != abtestManager.activeABTestModel.createAccountTest {
+            do {
+                var testModel = abtestManager.activeABTestModel
+                testModel.update(createAccountTest: newValue)
+                try abtestManager.override(updateABTestModel: testModel)
+            } catch {
+                createAccountTest = abtestManager.activeABTestModel.createAccountTest
+                print("error: \(error.localizedDescription)")
+            }
+        }
+    }
+    
+    private var abtestSection: some View {
+        Section {
+            Toggle("Create Account Test", isOn: $createAccountTest)
+                .onChange(of: createAccountTest, handleCreateAccountChange)
+        } header: {
+            Text("ABTest")
+        }
+        .font(.caption)
     }
 
     private var deviceInfoSection: some View {
