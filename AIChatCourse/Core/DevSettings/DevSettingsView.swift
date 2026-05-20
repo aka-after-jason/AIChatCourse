@@ -14,6 +14,7 @@ struct DevSettingsView: View {
     @Environment(UserManager.self) private var userManager
     @Environment(ABTestManager.self) private var abtestManager
     @State private var createAccountTest: Bool = false
+    @State private var onboardingCommunityTest: Bool = false
     var body: some View {
         // This is a sheet, new environment
         NavigationStack {
@@ -39,11 +40,12 @@ struct DevSettingsView: View {
             }
         }
     }
-    
+
     private func loadABTest() {
         createAccountTest = abtestManager.activeABTestModel.createAccountTest
+        onboardingCommunityTest = abtestManager.activeABTestModel.onboardingCommunityTest
     }
-    
+
     private func handleCreateAccountChange(oldValue: Bool, newValue: Bool) {
         if newValue != abtestManager.activeABTestModel.createAccountTest {
             do {
@@ -56,11 +58,58 @@ struct DevSettingsView: View {
             }
         }
     }
-    
+
+    private func handleOnboardingCommunityChange(oldValue: Bool, newValue: Bool) {
+        
+        // 使用封装的方法
+        updateTestModel(
+            property: &onboardingCommunityTest,
+            newValue: newValue,
+            savedValue: abtestManager.activeABTestModel.onboardingCommunityTest,
+            updateAction: {testModel in
+                testModel.update(onboardingCommunityTest: newValue)
+            }
+        )
+        
+        /*
+        if newValue != abtestManager.activeABTestModel.onboardingCommunityTest {
+            do {
+                var testModel = abtestManager.activeABTestModel
+                testModel.update(onboardingCommunityTest: newValue)
+                try abtestManager.override(updateABTestModel: testModel)
+            } catch {
+                onboardingCommunityTest = abtestManager.activeABTestModel.onboardingCommunityTest
+                print("error: \(error.localizedDescription)")
+            }
+        }
+         */
+    }
+
+    /// 封装一个方法
+    private func updateTestModel(
+        property: inout Bool,
+        newValue: Bool,
+        savedValue: Bool,
+        updateAction: (inout ActiveABTestModel) -> Void
+    ) {
+        if newValue != savedValue {
+            do {
+                var testModel = abtestManager.activeABTestModel
+                updateAction(&testModel)
+                try abtestManager.override(updateABTestModel: testModel)
+            } catch {
+                property = savedValue
+            }
+        }
+    }
+
     private var abtestSection: some View {
         Section {
             Toggle("Create Account Test", isOn: $createAccountTest)
                 .onChange(of: createAccountTest, handleCreateAccountChange)
+
+            Toggle("Onboarding Community Test", isOn: $onboardingCommunityTest)
+                .onChange(of: onboardingCommunityTest, handleOnboardingCommunityChange)
         } header: {
             Text("ABTest")
         }

@@ -10,18 +10,27 @@ import SwiftUI
 /// 存储需要测试的变量
 struct ActiveABTestModel: Codable {
     private(set) var createAccountTest: Bool
+    private(set) var onboardingCommunityTest: Bool
 
     enum CodingKeys: String, CodingKey {
         case createAccountTest = "_20260519_CreateAccountTest"
+        case onboardingCommunityTest = "_20260519_OnboardingTest"
     }
 
     var eventParameters: [String: Any] {
-        let dict: [String: Any?] = ["test\(CodingKeys.createAccountTest.rawValue)": createAccountTest]
+        let dict: [String: Any?] = [
+            "test\(CodingKeys.createAccountTest.rawValue)": createAccountTest,
+            "test\(CodingKeys.onboardingCommunityTest.rawValue)": onboardingCommunityTest
+        ]
         return dict.compactMapValues { $0 } // drop the nil value
     }
-    
+
     mutating func update(createAccountTest newValue: Bool) {
         createAccountTest = newValue
+    }
+
+    mutating func update(onboardingCommunityTest newValue: Bool) {
+        onboardingCommunityTest = newValue
     }
 }
 
@@ -32,8 +41,11 @@ protocol ABTestService {
 
 class MockABTestService: ABTestService {
     var activeABTestModel: ActiveABTestModel
-    init(createAccountTest: Bool? = nil) {
-        self.activeABTestModel = ActiveABTestModel(createAccountTest: createAccountTest ?? false)
+    init(createAccountTest: Bool? = nil, onboardingCommunityTest: Bool? = nil) {
+        self.activeABTestModel = ActiveABTestModel(
+            createAccountTest: createAccountTest ?? false,
+            onboardingCommunityTest: onboardingCommunityTest ?? false
+        )
     }
 
     func saveUpdatedConfig(abtestModel: ActiveABTestModel) throws {
@@ -44,9 +56,14 @@ class MockABTestService: ABTestService {
 class LocalABTestService: ABTestService {
     /// 使用自定义的 propertyWrapper
     @UserDefault(key: ActiveABTestModel.CodingKeys.createAccountTest.rawValue, startingValue: Bool.random()) private var createAccountTest: Bool
+    
+    @UserDefault(key: ActiveABTestModel.CodingKeys.onboardingCommunityTest.rawValue, startingValue: Bool.random()) private var onboardingCommunityTest: Bool
 
     var activeABTestModel: ActiveABTestModel {
-        ActiveABTestModel(createAccountTest: createAccountTest)
+        ActiveABTestModel(
+            createAccountTest: createAccountTest,
+            onboardingCommunityTest: onboardingCommunityTest
+        )
     }
 
     init() {
@@ -55,6 +72,7 @@ class LocalABTestService: ABTestService {
 
     func saveUpdatedConfig(abtestModel: ActiveABTestModel) throws {
         createAccountTest = abtestModel.createAccountTest
+        onboardingCommunityTest = abtestModel.onboardingCommunityTest
     }
 }
 
