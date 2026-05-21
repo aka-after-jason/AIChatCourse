@@ -157,7 +157,7 @@ struct Dependencies {
             aiManager = AIManager(service: OpenAIService())
             avatarManager = AvatarManager(service: FirebaseAvatarService(), local: SwiftDataLocalAvatarPersistence())
             chatManager = ChatManager(service: FirebaseChatService())
-            abtestManager = ABTestManager(service: MockABTestService(), logManager: logManager)
+            abtestManager = ABTestManager(service: FirebaseABTestService(), logManager: logManager)
             print("This is Production env!") // 这里添加打印, 因为 release 环境取消了 debug executable, 断点没有用
         }
 

@@ -12,6 +12,7 @@
 		AF2A19B22F9B8BD100E51154 /* SignInAppleAsync in Frameworks */ = {isa = PBXBuildFile; productRef = AF2A19B12F9B8BD100E51154 /* SignInAppleAsync */; };
 		AF37E5E62FBC46260022252D /* FirebaseFunctions in Frameworks */ = {isa = PBXBuildFile; productRef = AF37E5E52FBC46260022252D /* FirebaseFunctions */; };
 		AF639B9D2F6F977F00979BBA /* SwiftfulUtilities in Frameworks */ = {isa = PBXBuildFile; productRef = AF639B9C2F6F977F00979BBA /* SwiftfulUtilities */; };
+		AF992C062FBEFD51006AFC86 /* FirebaseRemoteConfig in Frameworks */ = {isa = PBXBuildFile; productRef = AF992C052FBEFD51006AFC86 /* FirebaseRemoteConfig */; };
 		AFBE45932FAEC5C1005E02EE /* JPush in Frameworks */ = {isa = PBXBuildFile; productRef = AFBE45922FAEC5C1005E02EE /* JPush */; };
 		AFBE45962FAEC6B8005E02EE /* JCore in Frameworks */ = {isa = PBXBuildFile; productRef = AFBE45952FAEC6B8005E02EE /* JCore */; };
 		AFCBC2242FA9A54D00ACA3CE /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = AFCBC2232FA9A54D00ACA3CE /* FirebaseAnalytics */; };
@@ -90,6 +91,7 @@
 				AFE9585F2F9D75B400DB6D49 /* SwiftfulFirestore in Frameworks */,
 				AFBE45932FAEC5C1005E02EE /* JPush in Frameworks */,
 				AFED45292F9B09EE0060CA90 /* FirebaseAuth in Frameworks */,
+				AF992C062FBEFD51006AFC86 /* FirebaseRemoteConfig in Frameworks */,
 				AFE9587E2F9DBEE800DB6D49 /* OpenAI in Frameworks */,
 				AFCBC2312FA9CA2500ACA3CE /* FirebaseCrashlytics in Frameworks */,
 				AF1479542FA573D800B0C58E /* FirebaseStorage in Frameworks */,
@@ -183,6 +185,7 @@
 				AFBE45952FAEC6B8005E02EE /* JCore */,
 				AFEFB9212FB1471400216A81 /* SwiftfulUI */,
 				AF37E5E52FBC46260022252D /* FirebaseFunctions */,
+				AF992C052FBEFD51006AFC86 /* FirebaseRemoteConfig */,
 			);
 			productName = AIChatCourse;
 			productReference = AFB9EAD72F66B7A500EB3ED3 /* AIChatCourse.app */;
@@ -1022,6 +1025,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = AF639B9B2F6F977F00979BBA /* XCRemoteSwiftPackageReference "SwiftfulUtilities" */;
 			productName = SwiftfulUtilities;
+		};
+		AF992C052FBEFD51006AFC86 /* FirebaseRemoteConfig */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AFED45272F9B09EE0060CA90 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseRemoteConfig;
 		};
 		AFBE45922FAEC5C1005E02EE /* JPush */ = {
 			isa = XCSwiftPackageProductDependency;
