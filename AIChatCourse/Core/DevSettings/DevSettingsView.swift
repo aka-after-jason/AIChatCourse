@@ -15,6 +15,7 @@ struct DevSettingsView: View {
     @Environment(ABTestManager.self) private var abtestManager
     @State private var createAccountTest: Bool = false
     @State private var onboardingCommunityTest: Bool = false
+    @State private var categoryRowTest: CategoryRowTestOption = .default
     var body: some View {
         // This is a sheet, new environment
         NavigationStack {
@@ -44,6 +45,7 @@ struct DevSettingsView: View {
     private func loadABTest() {
         createAccountTest = abtestManager.activeABTestModel.createAccountTest
         onboardingCommunityTest = abtestManager.activeABTestModel.onboardingCommunityTest
+        categoryRowTest = abtestManager.activeABTestModel.categroyRowTest
     }
 
     private func handleCreateAccountChange(oldValue: Bool, newValue: Bool) {
@@ -60,36 +62,35 @@ struct DevSettingsView: View {
     }
 
     private func handleOnboardingCommunityChange(oldValue: Bool, newValue: Bool) {
-        
         // 使用封装的方法
         updateTestModel(
             property: &onboardingCommunityTest,
             newValue: newValue,
             savedValue: abtestManager.activeABTestModel.onboardingCommunityTest,
-            updateAction: {testModel in
+            updateAction: { testModel in
                 testModel.update(onboardingCommunityTest: newValue)
             }
         )
-        
+
         /*
-        if newValue != abtestManager.activeABTestModel.onboardingCommunityTest {
-            do {
-                var testModel = abtestManager.activeABTestModel
-                testModel.update(onboardingCommunityTest: newValue)
-                try abtestManager.override(updateABTestModel: testModel)
-            } catch {
-                onboardingCommunityTest = abtestManager.activeABTestModel.onboardingCommunityTest
-                print("error: \(error.localizedDescription)")
-            }
-        }
-         */
+         if newValue != abtestManager.activeABTestModel.onboardingCommunityTest {
+             do {
+                 var testModel = abtestManager.activeABTestModel
+                 testModel.update(onboardingCommunityTest: newValue)
+                 try abtestManager.override(updateABTestModel: testModel)
+             } catch {
+                 onboardingCommunityTest = abtestManager.activeABTestModel.onboardingCommunityTest
+                 print("error: \(error.localizedDescription)")
+             }
+         }
+          */
     }
 
     /// 封装一个方法
-    private func updateTestModel(
-        property: inout Bool,
-        newValue: Bool,
-        savedValue: Bool,
+    private func updateTestModel<T: Equatable>(
+        property: inout T,
+        newValue: T,
+        savedValue: T,
         updateAction: (inout ActiveABTestModel) -> Void
     ) {
         if newValue != savedValue {
@@ -103,6 +104,18 @@ struct DevSettingsView: View {
         }
     }
 
+    private func handleCategoryRowTestChange(oldValue: CategoryRowTestOption, newValue: CategoryRowTestOption) {
+        // 使用封装的方法
+        updateTestModel(
+            property: &categoryRowTest,
+            newValue: newValue,
+            savedValue: abtestManager.activeABTestModel.categroyRowTest,
+            updateAction: { testModel in
+                testModel.update(categoryRowTest: newValue)
+            }
+        )
+    }
+
     private var abtestSection: some View {
         Section {
             Toggle("Create Account Test", isOn: $createAccountTest)
@@ -110,6 +123,13 @@ struct DevSettingsView: View {
 
             Toggle("Onboarding Community Test", isOn: $onboardingCommunityTest)
                 .onChange(of: onboardingCommunityTest, handleOnboardingCommunityChange)
+
+            Picker("Category Row Test", selection: $categoryRowTest) {
+                ForEach(CategoryRowTestOption.allCases, id: \.self) { option in
+                    Text(option.rawValue).id(option)
+                }
+            }
+            .onChange(of: categoryRowTest, handleCategoryRowTestChange)
         } header: {
             Text("ABTest")
         }

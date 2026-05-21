@@ -7,20 +7,31 @@
 
 import SwiftUI
 
+enum CategoryRowTestOption: String, Codable, CaseIterable {
+    case original, top, hidden
+    
+    static var `default`: Self {
+        .original
+    }
+}
+
 /// 存储需要测试的变量
 struct ActiveABTestModel: Codable {
     private(set) var createAccountTest: Bool
     private(set) var onboardingCommunityTest: Bool
+    private(set) var categroyRowTest: CategoryRowTestOption
 
     enum CodingKeys: String, CodingKey {
         case createAccountTest = "_20260519_CreateAccountTest"
         case onboardingCommunityTest = "_20260519_OnboardingTest"
+        case categroyRowTest = "_20260519_CategroyRowTest"
     }
 
     var eventParameters: [String: Any] {
         let dict: [String: Any?] = [
             "test\(CodingKeys.createAccountTest.rawValue)": createAccountTest,
-            "test\(CodingKeys.onboardingCommunityTest.rawValue)": onboardingCommunityTest
+            "test\(CodingKeys.onboardingCommunityTest.rawValue)": onboardingCommunityTest,
+            "test\(CodingKeys.categroyRowTest.rawValue)": categroyRowTest.rawValue
         ]
         return dict.compactMapValues { $0 } // drop the nil value
     }
@@ -32,6 +43,10 @@ struct ActiveABTestModel: Codable {
     mutating func update(onboardingCommunityTest newValue: Bool) {
         onboardingCommunityTest = newValue
     }
+    
+    mutating func update(categoryRowTest newValue: CategoryRowTestOption) {
+        categroyRowTest = newValue
+    }
 }
 
 protocol ABTestService {
@@ -41,10 +56,15 @@ protocol ABTestService {
 
 class MockABTestService: ABTestService {
     var activeABTestModel: ActiveABTestModel
-    init(createAccountTest: Bool? = nil, onboardingCommunityTest: Bool? = nil) {
+    init(
+        createAccountTest: Bool? = nil,
+        onboardingCommunityTest: Bool? = nil,
+        categoryRowTest: CategoryRowTestOption? = nil
+    ) {
         self.activeABTestModel = ActiveABTestModel(
             createAccountTest: createAccountTest ?? false,
-            onboardingCommunityTest: onboardingCommunityTest ?? false
+            onboardingCommunityTest: onboardingCommunityTest ?? false,
+            categroyRowTest: categoryRowTest ?? .default
         )
     }
 
@@ -56,13 +76,16 @@ class MockABTestService: ABTestService {
 class LocalABTestService: ABTestService {
     /// 使用自定义的 propertyWrapper
     @UserDefault(key: ActiveABTestModel.CodingKeys.createAccountTest.rawValue, startingValue: Bool.random()) private var createAccountTest: Bool
-    
+
     @UserDefault(key: ActiveABTestModel.CodingKeys.onboardingCommunityTest.rawValue, startingValue: Bool.random()) private var onboardingCommunityTest: Bool
+    
+    @UserDefaultEnum(key: ActiveABTestModel.CodingKeys.categroyRowTest.rawValue, startingValue: CategoryRowTestOption.allCases.randomElement()!) private var categoryRowTest: CategoryRowTestOption
 
     var activeABTestModel: ActiveABTestModel {
         ActiveABTestModel(
             createAccountTest: createAccountTest,
-            onboardingCommunityTest: onboardingCommunityTest
+            onboardingCommunityTest: onboardingCommunityTest,
+            categroyRowTest: categoryRowTest
         )
     }
 
@@ -73,6 +96,7 @@ class LocalABTestService: ABTestService {
     func saveUpdatedConfig(abtestModel: ActiveABTestModel) throws {
         createAccountTest = abtestModel.createAccountTest
         onboardingCommunityTest = abtestModel.onboardingCommunityTest
+        categoryRowTest = abtestModel.categroyRowTest
     }
 }
 
