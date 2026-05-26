@@ -8,30 +8,81 @@
 import StoreKit
 import SwiftUI
 
-enum EntitlementOption: Codable, CaseIterable {
-    case yearly
-
-    var productId: String {
-        switch self {
-        case .yearly:
-            return "com.aka.AIChat.release.yearly"
+struct PaywallView: View {
+    @Environment(PurchaseManager.self) private var purchaseManager
+    @Environment(LogManager.self) private var logManager
+    @Environment(\.dismiss) private var dismiss
+    @State private var products: [AnyProduct] = []
+    @State private var productIds: [String] = EntitlementOption.allProductIds
+    @State private var showAlert: AnyAppAlertItem?
+    var body: some View {
+        ZStack {
+            if products.isEmpty {
+                ProgressView()
+            } else {
+                CustomPaywallView(
+                    onBackButtonPressed: onBackButtonPressed,
+                    onRestorePurchasePressed: onRestorePurchasePressed,
+                    onPurchaseProductPressed: onPurchaseProductPressed,
+                    products: products
+                )
+            }
+        }
+//        StoreKitPaywallView(
+//            productIds: productIds,
+//            onInAppPurchaseStart: onPurchaseStart,
+//            onInAppPurchaseCompletion: onPurchaseComplete
+//        )
+        .appearAnalyticsViewModifier(name: "Paywall")
+        .showCustomAlert(alertItem: $showAlert)
+        .task {
+            await onLoadProducts()
         }
     }
 
-    static var allProductIds: [String] {
-        EntitlementOption.allCases.map { $0.productId }
+    private func onLoadProducts() async {
+        logManager.trackEvent(event: Event.loadProductsStart)
+        do {
+            products = try await purchaseManager.getProducts(productIds: productIds)
+        } catch {
+            showAlert = AnyAppAlertItem(error: error)
+        }
     }
-}
 
-struct PaywallView: View {
-    @Environment(LogManager.self) private var logManager
-    @Environment(\.dismiss) private var dismiss
-    var body: some View {
-        StoreKitPaywallView(
-            onInAppPurchaseStart: onPurchaseStart,
-            onInAppPurchaseCompletion: onPurchaseComplete
-        )
-        .appearAnalyticsViewModifier(name: "Paywall")
+    private func onBackButtonPressed() {
+        logManager.trackEvent(event: Event.backButtonPressed)
+        dismiss()
+    }
+
+    private func onRestorePurchasePressed() {
+        logManager.trackEvent(event: Event.restorePurchaseStart)
+        Task {
+            do {
+                let entitlements = try await purchaseManager.restorePurchase()
+                if entitlements.hasActiveEntitlement {
+                    dismiss()
+                }
+            } catch {
+                showAlert = AnyAppAlertItem(error: error)
+            }
+        }
+    }
+
+    private func onPurchaseProductPressed(product: AnyProduct) {
+        logManager.trackEvent(event: Event.purchaseStart(product: product))
+        Task {
+            do {
+                let entitlements = try await purchaseManager.purchaseProduct(productId: product.id)
+                logManager.trackEvent(event: Event.purchaseSuccess(product: product))
+                if entitlements.hasActiveEntitlement {
+                    dismiss()
+                }
+                
+            } catch {
+                showAlert = AnyAppAlertItem(error: error)
+                logManager.trackEvent(event: Event.purchaseFail(error: error))
+            }
+        }
     }
 
     private func onPurchaseStart(product: StoreKit.Product) {
@@ -60,29 +111,6 @@ struct PaywallView: View {
     }
 }
 
-struct StoreKitPaywallView: View {
-    var onInAppPurchaseStart: ((Product) async -> Void)?
-    var onInAppPurchaseCompletion: ((Product, Result<Product.PurchaseResult, any Error>) async -> Void)?
-    var body: some View {
-        SubscriptionStoreView(productIDs: EntitlementOption.allProductIds) {
-            VStack(spacing: 8) {
-                Text("AI Chat 🤗")
-                    .font(.largeTitle)
-                    .fontWeight(.semibold)
-                Text("Get premium access to unlock all features.")
-                    .font(.subheadline)
-            }
-            .foregroundStyle(.white)
-            .multilineTextAlignment(.center)
-            .containerBackground(Color.accent.gradient, for: .subscriptionStore)
-        }
-        .storeButton(.visible, for: .restorePurchases)
-        .subscriptionStoreControlStyle(.prominentPicker)
-        .onInAppPurchaseStart(perform: onInAppPurchaseStart)
-        .onInAppPurchaseCompletion(perform: onInAppPurchaseCompletion)
-    }
-}
-
 extension PaywallView {
     enum Event: LoggableEvent {
         case purchaseStart(product: AnyProduct)
@@ -91,7 +119,10 @@ extension PaywallView {
         case purchaseUserCancelled(product: AnyProduct)
         case purchaseUnknown(product: AnyProduct)
         case purchaseFail(error: Error)
-        
+        case loadProductsStart
+        case restorePurchaseStart
+        case backButtonPressed
+
         var eventName: String {
             switch self {
             case .purchaseStart: return "PaywallView_Purchase_Start"
@@ -100,18 +131,23 @@ extension PaywallView {
             case .purchaseUserCancelled: return "PaywallView_Purchase_UserCancelled"
             case .purchaseUnknown: return "PaywallView_Purchase_Unknown"
             case .purchaseFail: return "PaywallView_Purchase_Fail"
+            case .loadProductsStart: return "PaywallView_LoadProducts_Start"
+            case .restorePurchaseStart: return "PaywallView_RestorePurchase_Start"
+            case .backButtonPressed: return "PaywallView_BackButton_Pressed"
             }
         }
-        
+
         var parameters: [String: Any]? {
             switch self {
             case .purchaseFail(error: let error):
                 return error.eventParameters
             case .purchaseStart(product: let product), .purchasePending(product: let product), .purchaseSuccess(product: let product), .purchaseUnknown(product: let product), .purchaseUserCancelled(product: let product):
                 return product.eventParameters
+            default:
+                return nil
             }
         }
-        
+
         var type: CustomLogType {
             switch self {
             case .purchaseFail:

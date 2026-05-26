@@ -56,7 +56,7 @@ public struct AnyProduct: Identifiable, Codable, Sendable {
     }
 
     public static let mockYearly: AnyProduct = .init(
-        id: "mock.yearly.id",
+        id: EntitlementOption.yearly.productId, // "mock.yearly.id",
         title: "Yearly subscription",
         subtitle: "This is a yearly subscription description.",
         priceString: "$99/year",
