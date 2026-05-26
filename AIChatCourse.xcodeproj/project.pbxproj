@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AF0490872FC5524600B751E6 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AF0490862FC5524600B751E6 /* StoreKit.framework */; };
 		AF05D9542F9D006F00ECB7AD /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = AF05D9532F9D006F00ECB7AD /* FirebaseFirestore */; };
 		AF1479542FA573D800B0C58E /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = AF1479532FA573D800B0C58E /* FirebaseStorage */; };
 		AF2A19B22F9B8BD100E51154 /* SignInAppleAsync in Frameworks */ = {isa = PBXBuildFile; productRef = AF2A19B12F9B8BD100E51154 /* SignInAppleAsync */; };
@@ -43,6 +44,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		AF0490862FC5524600B751E6 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		AFB9EAD72F66B7A500EB3ED3 /* AIChatCourse.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AIChatCourse.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AFB9EAE42F66B7A700EB3ED3 /* AIChatCourseTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AIChatCourseTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		AFB9EAEE2F66B7A700EB3ED3 /* AIChatCourseUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AIChatCourseUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -98,6 +100,7 @@
 				AFCBC22D2FA9BD5A00ACA3CE /* Mixpanel in Frameworks */,
 				AF05D9542F9D006F00ECB7AD /* FirebaseFirestore in Frameworks */,
 				AF37E5E62FBC46260022252D /* FirebaseFunctions in Frameworks */,
+				AF0490872FC5524600B751E6 /* StoreKit.framework in Frameworks */,
 				AF639B9D2F6F977F00979BBA /* SwiftfulUtilities in Frameworks */,
 				AFCBC2242FA9A54D00ACA3CE /* FirebaseAnalytics in Frameworks */,
 			);
@@ -123,6 +126,7 @@
 		AF05D9522F9D006F00ECB7AD /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				AF0490862FC5524600B751E6 /* StoreKit.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
