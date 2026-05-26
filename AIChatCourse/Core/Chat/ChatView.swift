@@ -15,6 +15,7 @@ struct ChatView: View {
     @Environment(AIManager.self) private var aiManager
     @Environment(ChatManager.self) private var chatManager
     @Environment(LogManager.self) private var logManager
+    @Environment(PurchaseManager.self) private var purchaseManager
     @State private var chatMessages: [ChatMessageModel] = []
     @State var chat: ChatModel? // public, 让外面传进来
     @State private var avatar: AvatarModel? // = .mock
@@ -26,6 +27,7 @@ struct ChatView: View {
     @State private var dialogItem: AnyAppAlertItem?
 
     @State private var showProfileModalView: Bool = false
+    @State private var showPaywallViwe: Bool = false
 
     var avatarId: String = AvatarModel.mock.avatarId
 
@@ -55,6 +57,9 @@ struct ChatView: View {
                 profileModal(avatar: avatar)
             }
         }
+        .sheet(isPresented: $showPaywallViwe, content: {
+            PaywallView()
+        })
         .task {
             await loadAvatar()
         }
@@ -240,6 +245,16 @@ extension ChatView {
         logManager.trackEvent(event: Event.sendMessageStart(chat: chat, avatar: avatar))
         Task {
             do {
+                
+                // show paywall if needed
+                // User is NOT premium
+                // Chat has >= 3 messages
+                let isPremium = purchaseManager.entitlements.hasActiveEntitlement
+                if !isPremium && chatMessages.count >= 3 {
+                    showPaywallViwe = true
+                    return
+                }
+                
                 // get userId
                 let uid = try authManager.getCurrentUserId()
 
@@ -394,6 +409,7 @@ extension ChatView {
         case messageSeenFail(error: Error)
 
         case sendMessageStart(chat: ChatModel?, avatar: AvatarModel?)
+        case sendMessagePaywall(chat: ChatModel?, avatar: AvatarModel?)
         case sendMessageFail(error: Error)
         case sendMessageSent(chat: ChatModel?, avatar: AvatarModel?, message: ChatMessageModel)
         case sendMessageResponse(chat: ChatModel?, avatar: AvatarModel?, message: ChatMessageModel)
@@ -425,6 +441,7 @@ extension ChatView {
             case .loadMessagesFail: return "ChatView_LoadMessages_Fail"
             case .messageSeenFail: return "ChatView_MessageSeen_Fail"
             case .sendMessageStart: return "ChatView_SendMessage_Start"
+            case .sendMessagePaywall: return "ChatView_SendMessage_Paywall"
             case .sendMessageFail: return "ChatView_SendMessage_Fail"
             case .sendMessageSent: return "ChatView_SentMessage_Sent"
             case .sendMessageResponse: return "ChatView_SentMessage_Response"
@@ -454,7 +471,7 @@ extension ChatView {
                 return avatar.eventParameters
             case .loadChatSuccess(chat: let chat):
                 return chat?.eventParameters
-            case .sendMessageStart(chat: let chat, avatar: let avatar):
+            case .sendMessageStart(chat: let chat, avatar: let avatar), .sendMessagePaywall(chat: let chat, avatar: let avatar):
                 var dict = chat?.eventParameters ?? [:]
                 dict.merge(avatar?.eventParameters)
                 return dict

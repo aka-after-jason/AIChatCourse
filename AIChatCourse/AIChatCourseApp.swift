@@ -23,6 +23,7 @@ struct AIChatCourseApp: App {
     var body: some Scene {
         WindowGroup {
             AppView()
+                .environment(delegate.dependencies.purchaseManager)
                 .environment(delegate.dependencies.aiManager)
                 .environment(delegate.dependencies.avatarManager)
                 .environment(delegate.dependencies.userManager)
@@ -31,7 +32,6 @@ struct AIChatCourseApp: App {
                 .environment(delegate.dependencies.logManager)
                 .environment(delegate.dependencies.pushManager)
                 .environment(delegate.dependencies.abtestManager)
-                .environment(delegate.dependencies.purchaseManager)
         }
     }
 }
@@ -223,7 +223,9 @@ extension AppDelegate {
 
 extension View {
     func previewEnvironment(isSignedIn: Bool = true) -> some View {
-        environment(AIManager(service: MockAIService()))
+        self
+            .environment(PurchaseManager(service: MockPurchaseService()))
+            .environment(AIManager(service: MockAIService()))
             .environment(AvatarManager(service: MockAvatarService()))
             .environment(UserManager(services: MockUserServices(user: isSignedIn ? .mock : nil)))
             .environment(AuthManager(service: MockAuthService(user: isSignedIn ? .mock(isAnonymous: false) : nil)))
@@ -231,7 +233,6 @@ extension View {
             .environment(LogManager(services: []))
             .environment(PushManager())
             .environment(ABTestManager(service: MockABTestService()))
-            .environment(PurchaseManager(service: MockPurchaseService()))
             .environment(AppState())
     }
 }
