@@ -17,16 +17,18 @@ struct PaywallView: View {
     @State private var showAlert: AnyAppAlertItem?
     var body: some View {
         ZStack {
-            if products.isEmpty {
-                ProgressView()
-            } else {
-                CustomPaywallView(
-                    onBackButtonPressed: onBackButtonPressed,
-                    onRestorePurchasePressed: onRestorePurchasePressed,
-                    onPurchaseProductPressed: onPurchaseProductPressed,
-                    products: products
-                )
-            }
+            RevenueCatPaywallView()
+
+//            if products.isEmpty {
+//                ProgressView()
+//            } else {
+//                CustomPaywallView(
+//                    onBackButtonPressed: onBackButtonPressed,
+//                    onRestorePurchasePressed: onRestorePurchasePressed,
+//                    onPurchaseProductPressed: onPurchaseProductPressed,
+//                    products: products
+//                )
+//            }
         }
 //        StoreKitPaywallView(
 //            productIds: productIds,
@@ -77,7 +79,7 @@ struct PaywallView: View {
                 if entitlements.hasActiveEntitlement {
                     dismiss()
                 }
-                
+
             } catch {
                 showAlert = AnyAppAlertItem(error: error)
                 logManager.trackEvent(event: Event.purchaseFail(error: error))
