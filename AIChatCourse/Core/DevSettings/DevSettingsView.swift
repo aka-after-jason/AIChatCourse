@@ -16,6 +16,7 @@ struct DevSettingsView: View {
     @State private var createAccountTest: Bool = false
     @State private var onboardingCommunityTest: Bool = false
     @State private var categoryRowTest: CategoryRowTestOption = .default
+    @State private var paywallTest: PaywallTestOption = .default
     var body: some View {
         // This is a sheet, new environment
         NavigationStack {
@@ -46,6 +47,7 @@ struct DevSettingsView: View {
         createAccountTest = abtestManager.activeABTestModel.createAccountTest
         onboardingCommunityTest = abtestManager.activeABTestModel.onboardingCommunityTest
         categoryRowTest = abtestManager.activeABTestModel.categroyRowTest
+        paywallTest = abtestManager.activeABTestModel.paywallTest
     }
 
     private func handleCreateAccountChange(oldValue: Bool, newValue: Bool) {
@@ -115,6 +117,18 @@ struct DevSettingsView: View {
             }
         )
     }
+    
+    private func handlePaywallTestChange(oldValue: PaywallTestOption, newValue: PaywallTestOption) {
+        // 使用封装的方法
+        updateTestModel(
+            property: &paywallTest,
+            newValue: newValue,
+            savedValue: abtestManager.activeABTestModel.paywallTest,
+            updateAction: { testModel in
+                testModel.update(paywallTest: newValue)
+            }
+        )
+    }
 
     private var abtestSection: some View {
         Section {
@@ -130,6 +144,14 @@ struct DevSettingsView: View {
                 }
             }
             .onChange(of: categoryRowTest, handleCategoryRowTestChange)
+            
+            Picker("Paywall Test", selection: $paywallTest) {
+                ForEach(PaywallTestOption.allCases, id: \.self) { option in
+                    Text(option.rawValue).id(option)
+                }
+            }
+            .onChange(of: paywallTest, handlePaywallTestChange)
+            
         } header: {
             Text("ABTest")
         }

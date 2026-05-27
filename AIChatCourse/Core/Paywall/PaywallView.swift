@@ -11,30 +11,35 @@ import SwiftUI
 struct PaywallView: View {
     @Environment(PurchaseManager.self) private var purchaseManager
     @Environment(LogManager.self) private var logManager
+    @Environment(ABTestManager.self) private var abtestManager
     @Environment(\.dismiss) private var dismiss
     @State private var products: [AnyProduct] = []
     @State private var productIds: [String] = EntitlementOption.allProductIds
     @State private var showAlert: AnyAppAlertItem?
     var body: some View {
         ZStack {
-            RevenueCatPaywallView()
-
-//            if products.isEmpty {
-//                ProgressView()
-//            } else {
-//                CustomPaywallView(
-//                    onBackButtonPressed: onBackButtonPressed,
-//                    onRestorePurchasePressed: onRestorePurchasePressed,
-//                    onPurchaseProductPressed: onPurchaseProductPressed,
-//                    products: products
-//                )
-//            }
+            switch abtestManager.activeABTestModel.paywallTest {
+            case .custom:
+                if products.isEmpty {
+                    ProgressView()
+                } else {
+                    CustomPaywallView(
+                        onBackButtonPressed: onBackButtonPressed,
+                        onRestorePurchasePressed: onRestorePurchasePressed,
+                        onPurchaseProductPressed: onPurchaseProductPressed,
+                        products: products
+                    )
+                }
+            case .revenueCat:
+                RevenueCatPaywallView()
+            case .storeKit:
+                StoreKitPaywallView(
+                    productIds: productIds,
+                    onInAppPurchaseStart: onPurchaseStart,
+                    onInAppPurchaseCompletion: onPurchaseComplete
+                )
+            }
         }
-//        StoreKitPaywallView(
-//            productIds: productIds,
-//            onInAppPurchaseStart: onPurchaseStart,
-//            onInAppPurchaseCompletion: onPurchaseComplete
-//        )
         .appearAnalyticsViewModifier(name: "Paywall")
         .showCustomAlert(alertItem: $showAlert)
         .task {
@@ -161,7 +166,20 @@ extension PaywallView {
     }
 }
 
-#Preview {
+#Preview("Custom") {
     PaywallView()
+        .environment(ABTestManager(service: MockABTestService(paywallTest: .custom)))
+        .previewEnvironment()
+}
+
+#Preview("StoreKit") {
+    PaywallView()
+        .environment(ABTestManager(service: MockABTestService(paywallTest: .storeKit)))
+        .previewEnvironment()
+}
+
+#Preview("RevenueCat") {
+    PaywallView()
+        .environment(ABTestManager(service: MockABTestService(paywallTest: .revenueCat)))
         .previewEnvironment()
 }
