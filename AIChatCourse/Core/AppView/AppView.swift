@@ -20,6 +20,7 @@ struct AppView: View {
     @Environment(UserManager.self) private var userManager
     @Environment(LogManager.self) private var logManager
     @Environment(\.scenePhase) private var scenePhase // LifeCycle: SwiftUI 使用这个
+    @Environment(PurchaseManager.self) private var purchaseManager
     var body: some View {
         // RootView 来自 SwiftfulUI 框架
         RootView(
@@ -51,10 +52,10 @@ struct AppView: View {
                 await checkUserStatus()
             }
             /*
-            .task {
-                await getDataFromMyNewEndpoint()
-            }
-             */
+             .task {
+                 await getDataFromMyNewEndpoint()
+             }
+              */
             .task {
                 try? await Task.sleep(for: .seconds(2))
                 await showATTPromptIfNeeded()
@@ -113,6 +114,10 @@ extension AppView {
             logManager.trackEvent(event: Event.existingAuthStart)
             do {
                 try await userManager.login(auth: user, isNewUser: false)
+                try await purchaseManager.logIn(
+                    userId: user.uid,
+                    attributes: PurchaseProfileAttributes(email: user.email)
+                )
             } catch {
                 logManager.trackEvent(event: Event.existingAuthFail(error: error))
                 try? await Task.sleep(for: .seconds(3))
@@ -124,6 +129,7 @@ extension AppView {
             do {
                 let (user, isNewUser) = try await authManager.signInAnonymously()
                 try await userManager.login(auth: user, isNewUser: isNewUser)
+                try await purchaseManager.logIn(userId: user.uid)
                 JPushManager.shared.setAlias(user.uid)
                 JPushManager.shared.setTags(["ios", "user"])
                 logManager.trackEvent(event: Event.anonymousAuthSuccess)

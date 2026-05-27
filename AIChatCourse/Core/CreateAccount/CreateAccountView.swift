@@ -5,14 +5,15 @@
 //  Created by Elaine on 2026/3/22.
 //
 
-import SwiftUI
 import AuthenticationServices
+import SwiftUI
 
 struct CreateAccountView: View {
     @Environment(AuthManager.self) private var authManager
     @Environment(UserManager.self) private var userManager
     @Environment(\.dismiss) private var dismiss
     @Environment(LogManager.self) private var logManager
+    @Environment(PurchaseManager.self) private var purchaseManager
     var title: String = "Create Account?"
     var subtitle: String = "Don't lose your data! Connect to an SSO provider to save your account."
     var onDidSignIn: ((_ isNewUser: Bool) -> Void)?
@@ -51,6 +52,7 @@ struct CreateAccountView: View {
 }
 
 // MARK: 事件
+
 extension CreateAccountView {
     private func onSignInApplePressed() {
         logManager.trackEvent(event: Event.appleAuthStart)
@@ -59,6 +61,10 @@ extension CreateAccountView {
                 let (userAuthInfo, isNewUser) = try await authManager.signInApple()
                 logManager.trackEvent(event: Event.appleAuthSuccess(user: userAuthInfo, isNewUser: isNewUser))
                 try await userManager.login(auth: userAuthInfo, isNewUser: isNewUser)
+                try await purchaseManager.logIn(
+                    userId: userAuthInfo.uid,
+                    attributes: PurchaseProfileAttributes(email: userAuthInfo.email)
+                )
                 logManager.trackEvent(event: Event.appleAuthLoginSuccess(user: userAuthInfo, isNewUser: isNewUser))
                 onDidSignIn?(isNewUser)
                 dismiss()
@@ -70,9 +76,7 @@ extension CreateAccountView {
 }
 
 extension CreateAccountView {
-    
     enum Event: LoggableEvent {
-        
         case appleAuthStart
         case appleAuthSuccess(user: UserAuthInfoModel, isNewUser: Bool)
         case appleAuthFail(error: Error)

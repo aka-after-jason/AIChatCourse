@@ -16,6 +16,7 @@ struct SettingsView: View {
     @Environment(AvatarManager.self) private var avatarManager
     @Environment(ChatManager.self) private var chatManager
     @Environment(LogManager.self) private var logManager
+    @Environment(PurchaseManager.self) private var purchaseManager
     @State private var isPremium: Bool = false
     @State private var isAnonymousUser: Bool = false
     @State private var showCreateAccountView: Bool = false
@@ -173,6 +174,7 @@ extension SettingsView {
         Task {
             do {
                 try authManager.signOut()
+                try await purchaseManager.logOut()
                 userManager.signOut()
                 await dismissScreen()
                 logManager.trackEvent(event: Event.signOutSuccess)
@@ -210,6 +212,7 @@ extension SettingsView {
                 try await userManager.deleteUser()
                 try await avatarManager.removeAuthorIdFromAllUserAvatars(userId: uid)
                 try await chatManager.deleteAllChatsForUser(userId: uid)
+                try await purchaseManager.logOut()
 
                 // 使用 async let
 //                async let deleteAuth: () = authManager.deleteAccount()
