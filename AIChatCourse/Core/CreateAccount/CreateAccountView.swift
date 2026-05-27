@@ -65,7 +65,8 @@ extension CreateAccountView {
                     userId: userAuthInfo.uid,
                     attributes: PurchaseProfileAttributes(
                         email: userAuthInfo.email,
-                        firebaseAppInstanceID: FirebaseAnalyticsService.appInstanceID
+                        firebaseAppInstanceID: FirebaseAnalyticsService.appInstanceID,
+                        mixpanelDistinctID: MixpanelService.distinctId
                     )
                 )
                 logManager.trackEvent(event: Event.appleAuthLoginSuccess(user: userAuthInfo, isNewUser: isNewUser))

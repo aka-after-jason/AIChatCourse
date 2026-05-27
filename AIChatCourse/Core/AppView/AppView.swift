@@ -118,7 +118,8 @@ extension AppView {
                     userId: user.uid,
                     attributes: PurchaseProfileAttributes(
                         email: user.email,
-                        firebaseAppInstanceID: FirebaseAnalyticsService.appInstanceID
+                        firebaseAppInstanceID: FirebaseAnalyticsService.appInstanceID,
+                        mixpanelDistinctID: MixpanelService.distinctId
                     )
                 )
             } catch {
@@ -135,7 +136,8 @@ extension AppView {
                 try await purchaseManager.logIn(
                     userId: user.uid,
                     attributes: PurchaseProfileAttributes(
-                        firebaseAppInstanceID: FirebaseAnalyticsService.appInstanceID
+                        firebaseAppInstanceID: FirebaseAnalyticsService.appInstanceID,
+                        mixpanelDistinctID: MixpanelService.distinctId
                     )
                 )
                 JPushManager.shared.setAlias(user.uid)
