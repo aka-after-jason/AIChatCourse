@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		AF0490872FC5524600B751E6 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AF0490862FC5524600B751E6 /* StoreKit.framework */; };
+		AF0491DD2FC5ED9B00B751E6 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = AF0491DC2FC5ED9B00B751E6 /* RevenueCat */; };
+		AF0491DF2FC5ED9B00B751E6 /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = AF0491DE2FC5ED9B00B751E6 /* RevenueCatUI */; };
 		AF05D9542F9D006F00ECB7AD /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = AF05D9532F9D006F00ECB7AD /* FirebaseFirestore */; };
 		AF1479542FA573D800B0C58E /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = AF1479532FA573D800B0C58E /* FirebaseStorage */; };
 		AF2A19B22F9B8BD100E51154 /* SignInAppleAsync in Frameworks */ = {isa = PBXBuildFile; productRef = AF2A19B12F9B8BD100E51154 /* SignInAppleAsync */; };
@@ -88,6 +90,7 @@
 			files = (
 				AFEFB9222FB1471400216A81 /* SwiftfulUI in Frameworks */,
 				AF2A19B22F9B8BD100E51154 /* SignInAppleAsync in Frameworks */,
+				AF0491DF2FC5ED9B00B751E6 /* RevenueCatUI in Frameworks */,
 				AFBE45962FAEC6B8005E02EE /* JCore in Frameworks */,
 				AFF87AF42F6809A900595BD1 /* SDWebImageSwiftUI in Frameworks */,
 				AFE9585F2F9D75B400DB6D49 /* SwiftfulFirestore in Frameworks */,
@@ -100,6 +103,7 @@
 				AFCBC22D2FA9BD5A00ACA3CE /* Mixpanel in Frameworks */,
 				AF05D9542F9D006F00ECB7AD /* FirebaseFirestore in Frameworks */,
 				AF37E5E62FBC46260022252D /* FirebaseFunctions in Frameworks */,
+				AF0491DD2FC5ED9B00B751E6 /* RevenueCat in Frameworks */,
 				AF0490872FC5524600B751E6 /* StoreKit.framework in Frameworks */,
 				AF639B9D2F6F977F00979BBA /* SwiftfulUtilities in Frameworks */,
 				AFCBC2242FA9A54D00ACA3CE /* FirebaseAnalytics in Frameworks */,
@@ -190,6 +194,8 @@
 				AFEFB9212FB1471400216A81 /* SwiftfulUI */,
 				AF37E5E52FBC46260022252D /* FirebaseFunctions */,
 				AF992C052FBEFD51006AFC86 /* FirebaseRemoteConfig */,
+				AF0491DC2FC5ED9B00B751E6 /* RevenueCat */,
+				AF0491DE2FC5ED9B00B751E6 /* RevenueCatUI */,
 			);
 			productName = AIChatCourse;
 			productReference = AFB9EAD72F66B7A500EB3ED3 /* AIChatCourse.app */;
@@ -285,6 +291,7 @@
 				AFBE45912FAEC5C1005E02EE /* XCRemoteSwiftPackageReference "jpush-sdk" */,
 				AFBE45942FAEC6B8005E02EE /* XCRemoteSwiftPackageReference "jcore-sdk" */,
 				AFEFB9202FB1471400216A81 /* XCRemoteSwiftPackageReference "SwiftfulUI" */,
+				AF0491DB2FC5E25A00B751E6 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = AFB9EAD82F66B7A500EB3ED3 /* Products */;
@@ -922,6 +929,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		AF0491DB2FC5E25A00B751E6 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/RevenueCat/purchases-ios-spm.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.74.0;
+			};
+		};
 		AF2A19B02F9B8BD100E51154 /* XCRemoteSwiftPackageReference "SignInAppleAsync" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/SwiftfulThinking/SignInAppleAsync.git";
@@ -1005,6 +1020,16 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		AF0491DC2FC5ED9B00B751E6 /* RevenueCat */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AF0491DB2FC5E25A00B751E6 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
+			productName = RevenueCat;
+		};
+		AF0491DE2FC5ED9B00B751E6 /* RevenueCatUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AF0491DB2FC5E25A00B751E6 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
+			productName = RevenueCatUI;
+		};
 		AF05D9532F9D006F00ECB7AD /* FirebaseFirestore */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = AFED45272F9B09EE0060CA90 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;

@@ -148,7 +148,10 @@ struct Dependencies {
             avatarManager = AvatarManager(service: FirebaseAvatarService(), local: SwiftDataLocalAvatarPersistence())
             chatManager = ChatManager(service: FirebaseChatService())
             abtestManager = ABTestManager(service: LocalABTestService(), logManager: logManager)
-            purchaseManager = PurchaseManager(service: StoreKitPurchaseService(), logManager: logManager)
+            purchaseManager = PurchaseManager(
+                service: RevenueCatPurchaseService(apiKey: Keys.revenueCatApiKey), // StoreKitPurchaseService(),
+                logManager: logManager
+            )
         case .prod:
             // Production
             logManager = LogManager(services: [
