@@ -8,6 +8,15 @@
 import FirebaseAnalytics
 
 struct FirebaseAnalyticsService: LogService {
+    
+    static var appInstanceID: String? {
+        #if MOCK
+        return nil
+        #else
+        Analytics.appInstanceID()
+        #endif
+    }
+    
     func identifyUser(userId: String, name: String?, email: String?) {
         Analytics.setUserID(userId)
         if let name {

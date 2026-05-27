@@ -116,7 +116,10 @@ extension AppView {
                 try await userManager.login(auth: user, isNewUser: false)
                 try await purchaseManager.logIn(
                     userId: user.uid,
-                    attributes: PurchaseProfileAttributes(email: user.email)
+                    attributes: PurchaseProfileAttributes(
+                        email: user.email,
+                        firebaseAppInstanceID: FirebaseAnalyticsService.appInstanceID
+                    )
                 )
             } catch {
                 logManager.trackEvent(event: Event.existingAuthFail(error: error))
@@ -129,7 +132,12 @@ extension AppView {
             do {
                 let (user, isNewUser) = try await authManager.signInAnonymously()
                 try await userManager.login(auth: user, isNewUser: isNewUser)
-                try await purchaseManager.logIn(userId: user.uid)
+                try await purchaseManager.logIn(
+                    userId: user.uid,
+                    attributes: PurchaseProfileAttributes(
+                        firebaseAppInstanceID: FirebaseAnalyticsService.appInstanceID
+                    )
+                )
                 JPushManager.shared.setAlias(user.uid)
                 JPushManager.shared.setTags(["ios", "user"])
                 logManager.trackEvent(event: Event.anonymousAuthSuccess)

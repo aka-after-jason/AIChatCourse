@@ -197,6 +197,10 @@ struct RevenueCatPurchaseService: PurchaseService {
         if let email = attributes.email {
             Purchases.shared.attribution.setEmail(email)
         }
+        
+        if let firebaseAppInstanceID = attributes.firebaseAppInstanceID {
+            Purchases.shared.attribution.setFirebaseAppInstanceID(firebaseAppInstanceID)
+        }
     }
     
     func logOut() async throws {
@@ -206,6 +210,12 @@ struct RevenueCatPurchaseService: PurchaseService {
 
 struct PurchaseProfileAttributes {
     let email: String?
+    let firebaseAppInstanceID: String?
+    
+    init(email: String? = nil, firebaseAppInstanceID: String? = nil) {
+        self.email = email
+        self.firebaseAppInstanceID = firebaseAppInstanceID
+    }
 }
 
 @MainActor

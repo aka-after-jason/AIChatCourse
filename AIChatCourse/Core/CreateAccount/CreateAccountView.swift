@@ -63,7 +63,10 @@ extension CreateAccountView {
                 try await userManager.login(auth: userAuthInfo, isNewUser: isNewUser)
                 try await purchaseManager.logIn(
                     userId: userAuthInfo.uid,
-                    attributes: PurchaseProfileAttributes(email: userAuthInfo.email)
+                    attributes: PurchaseProfileAttributes(
+                        email: userAuthInfo.email,
+                        firebaseAppInstanceID: FirebaseAnalyticsService.appInstanceID
+                    )
                 )
                 logManager.trackEvent(event: Event.appleAuthLoginSuccess(user: userAuthInfo, isNewUser: isNewUser))
                 onDidSignIn?(isNewUser)
