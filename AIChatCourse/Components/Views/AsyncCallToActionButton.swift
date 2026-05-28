@@ -10,7 +10,7 @@ import SwiftUI
 struct AsyncCallToActionButton: View {
     var isLoading: Bool = false
     var title: String = "Save"
-    var action: () -> Void
+    var action: (() -> Void)
     var body: some View {
         ZStack {
             if isLoading {

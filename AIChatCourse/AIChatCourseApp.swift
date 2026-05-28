@@ -18,21 +18,20 @@ import SwiftUI
  */
 
 // 4. MVVM Architecture
-/**
+/* 
  - DataManager is shared accross the application, but access from the ViewModel
  - ViewModels are responsible for business logic
  - ViewModel holds the array of products
- 
+
  Pros:
  - Seperated the View from the business logic
  - Business logic is now testable
  - View code is much cleaner
- 
+
  Cons:
  - More difficult to set up and inject dependencies
  - ViewModel lifecycle is outside of View lifecycle (cannot use SwiftUI Property Wrappers)
  */
-
 
 @main
 struct AIChatCourseApp: App {
@@ -243,8 +242,7 @@ extension AppDelegate {
 
 extension View {
     func previewEnvironment(isSignedIn: Bool = true) -> some View {
-        self
-            .environment(PurchaseManager(service: MockPurchaseService()))
+        environment(PurchaseManager(service: MockPurchaseService()))
             .environment(AIManager(service: MockAIService()))
             .environment(AvatarManager(service: MockAvatarService()))
             .environment(UserManager(services: MockUserServices(user: isSignedIn ? .mock : nil)))
@@ -260,7 +258,7 @@ extension View {
 @MainActor
 class DevPreview {
     static let shared = DevPreview()
-    
+
     let authManager: AuthManager
     let userManager: UserManager
     let aiManager: AIManager
@@ -270,17 +268,16 @@ class DevPreview {
     let pushManager: PushManager
     let abtestManager: ABTestManager
     let purchaseManager: PurchaseManager
-    
+
     init(isSignedIn: Bool = true) {
-        self.authManager = AuthManager(service: MockAuthService(user: isSignedIn ? .mock(isAnonymous: false) : nil))
-        self.userManager = UserManager(services: MockUserServices(user: isSignedIn ? .mock : nil))
-        self.aiManager = AIManager(service: MockAIService())
-        self.avatarManager = AvatarManager(service: MockAvatarService())
-        self.chatManager = ChatManager(service: MockChatService())
-        self.logManager = LogManager(services: [])
-        self.pushManager = PushManager()
-        self.abtestManager = ABTestManager(service: MockABTestService())
-        self.purchaseManager = PurchaseManager(service: MockPurchaseService())
+        authManager = AuthManager(service: MockAuthService(user: isSignedIn ? .mock(isAnonymous: false) : nil))
+        userManager = UserManager(services: MockUserServices(user: isSignedIn ? .mock : nil))
+        aiManager = AIManager(service: MockAIService())
+        avatarManager = AvatarManager(service: MockAvatarService())
+        chatManager = ChatManager(service: MockChatService())
+        logManager = LogManager(services: [])
+        pushManager = PushManager()
+        abtestManager = ABTestManager(service: MockABTestService())
+        purchaseManager = PurchaseManager(service: MockPurchaseService())
     }
-    
 }

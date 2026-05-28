@@ -13,6 +13,7 @@ struct TabBarView: View {
     @Environment(AvatarManager.self) private var avatarManager
     @Environment(AuthManager.self) private var authManager
     @Environment(LogManager.self) private var logManager
+    @Environment(AIManager.self) private var aiManager
     
     var body: some View {
         TabView {
@@ -31,7 +32,8 @@ struct TabBarView: View {
                     userManager: userManager,
                     avatarManager: avatarManager,
                     authManager: authManager,
-                    logManager: logManager
+                    logManager: logManager,
+                    aiManager: aiManager
                 )
             )
                 .tabItem {

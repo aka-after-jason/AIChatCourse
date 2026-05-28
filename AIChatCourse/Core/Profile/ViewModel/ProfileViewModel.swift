@@ -10,15 +10,17 @@ import SwiftUI
 @Observable
 final class ProfileViewModel {
     // 注入 managers
-    private let userManager: UserManager
-    private let avatarManager: AvatarManager
-    private let authManager: AuthManager
-    private let logManager: LogManager
-    init(userManager: UserManager, avatarManager: AvatarManager, authManager: AuthManager, logManager: LogManager) {
+    let userManager: UserManager
+    let avatarManager: AvatarManager
+    let authManager: AuthManager
+    let logManager: LogManager
+    let aiManager: AIManager // CreateAvatarView 页面需要
+    init(userManager: UserManager, avatarManager: AvatarManager, authManager: AuthManager, logManager: LogManager, aiManager: AIManager) {
         self.userManager = userManager
         self.avatarManager = avatarManager
         self.authManager = authManager
         self.logManager = logManager
+        self.aiManager = aiManager
     }
 
     private(set) var currentUser: UserModel?

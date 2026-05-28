@@ -28,12 +28,22 @@ struct ProfileView: View {
             SettingsView()
         }
         .showCustomAlert(alertItem: $viewModel.showAlert)
-        .fullScreenCover(isPresented: $viewModel.showCreateAvatarView, onDismiss: {
-            Task {
-                await viewModel.loadData() // avatar 创建完成, 自动刷新
-            }
-        }, content: {
-            CreateAvatarView()
+        .fullScreenCover(
+            isPresented: $viewModel.showCreateAvatarView,
+            onDismiss: {
+                Task {
+                    await viewModel.loadData() // avatar 创建完成, 自动刷新
+                }
+            },
+            content: {
+                CreateAvatarView(
+                    viewModel: CreateAvatarViewModel(
+                        aiManager: viewModel.aiManager,
+                        authManager: viewModel.authManager,
+                        avatarManager: viewModel.avatarManager,
+                        logManager: viewModel.logManager
+                    )
+                )
         })
         .task {
             await viewModel.loadData()
@@ -121,7 +131,9 @@ extension ProfileView {
             userManager: DevPreview.shared.userManager,
             avatarManager: DevPreview.shared.avatarManager,
             authManager: DevPreview.shared.authManager,
-            logManager: DevPreview.shared.logManager
+            logManager: DevPreview.shared.logManager,
+            aiManager: DevPreview.shared.aiManager
         )
     )
+    .previewEnvironment()
 }
