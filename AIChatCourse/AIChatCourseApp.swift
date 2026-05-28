@@ -18,7 +18,7 @@ import SwiftUI
  */
 
 // 4. MVVM Architecture
-/* 
+/*
  - DataManager is shared accross the application, but access from the ViewModel
  - ViewModels are responsible for business logic
  - ViewModel holds the array of products
@@ -33,12 +33,18 @@ import SwiftUI
  - ViewModel lifecycle is outside of View lifecycle (cannot use SwiftUI Property Wrappers)
  */
 
+/*
+ DI: Dependency Injection
+ https://github.com/Swinject/Swinject
+ */
+
 @main
 struct AIChatCourseApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     var body: some Scene {
         WindowGroup {
             AppView()
+                .environment(delegate.dependencies.container)
                 .environment(delegate.dependencies.purchaseManager)
                 .environment(delegate.dependencies.aiManager)
                 .environment(delegate.dependencies.avatarManager)
@@ -99,7 +105,33 @@ enum BuildConfiguration {
     }
 }
 
+/// 存储所有的 manager
+@MainActor
+@Observable
+class DependencyContainer {
+    private var managers: [String: Any] = [:]
+
+    /// 注册 manager
+    func regiser<T>(_ type: T.Type, manager: T) {
+        let key = "\(type)"
+        managers[key] = manager
+    }
+
+    func register<T>(_ type: T.Type, manager: () -> T) {
+        let key = "\(type)"
+        managers[key] = manager()
+    }
+
+    /// 获取 manager
+    func resolve<T>(_ type: T.Type) -> T? {
+        let key = "\(type)"
+        return managers[key] as? T
+    }
+}
+
 struct Dependencies {
+    let container: DependencyContainer
+
     let authManager: AuthManager
     let userManager: UserManager
     let aiManager: AIManager
@@ -110,6 +142,7 @@ struct Dependencies {
     let abtestManager: ABTestManager
     let purchaseManager: PurchaseManager
 
+    // swiftlint:disable:next function_body_length
     init(config: BuildConfiguration) {
         // Multiple schemes
         // Mock - mock dependencies
@@ -186,6 +219,20 @@ struct Dependencies {
         }
 
         pushManager = PushManager(logManager: logManager)
+
+        // 创建 container
+        let container = DependencyContainer()
+        // 注册 manager
+        container.regiser(AuthManager.self, manager: authManager)
+        container.regiser(UserManager.self, manager: userManager)
+        container.regiser(AIManager.self, manager: aiManager)
+        container.regiser(AvatarManager.self, manager: avatarManager)
+        container.regiser(ChatManager.self, manager: chatManager)
+        container.regiser(LogManager.self, manager: logManager)
+        container.regiser(PushManager.self, manager: pushManager)
+        container.regiser(ABTestManager.self, manager: abtestManager)
+        container.regiser(PurchaseManager.self, manager: purchaseManager)
+        self.container = container
     }
 }
 
@@ -259,6 +306,8 @@ extension View {
 class DevPreview {
     static let shared = DevPreview()
 
+    let container: DependencyContainer
+
     let authManager: AuthManager
     let userManager: UserManager
     let aiManager: AIManager
@@ -279,5 +328,19 @@ class DevPreview {
         pushManager = PushManager()
         abtestManager = ABTestManager(service: MockABTestService())
         purchaseManager = PurchaseManager(service: MockPurchaseService())
+
+        // 创建 container
+        let container = DependencyContainer()
+        // 注册 manager
+        container.regiser(AuthManager.self, manager: authManager)
+        container.regiser(UserManager.self, manager: userManager)
+        container.regiser(AIManager.self, manager: aiManager)
+        container.regiser(AvatarManager.self, manager: avatarManager)
+        container.regiser(ChatManager.self, manager: chatManager)
+        container.regiser(LogManager.self, manager: logManager)
+        container.regiser(PushManager.self, manager: pushManager)
+        container.regiser(ABTestManager.self, manager: abtestManager)
+        container.regiser(PurchaseManager.self, manager: purchaseManager)
+        self.container = container
     }
 }

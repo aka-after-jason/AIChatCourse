@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ProfileView: View {
     @State var viewModel: ProfileViewModel
+    @Environment(DependencyContainer.self) private var container
     var body: some View {
         NavigationStack(path: $viewModel.path) {
             List {
@@ -37,14 +38,10 @@ struct ProfileView: View {
             },
             content: {
                 CreateAvatarView(
-                    viewModel: CreateAvatarViewModel(
-                        aiManager: viewModel.aiManager,
-                        authManager: viewModel.authManager,
-                        avatarManager: viewModel.avatarManager,
-                        logManager: viewModel.logManager
-                    )
+                    viewModel: CreateAvatarViewModel(container: container)
                 )
-        })
+            }
+        )
         .task {
             await viewModel.loadData()
         }
@@ -126,14 +123,10 @@ extension ProfileView {
 }
 
 #Preview {
-    ProfileView(
-        viewModel: ProfileViewModel(
-            userManager: DevPreview.shared.userManager,
-            avatarManager: DevPreview.shared.avatarManager,
-            authManager: DevPreview.shared.authManager,
-            logManager: DevPreview.shared.logManager,
-            aiManager: DevPreview.shared.aiManager
-        )
-    )
-    .previewEnvironment()
+    let container = DevPreview.shared.container
+    // 可以自定义
+    // container.regiser(AuthManager.self, manager: AuthManager(service: MockAuthService()))
+
+    return ProfileView(viewModel: ProfileViewModel(container: container))
+        .previewEnvironment()
 }

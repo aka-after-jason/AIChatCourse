@@ -15,11 +15,12 @@ final class CreateAvatarViewModel {
     private let authManager: AuthManager
     private let avatarManager: AvatarManager
     private let logManager: LogManager
-    init(aiManager: AIManager, authManager: AuthManager, avatarManager: AvatarManager, logManager: LogManager) {
-        self.aiManager = aiManager
-        self.authManager = authManager
-        self.avatarManager = avatarManager
-        self.logManager = logManager
+    
+    init(container: DependencyContainer) {
+        self.aiManager = container.resolve(AIManager.self)!
+        self.authManager = container.resolve(AuthManager.self)!
+        self.avatarManager = container.resolve(AvatarManager.self)!
+        self.logManager = container.resolve(LogManager.self)!
     }
 
     private(set) var isGenerating: Bool = false

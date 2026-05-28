@@ -7,15 +7,14 @@
 
 import SwiftUI
 
-
 struct CreateAvatarView: View {
     @State var viewModel: CreateAvatarViewModel
-    
-    // 这里打破了 MVVM 架构
-    // ViewModel cannot use SwiftUI Property Wrappers
-    // 这里在 viewmodel 中传入了事件
+
+    /// 这里打破了 MVVM 架构
+    /// ViewModel cannot use SwiftUI Property Wrappers
+    /// 这里在 viewmodel 中传入了事件
     @Environment(\.dismiss) private var dismiss
-    
+
     var body: some View {
         NavigationStack {
             List {
@@ -132,15 +131,9 @@ extension CreateAvatarView {
     }
 }
 
-
 #Preview {
     CreateAvatarView(
-        viewModel: CreateAvatarViewModel(
-            aiManager: DevPreview.shared.aiManager,
-            authManager: DevPreview.shared.authManager,
-            avatarManager: DevPreview.shared.avatarManager,
-            logManager: DevPreview.shared.logManager
-        )
+        viewModel: CreateAvatarViewModel(container: DevPreview.shared.container)
     )
     .previewEnvironment()
 }

@@ -14,13 +14,12 @@ final class ProfileViewModel {
     let avatarManager: AvatarManager
     let authManager: AuthManager
     let logManager: LogManager
-    let aiManager: AIManager // CreateAvatarView 页面需要
-    init(userManager: UserManager, avatarManager: AvatarManager, authManager: AuthManager, logManager: LogManager, aiManager: AIManager) {
-        self.userManager = userManager
-        self.avatarManager = avatarManager
-        self.authManager = authManager
-        self.logManager = logManager
-        self.aiManager = aiManager
+    
+    init(container: DependencyContainer) {
+        self.userManager = container.resolve(UserManager.self)!
+        self.avatarManager = container.resolve(AvatarManager.self)!
+        self.authManager = container.resolve(AuthManager.self)!
+        self.logManager = container.resolve(LogManager.self)!
     }
 
     private(set) var currentUser: UserModel?

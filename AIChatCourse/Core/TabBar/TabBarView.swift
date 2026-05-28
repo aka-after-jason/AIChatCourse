@@ -9,11 +9,7 @@ import SwiftUI
 
 struct TabBarView: View {
     
-    @Environment(UserManager.self) private var userManager
-    @Environment(AvatarManager.self) private var avatarManager
-    @Environment(AuthManager.self) private var authManager
-    @Environment(LogManager.self) private var logManager
-    @Environment(AIManager.self) private var aiManager
+    @Environment(DependencyContainer.self) private var container
     
     var body: some View {
         TabView {
@@ -28,13 +24,7 @@ struct TabBarView: View {
                 }
 
             ProfileView(
-                viewModel: ProfileViewModel(
-                    userManager: userManager,
-                    avatarManager: avatarManager,
-                    authManager: authManager,
-                    logManager: logManager,
-                    aiManager: aiManager
-                )
+                viewModel: ProfileViewModel(container: container)
             )
                 .tabItem {
                     Label("Profile", systemImage: "person.fill")
