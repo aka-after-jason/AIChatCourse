@@ -306,7 +306,22 @@ extension View {
 class DevPreview {
     static let shared = DevPreview()
 
-    let container: DependencyContainer
+    // 每次调用container, 都会创建一个新的
+    var container: DependencyContainer {
+        // 创建 container
+        let container = DependencyContainer()
+        // 注册 manager
+        container.regiser(AuthManager.self, manager: authManager)
+        container.regiser(UserManager.self, manager: userManager)
+        container.regiser(AIManager.self, manager: aiManager)
+        container.regiser(AvatarManager.self, manager: avatarManager)
+        container.regiser(ChatManager.self, manager: chatManager)
+        container.regiser(LogManager.self, manager: logManager)
+        container.regiser(PushManager.self, manager: pushManager)
+        container.regiser(ABTestManager.self, manager: abtestManager)
+        container.regiser(PurchaseManager.self, manager: purchaseManager)
+        return container
+    }
 
     let authManager: AuthManager
     let userManager: UserManager
@@ -328,19 +343,5 @@ class DevPreview {
         pushManager = PushManager()
         abtestManager = ABTestManager(service: MockABTestService())
         purchaseManager = PurchaseManager(service: MockPurchaseService())
-
-        // 创建 container
-        let container = DependencyContainer()
-        // 注册 manager
-        container.regiser(AuthManager.self, manager: authManager)
-        container.regiser(UserManager.self, manager: userManager)
-        container.regiser(AIManager.self, manager: aiManager)
-        container.regiser(AvatarManager.self, manager: avatarManager)
-        container.regiser(ChatManager.self, manager: chatManager)
-        container.regiser(LogManager.self, manager: logManager)
-        container.regiser(PushManager.self, manager: pushManager)
-        container.regiser(ABTestManager.self, manager: abtestManager)
-        container.regiser(PurchaseManager.self, manager: purchaseManager)
-        self.container = container
     }
 }
