@@ -289,7 +289,9 @@ extension AppDelegate {
 
 extension View {
     func previewEnvironment(isSignedIn: Bool = true) -> some View {
-        environment(PurchaseManager(service: MockPurchaseService()))
+        self
+            .environment(DevPreview.shared.container)
+            .environment(PurchaseManager(service: MockPurchaseService()))
             .environment(AIManager(service: MockAIService()))
             .environment(AvatarManager(service: MockAvatarService()))
             .environment(UserManager(services: MockUserServices(user: isSignedIn ? .mock : nil)))

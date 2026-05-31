@@ -5,24 +5,32 @@
 //  Created by Elaine on 2026/4/24.
 //
 
-import SwiftUI
 import Foundation
+import SwiftUI
 
 enum NavigationPathOption: Hashable {
     case chatView(avatarId: String, chat: ChatModel?)
     case categoryListView(category: CharacterOption, imageName: String)
 }
 
-extension View {
-    func customNavigationDestinationForCoreModule(path: Binding<[NavigationPathOption]>) -> some View {
-        self
-            .navigationDestination(for: NavigationPathOption.self) { type in
-                switch type {
+struct NavigationDestinationViewModifier: ViewModifier {
+    @Environment(DependencyContainer.self) private var container
+    let path: Binding<[NavigationPathOption]>
+    func body(content: Content) -> some View {
+        content
+            .navigationDestination(for: NavigationPathOption.self) { newValue in
+                switch newValue {
                 case .chatView(avatarId: let avatarId, chat: let chat):
                     ChatView(chat: chat, avatarId: avatarId)
                 case .categoryListView(category: let category, imageName: let imageName):
-                    CategoryListView(category: category, imageName: imageName, path: path)
+                    CategoryListView(viewModel: CategoryListViewModel(container: container), path: path, category: category, imageName: imageName)
                 }
             }
+    }
+}
+
+extension View {
+    func customNavigationDestinationForCoreModule(path: Binding<[NavigationPathOption]>) -> some View {
+        modifier(NavigationDestinationViewModifier(path: path))
     }
 }
