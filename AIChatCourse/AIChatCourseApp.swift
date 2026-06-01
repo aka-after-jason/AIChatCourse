@@ -13,8 +13,14 @@ import SwiftUI
 // MARK: Firestore 创建在台湾直连
 
 /*
- module1: view layers
- module2: data layers (firebase)
+ module1: View Layers
+ module2: Data Layers (firebase)
+ module3: MVP Essentials: Core Updates
+ module4: MVP Essentials: Growth Updates
+ module5: Testing & CI/CD
+ module6: Enterprise Architecture: MVVM
+ module7: Enterprise Architecture: VIPER
+ module8: Swift Packages
  */
 
 // 4. MVVM Architecture
