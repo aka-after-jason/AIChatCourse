@@ -12,7 +12,7 @@ import Testing
 @MainActor
 struct UserModelTests {
     @Test("UserModel Initialization with Full Data")
-    func initializationWithFullData() {
+    func initializationWithFullData() async throws {
         // Write your test here and use APIs like `#expect(...)` to check expected conditions.
         let randomUserId = String.random
         let randomEmail = "\(String.random)@example.com"
@@ -44,7 +44,7 @@ struct UserModelTests {
      }
     
     @Test("UserModel Event Parameters")
-    func testEventParameters() {
+    func testEventParameters() async throws {
         let randomUserId = String.random
         let randomEmail = "\(String.random)@example.com"
         let randomIsAnonymous = Bool.random

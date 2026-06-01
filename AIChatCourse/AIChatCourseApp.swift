@@ -6,6 +6,7 @@
 //
 
 import FirebaseCore
+import SwiftfulUtilities
 import SwiftUI
 
 // MARK: SwiftUI advanced architecture
@@ -45,6 +46,26 @@ import SwiftUI
  */
 
 @main
+struct AppEntryPoint {
+    static func main() {
+        if Utilities.isUnitTesting {
+            TestingApp.main()
+        } else {
+            AIChatCourseApp.main()
+        }
+    }
+}
+
+// 测试app
+struct TestingApp: App {
+    var body: some Scene {
+        WindowGroup {
+            Text("Testing")
+        }
+    }
+}
+
+// 主 app
 struct AIChatCourseApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     var body: some Scene {
@@ -295,8 +316,7 @@ extension AppDelegate {
 
 extension View {
     func previewEnvironment(isSignedIn: Bool = true) -> some View {
-        self
-            .environment(DevPreview.shared.container)
+        environment(DevPreview.shared.container)
             .environment(PurchaseManager(service: MockPurchaseService()))
             .environment(AIManager(service: MockAIService()))
             .environment(AvatarManager(service: MockAvatarService()))
@@ -314,7 +334,7 @@ extension View {
 class DevPreview {
     static let shared = DevPreview()
 
-    // 每次调用container, 都会创建一个新的
+    /// 每次调用container, 都会创建一个新的
     var container: DependencyContainer {
         // 创建 container
         let container = DependencyContainer()
