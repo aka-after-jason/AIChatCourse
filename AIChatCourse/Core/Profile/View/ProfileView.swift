@@ -127,6 +127,6 @@ extension ProfileView {
     // 可以自定义
     // container.regiser(AuthManager.self, manager: AuthManager(service: MockAuthService()))
     
-    return ProfileView(viewModel: ProfileViewModel(interactor: ProductProfileViewModelInteractor(container: container)))
+    return ProfileView(viewModel: ProfileViewModel(interactor: CoreInteractor(container: container)))
         .previewEnvironment()
 }

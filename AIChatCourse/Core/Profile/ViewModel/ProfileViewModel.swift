@@ -7,6 +7,7 @@
 import SwiftUI
 
 // MARK: MVVM With Protocols
+
 // 目的:
 // 1. 不需要导入manager中所有的方法, 用到什么方法,在 protocol 里面添加
 // 2. 方便单元测试
@@ -14,60 +15,70 @@ import SwiftUI
 @MainActor
 protocol ProfileViewModelInteractor {
     var currentUser: UserModel? { get }
-    
+
     func getCurrentUserId() throws -> String
     func getAvatarsForAuthor(userId: String) async throws -> [AvatarModel]
     func removeAuthorIdFromAvatar(avatarId: String) async throws
     func trackEvent(event: LoggableEvent)
 }
 
-@MainActor
-struct ProductProfileViewModelInteractor: ProfileViewModelInteractor {
-        
-    // 注入 managers
-    let userManager: UserManager
-    let avatarManager: AvatarManager
-    let authManager: AuthManager
-    let logManager: LogManager
-    
-    init(container: DependencyContainer) {
-        self.userManager = container.resolve(UserManager.self)!
-        self.avatarManager = container.resolve(AvatarManager.self)!
-        self.authManager = container.resolve(AuthManager.self)!
-        self.logManager = container.resolve(LogManager.self)!
-    }
-    
-    var currentUser: UserModel? {
-        userManager.currentUser
-    }
-    
-    func getCurrentUserId() throws -> String {
-        try authManager.getCurrentUserId()
-    }
-    
-    func getAvatarsForAuthor(userId: String) async throws -> [AvatarModel] {
-        try await avatarManager.getAvatarsForAuthor(userId: userId)
-    }
-    
-    func removeAuthorIdFromAvatar(avatarId: String) async throws {
-        try await avatarManager.removeAuthorIdFromAvatar(avatarId: avatarId)
-    }
-    
-    func trackEvent(event: any LoggableEvent) {
-        logManager.trackEvent(event: event)
-    }
+/// 这里使用 CoreInteractor
+extension CoreInteractor: ProfileViewModelInteractor {}
 
-}
+// 也可以单独设置 ProductProfileViewModelInteractor
+/*
+ @MainActor
+ struct ProductProfileViewModelInteractor: ProfileViewModelInteractor {
+
+     // 注入 managers
+     let userManager: UserManager
+     let avatarManager: AvatarManager
+     let authManager: AuthManager
+     let logManager: LogManager
+
+     init(container: DependencyContainer) {
+         self.userManager = container.resolve(UserManager.self)!
+         self.avatarManager = container.resolve(AvatarManager.self)!
+         self.authManager = container.resolve(AuthManager.self)!
+         self.logManager = container.resolve(LogManager.self)!
+     }
+
+     var currentUser: UserModel? {
+         userManager.currentUser
+     }
+
+     func getCurrentUserId() throws -> String {
+         try authManager.getCurrentUserId()
+     }
+
+     func getAvatarsForAuthor(userId: String) async throws -> [AvatarModel] {
+         try await avatarManager.getAvatarsForAuthor(userId: userId)
+     }
+
+     func removeAuthorIdFromAvatar(avatarId: String) async throws {
+         try await avatarManager.removeAuthorIdFromAvatar(avatarId: avatarId)
+     }
+
+     func trackEvent(event: any LoggableEvent) {
+         logManager.trackEvent(event: event)
+     }
+ }
+  */
 
 @MainActor
 @Observable
 final class ProfileViewModel {
-    
-    private let interactor: ProfileViewModelInteractor
-    init(interactor: ProfileViewModelInteractor) {
+    /*
+     private let interactor: ProfileViewModelInteractor
+     init(interactor: ProfileViewModelInteractor) {
+         self.interactor = interactor
+     }
+      */
+    private let interactor: CoreInteractor
+    init(interactor: CoreInteractor) {
         self.interactor = interactor
     }
-    
+
     private(set) var currentUser: UserModel?
     private(set) var myAvatars: [AvatarModel] = []
     private(set) var isLoading: Bool = true
