@@ -214,6 +214,14 @@ struct CoreInteractor {
         abtestManager.activeABTestModel
     }
     
+    var categoryRowTest: CategoryRowTestOption {
+        activeABTestModel.categroyRowTest
+    }
+    
+    var createAccountTest: Bool {
+        activeABTestModel.createAccountTest
+    }
+    
     func override(updateABTestModel: ActiveABTestModel) throws {
         try abtestManager.override(updateABTestModel: updateABTestModel)
     }

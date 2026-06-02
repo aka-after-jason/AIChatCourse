@@ -74,8 +74,8 @@ final class ProfileViewModel {
          self.interactor = interactor
      }
       */
-    private let interactor: CoreInteractor
-    init(interactor: CoreInteractor) {
+    private let interactor: ProfileViewModelInteractor
+    init(interactor: ProfileViewModelInteractor) {
         self.interactor = interactor
     }
 

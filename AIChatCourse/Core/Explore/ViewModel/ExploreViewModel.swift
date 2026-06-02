@@ -6,22 +6,26 @@
 //
 import SwiftUI
 
+protocol ExploreViewModelInteractor {
+    var categoryRowTest: CategoryRowTestOption { get }
+    var authUser: UserAuthInfoModel? { get }
+    var createAccountTest: Bool { get }
+    func canRequestAuthorization() async -> Bool
+    func requestAuthorization() async throws -> Bool
+    func schedulePushNotificationsForTheNextWeek()
+    func getFeaturedAvatars() async throws -> [AvatarModel]
+    func getPopularAvatars() async throws -> [AvatarModel]
+    func trackEvent(event: LoggableEvent)
+}
+
+extension CoreInteractor: ExploreViewModelInteractor {}
+
 @MainActor
 @Observable
 final class ExploreViewModel {
-    
-    private let authManager: AuthManager
-    private let abtestManager: ABTestManager
-    private let pushManager: PushManager
-    private let avatarManager: AvatarManager
-    private let logManager: LogManager
-
-    init(container: DependencyContainer) {
-        self.authManager = container.resolve(AuthManager.self)!
-        self.abtestManager = container.resolve(ABTestManager.self)!
-        self.pushManager = container.resolve(PushManager.self)!
-        self.avatarManager = container.resolve(AvatarManager.self)!
-        self.logManager = container.resolve(LogManager.self)!
+    let interactor: ExploreViewModelInteractor
+    init(interactor: ExploreViewModelInteractor) {
+        self.interactor = interactor
     }
 
     private(set) var categories: [CharacterOption] = CharacterOption.allCases
@@ -35,11 +39,11 @@ final class ExploreViewModel {
     var showNotificationButton: Bool = false
     var showPushNotificationModal: Bool = false
     var showCreateAccountView: Bool = false
-    
+
     var categroyRowTest: CategoryRowTestOption {
-        abtestManager.activeABTestModel.categroyRowTest
+        interactor.categoryRowTest
     }
-    
+
     var showDevSettingsButton: Bool {
         #if DEV || MOCK
         return true
@@ -54,7 +58,7 @@ final class ExploreViewModel {
 
             // If the user doesn't already have an account (Anonymous)
             // If the user is in our ABTest
-            guard authManager.authUser?.isAnonymous == true && abtestManager.activeABTestModel.createAccountTest == true else {
+            guard interactor.authUser?.isAnonymous == true && interactor.createAccountTest == true else {
                 return
             }
             showCreateAccountView = true
@@ -69,11 +73,11 @@ final class ExploreViewModel {
         在 Calendar 里面创建一个event, URL填写为: aiChat://?category=alien
      */
     func handleDeepLink(url: URL) {
-        logManager.trackEvent(event: Event.deeplinkStart)
+        interactor.trackEvent(event: Event.deeplinkStart)
         guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
               let queryItems = components.queryItems
         else {
-            logManager.trackEvent(event: Event.deeplinkNoQueryItems)
+            interactor.trackEvent(event: Event.deeplinkNoQueryItems)
             return
         }
 
@@ -82,54 +86,54 @@ final class ExploreViewModel {
             if queryItem.name == "category", let value = queryItem.value, let category = CharacterOption(rawValue: value) {
                 let imageName = popularAvatars.first(where: { $0.characterOption == category })?.profileImageName ?? Constants.randomImageUrl
                 path.append(.categoryListView(category: category, imageName: imageName))
-                logManager.trackEvent(event: Event.deeplinkCategory(category: category))
+                interactor.trackEvent(event: Event.deeplinkCategory(category: category))
                 return
             }
         }
-        logManager.trackEvent(event: Event.deeplinkUnknown)
+        interactor.trackEvent(event: Event.deeplinkUnknown)
     }
 
     func schedulePushNotifications() {
-        pushManager.schedulePushNotificationsForTheNextWeek()
+        interactor.schedulePushNotificationsForTheNextWeek()
     }
 
     func handleShowPushNotificationButton() async {
-        showNotificationButton = await pushManager.canRequestAuthorization()
+        showNotificationButton = await interactor.canRequestAuthorization()
     }
 
     func onPushNotificationButtonPressed() {
         showPushNotificationModal = true
-        logManager.trackEvent(event: Event.pushNotificationStart)
+        interactor.trackEvent(event: Event.pushNotificationStart)
     }
 
     func onEnablePushNotificationPressed() {
         showPushNotificationModal = false
         Task {
-            let isAuthorized = try await pushManager.requestAuthorization()
-            logManager.trackEvent(event: Event.pushNotificationEnable(isAuthorized: isAuthorized))
+            let isAuthorized = try await interactor.requestAuthorization()
+            interactor.trackEvent(event: Event.pushNotificationEnable(isAuthorized: isAuthorized))
             await handleShowPushNotificationButton()
         }
     }
 
     func onCancelPushNotificationPressed() {
         showPushNotificationModal = false
-        logManager.trackEvent(event: Event.pushNotificationCancel)
+        interactor.trackEvent(event: Event.pushNotificationCancel)
     }
 
     func onDevSettingsButtonPressed() {
         showDevSettings = true
-        logManager.trackEvent(event: Event.devSettingsPressed)
+        interactor.trackEvent(event: Event.devSettingsPressed)
     }
 
     func loadFeaturedAvatars() async {
         // If already loaded, no need to fetch again
         guard featuredAvatars.isEmpty else { return }
-        logManager.trackEvent(event: Event.loadFeaturedAvatarsStart)
+        interactor.trackEvent(event: Event.loadFeaturedAvatarsStart)
         do {
-            featuredAvatars = try await avatarManager.getFeaturedAvatars()
-            logManager.trackEvent(event: Event.loadFeaturedAvatarsSuccess(count: featuredAvatars.count))
+            featuredAvatars = try await interactor.getFeaturedAvatars()
+            interactor.trackEvent(event: Event.loadFeaturedAvatarsSuccess(count: featuredAvatars.count))
         } catch {
-            logManager.trackEvent(event: Event.loadFeaturedAvatarsFail(error: error))
+            interactor.trackEvent(event: Event.loadFeaturedAvatarsFail(error: error))
         }
         isLoadingFeatured = false
     }
@@ -137,28 +141,28 @@ final class ExploreViewModel {
     func loadPopularAvatars() async {
         // If already loaded, no need to fetch again
         guard popularAvatars.isEmpty else { return }
-        logManager.trackEvent(event: Event.loadPopularAvatarsStart)
+        interactor.trackEvent(event: Event.loadPopularAvatarsStart)
         do {
-            popularAvatars = try await avatarManager.getPopularAvatars()
-            logManager.trackEvent(event: Event.loadPopularAvatarsSuccess(count: popularAvatars.count))
+            popularAvatars = try await interactor.getPopularAvatars()
+            interactor.trackEvent(event: Event.loadPopularAvatarsSuccess(count: popularAvatars.count))
         } catch {
-            logManager.trackEvent(event: Event.loadPopularAvatarsFail(error: error))
+            interactor.trackEvent(event: Event.loadPopularAvatarsFail(error: error))
         }
         isLoadingPopular = false
     }
 
     func onAvatarPressed(avatar: AvatarModel) {
-        logManager.trackEvent(event: Event.avatarPressed(avatar: avatar))
+        interactor.trackEvent(event: Event.avatarPressed(avatar: avatar))
         path.append(.chatView(avatarId: avatar.avatarId, chat: nil))
     }
 
     func onCategoryPressed(category: CharacterOption, imageName: String) {
-        logManager.trackEvent(event: Event.categoryPressed(category: category))
+        interactor.trackEvent(event: Event.categoryPressed(category: category))
         path.append(.categoryListView(category: category, imageName: imageName))
     }
 
     func onTryAgainPressed() {
-        logManager.trackEvent(event: Event.tryAgainPressed)
+        interactor.trackEvent(event: Event.tryAgainPressed)
         isLoadingFeatured = true
         isLoadingPopular = true
         Task {
