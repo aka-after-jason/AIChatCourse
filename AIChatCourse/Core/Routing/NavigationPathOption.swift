@@ -23,7 +23,12 @@ struct NavigationDestinationViewModifier: ViewModifier {
                 case .chatView(avatarId: let avatarId, chat: let chat):
                     ChatView(chat: chat, avatarId: avatarId)
                 case .categoryListView(category: let category, imageName: let imageName):
-                    CategoryListView(viewModel: CategoryListViewModel(container: container), path: path, category: category, imageName: imageName)
+                    CategoryListView(
+                        viewModel: CategoryListViewModel(interactor: CoreInteractor(container: container)),
+                        path: path,
+                        category: category,
+                        imageName: imageName
+                    )
                 }
             }
     }

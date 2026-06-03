@@ -68,27 +68,27 @@ struct CategoryListView: View {
 #Preview("Has data") {
     let container = DevPreview.shared.container
     container.regiser(AvatarManager.self, manager: AvatarManager(service: MockAvatarService()))
-    return CategoryListView(viewModel: CategoryListViewModel(container: container), path: .constant([]))
+    return CategoryListView(viewModel: CategoryListViewModel(interactor: CoreInteractor(container: container)), path: .constant([]))
         .previewEnvironment()
 }
 
 #Preview("No data") {
     let container = DevPreview.shared.container
     container.regiser(AvatarManager.self, manager: AvatarManager(service: MockAvatarService(avatars: [])))
-    return CategoryListView(viewModel: CategoryListViewModel(container: container), path: .constant([]))
+    return CategoryListView(viewModel: CategoryListViewModel(interactor: CoreInteractor(container: container)), path: .constant([]))
         .previewEnvironment()
 }
 
 #Preview("Slow loading") {
     let container = DevPreview.shared.container
     container.regiser(AvatarManager.self, manager: AvatarManager(service: MockAvatarService(delay: 2.0)))
-    return CategoryListView(viewModel: CategoryListViewModel(container: container), path: .constant([]))
+    return CategoryListView(viewModel: CategoryListViewModel(interactor: CoreInteractor(container: container)), path: .constant([]))
         .previewEnvironment()
 }
 
 #Preview("Error loading") {
     let container = DevPreview.shared.container
     container.regiser(AvatarManager.self, manager: AvatarManager(service: MockAvatarService(delay: 2.0, showError: true)))
-    return CategoryListView(viewModel: CategoryListViewModel(container: container), path: .constant([]))
+    return CategoryListView(viewModel: CategoryListViewModel(interactor: CoreInteractor(container: container)), path: .constant([]))
         .previewEnvironment()
 }

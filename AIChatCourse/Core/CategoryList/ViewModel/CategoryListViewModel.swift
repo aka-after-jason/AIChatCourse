@@ -6,35 +6,41 @@
 //
 import SwiftUI
 
+protocol CategoryListViewModelInteractor {
+    func trackEvent(event: LoggableEvent)
+    func getAvatarsForCategory(category: CharacterOption) async throws -> [AvatarModel]
+}
+
+extension CoreInteractor: CategoryListViewModelInteractor {}
+
 @MainActor
 @Observable
 final class CategoryListViewModel {
-    private let avatarManager: AvatarManager
-    private let logManager: LogManager
-    init(container: DependencyContainer) {
-        self.avatarManager = container.resolve(AvatarManager.self)!
-        self.logManager = container.resolve(LogManager.self)!
+    
+    private let interactor: CategoryListViewModelInteractor
+    init(interactor: CategoryListViewModelInteractor) {
+        self.interactor = interactor
     }
-
+    
     private(set) var avatars: [AvatarModel] = [] // AvatarModel.mocks
     var showAlert: AnyAppAlertItem?
     private(set) var isLoading: Bool = true
 
     func loadAvatars(category: CharacterOption) async {
-        logManager.trackEvent(event: Event.loadAvatarsStart)
+        interactor.trackEvent(event: Event.loadAvatarsStart)
         do {
-            avatars = try await avatarManager.getAvatarsForCategory(category: category)
-            logManager.trackEvent(event: Event.loadAvatarsSuccess)
+            avatars = try await interactor.getAvatarsForCategory(category: category)
+            interactor.trackEvent(event: Event.loadAvatarsSuccess)
         } catch {
             showAlert = AnyAppAlertItem(error: error)
-            logManager.trackEvent(event: Event.loadAvatarsFail(error: error))
+            interactor.trackEvent(event: Event.loadAvatarsFail(error: error))
         }
         isLoading = false
     }
 
     func onAvatarPressed(avatar: AvatarModel, path: Binding<[NavigationPathOption]>) {
         path.wrappedValue.append(.chatView(avatarId: avatar.avatarId, chat: nil))
-        logManager.trackEvent(event: Event.avatarPressed(avatar: avatar))
+        interactor.trackEvent(event: Event.avatarPressed(avatar: avatar))
     }
 }
 
