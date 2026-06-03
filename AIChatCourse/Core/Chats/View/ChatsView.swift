@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct ChatsView: View {
+    @Environment(DependencyContainer.self) private var container
     @State var viewModel: ChatsViewModel
     var body: some View {
         NavigationStack(path: $viewModel.path) {
@@ -42,15 +43,10 @@ extension ChatsView {
                     .removeListRowFormatting()
             } else {
                 ForEach(viewModel.chats) { chat in
+                    // ChatRowCellViewBuilder 用了自己的 viewmodel
                     ChatRowCellViewBuilder(
-                        currentUserId: viewModel.authUser?.uid,
-                        chat: chat,
-                        getAvatar: {
-                            try? await viewModel.getAvatar(id: chat.avatarId)
-                        },
-                        getLastChatMessage: {
-                            try? await viewModel.getLastChatMessage(chatId: chat.id)
-                        }
+                        viewModel: ChatRowCellViewModel(interactor: CoreInteractor(container: container)),
+                        chat: chat
                     )
                     .anyButton(.highlight, action: {
                         viewModel.onChatPressed(chat: chat)

@@ -13,8 +13,6 @@ protocol ChatsViewModelInteractor {
     func getCurrentUserId() throws -> String
     func getAllChats(userId: String) async throws -> [ChatModel]
     func getRecentAvatars() throws -> [AvatarModel]
-    func getAvatar(id: String) async throws -> AvatarModel
-    func getLastChatMessage(chatId: String) async throws -> ChatMessageModel?
 }
 
 extension CoreInteractor: ChatsViewModelInteractor {}
@@ -53,22 +51,6 @@ final class ChatsViewModel {
             interactor.trackEvent(event: Event.loadAvatarsFail(error: error))
         }
     }
-
-    // MARK: ChatRowCellViewBuilder Logic
-
-    var authUser: UserAuthInfoModel? {
-        interactor.authUser
-    }
-
-    func getAvatar(id: String) async throws -> AvatarModel {
-        try await interactor.getAvatar(id: id)
-    }
-
-    func getLastChatMessage(chatId: String) async throws -> ChatMessageModel? {
-        try await interactor.getLastChatMessage(chatId: chatId)
-    }
-
-    // End ChatRowCellViewBuilder Logic
 
     func onChatPressed(chat: ChatModel) {
         path.append(.chatView(avatarId: chat.avatarId, chat: chat))
