@@ -1,188 +1,124 @@
 //
-//  ChatView.swift
+//  ChatViewModel.swift
 //  AIChatCourse
 //
-//  Created by Elaine on 2026/3/22.
+//  Created by Elaine on 2026/6/6.
 //
-
 import SwiftUI
 
-struct ChatView: View {
-    @Environment(\.dismiss) private var dismiss
-    @Environment(UserManager.self) private var userManager
-    @Environment(AuthManager.self) private var authManager
-    @Environment(AvatarManager.self) private var avatarManager
-    @Environment(AIManager.self) private var aiManager
-    @Environment(ChatManager.self) private var chatManager
-    @Environment(LogManager.self) private var logManager
-    @Environment(PurchaseManager.self) private var purchaseManager
-    @State private var chatMessages: [ChatMessageModel] = []
-    @State var chat: ChatModel? // public, 让外面传进来
-    @State private var avatar: AvatarModel? // = .mock
-    @State private var currentUser: UserModel?
-    @State private var textfieldText: String = ""
-    @State private var scrollPosition: String?
+protocol ChatViewModelInteractor {
+    var currentUser: UserModel? { get }
+    var authUser: UserAuthInfoModel? { get }
+    var entitlements: [PurchasedEntitlement] { get }
+    func trackEvent(event: LoggableEvent)
+    func streamChatMessages(chatId: String) -> AsyncThrowingStream<[ChatMessageModel], Error>
+    func getCurrentUserId() throws -> String
+    func getChat(userId: String, avatarId: String) async throws -> ChatModel?
+    func getAvatar(id: String) async throws -> AvatarModel
+    func addRecentAvatar(avatar: AvatarModel) async throws
+    func markChatMessageAsSeen(chatId: String, messageId: String, userId: String) async throws
+    func addChatMessage(chatId: String, message: ChatMessageModel) async throws
+    func generateText(chats: [AIChatModel]) async throws -> AIChatModel
+    func createNewChat(chat: ChatModel) async throws
+    func reportChat(chatId: String, userId: String) async throws
+    func deleteChat(chatId: String) async throws
+}
 
-    @State private var alertItem: AnyAppAlertItem?
-    @State private var dialogItem: AnyAppAlertItem?
+extension CoreInteractor: ChatViewModelInteractor {}
 
-    @State private var showProfileModalView: Bool = false
-    @State private var showPaywallViwe: Bool = false
-
-    var avatarId: String = AvatarModel.mock.avatarId
-
-    var body: some View {
-        VStack {
-            scrollviewSection
-            textFieldSection
-        }
-        .navigationTitle(avatar?.name ?? "")
-        .toolbarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button(action: {
-                    onChatSettingsPressed()
-                }, label: {
-                    Image(systemName: "ellipsis")
-                        .foregroundStyle(.accent)
-                        .padding(8)
-                })
-            }
-        }
-        .appearAnalyticsViewModifier(name: "ChatView")
-        .showCustomAlert(type: .confirmationDialog, alertItem: $dialogItem)
-        .showCustomAlert(type: .alert, alertItem: $alertItem)
-        .showModal(showModal: $showProfileModalView) {
-            if let avatar {
-                profileModal(avatar: avatar)
-            }
-        }
-        .sheet(isPresented: $showPaywallViwe, content: {
-            PaywallView()
-        })
-        .task {
-            await loadAvatar()
-        }
-        .task {
-            await loadChat()
-            // 放在下面
-            await listenForChatMessages()
-        }
-        .onAppear {
-            loadCurrentUser()
-        }
+@MainActor
+@Observable
+final class ChatViewModel {
+    private let interactor: ChatViewModelInteractor
+    init(interactor: ChatViewModelInteractor) {
+        self.interactor = interactor
     }
 
-    private func getChatId() throws -> String {
+    private(set) var chatMessages: [ChatMessageModel] = []
+    private(set) var avatar: AvatarModel? // = .mock
+    private(set) var currentUser: UserModel?
+    private(set) var chat: ChatModel?
+
+    var scrollPosition: String?
+    var textfieldText: String = ""
+    var alertItem: AnyAppAlertItem?
+    var dialogItem: AnyAppAlertItem?
+    var showProfileModalView: Bool = false
+    var showPaywallViwe: Bool = false
+
+    var entitlements: [PurchasedEntitlement] {
+        interactor.entitlements
+    }
+
+    func messageIsCurrentUser(message: ChatMessageModel) -> Bool {
+        message.authorId == interactor.authUser?.uid
+    }
+
+    func onViewFirstAppear(chat: ChatModel?) {
+        currentUser = interactor.currentUser
+        self.chat = chat
+    }
+
+    func getChatId() throws -> String {
         guard let chat else {
             throw CustomError.errorMessage(message: "No chat")
         }
         return chat.id
     }
 
-    private func listenForChatMessages() async {
-        logManager.trackEvent(event: Event.loadMessagesStart)
+    func listenForChatMessages() async {
+        interactor.trackEvent(event: Event.loadMessagesStart)
         do {
             let chatId = try getChatId()
-            for try await value in chatManager.streamChatMessages(chatId: chatId) {
+            for try await value in interactor.streamChatMessages(chatId: chatId) {
                 chatMessages = value.sorted(by: { $0.dateCreatedCalculated < $1.dateCreatedCalculated })
                 // 更新 scrollPosition
                 scrollPosition = chatMessages.last?.id
             }
         } catch {
-            logManager.trackEvent(event: Event.loadMessagesFail(error: error))
+            interactor.trackEvent(event: Event.loadMessagesFail(error: error))
         }
     }
 
-    private func loadChat() async {
-        logManager.trackEvent(event: Event.loadChatStart)
+    func loadChat(avatarId: String) async {
+        interactor.trackEvent(event: Event.loadChatStart)
         do {
-            let uid = try authManager.getCurrentUserId()
-            chat = try await chatManager.getChat(userId: uid, avatarId: avatarId)
-            logManager.trackEvent(event: Event.loadChatSuccess(chat: chat))
+            let uid = try interactor.getCurrentUserId()
+            chat = try await interactor.getChat(userId: uid, avatarId: avatarId)
+            interactor.trackEvent(event: Event.loadChatSuccess(chat: chat))
         } catch {
-            logManager.trackEvent(event: Event.loadChatFail(error: error))
+            interactor.trackEvent(event: Event.loadChatFail(error: error))
         }
     }
 
-    private func loadCurrentUser() {
-        currentUser = userManager.currentUser
-    }
-
-    private func loadAvatar() async {
-        logManager.trackEvent(event: Event.loadAvatarStart)
+    func loadAvatar(avatarId: String) async {
+        interactor.trackEvent(event: Event.loadAvatarStart)
         do {
-            let avatar = try await avatarManager.getAvatar(id: avatarId)
+            let avatar = try await interactor.getAvatar(id: avatarId)
             // 添加到 SwiftData
             self.avatar = avatar
-            try? await avatarManager.addRecentAvatar(avatar: avatar)
-            logManager.trackEvent(event: Event.loadAvatarSuccess(avatar: avatar))
+            try? await interactor.addRecentAvatar(avatar: avatar)
+            interactor.trackEvent(event: Event.loadAvatarSuccess(avatar: avatar))
         } catch {
-            logManager.trackEvent(event: Event.loadAvatarFail(error: error))
+            interactor.trackEvent(event: Event.loadAvatarFail(error: error))
         }
     }
 
-    private func profileModal(avatar: AvatarModel) -> some View {
-        ProfileModalView(
-            imageName: avatar.profileImageName,
-            title: avatar.name,
-            subtitle: avatar.characterOption?.rawValue.capitalized,
-            headline: avatar.characterDescription
-        ) {
-            showProfileModalView = false
-        }
-        .padding(40)
-        .transition(.slide)
-    }
-
-    private var scrollviewSection: some View {
-        ScrollView {
-            LazyVStack(spacing: 24) {
-                ForEach(chatMessages) { message in
-                    // 45 分钟 才显示时间
-                    if messageIsDelayed(message: message) {
-                        timestampView(date: message.dateCreatedCalculated)
-                    }
-                    let isCurrentUser = message.authorId == authManager.authUser?.uid // currentUser?.userId
-                    ChatBubbleViewBuilder(
-                        message: message,
-                        isCurrentUser: isCurrentUser,
-                        currentUserProfileColor: currentUser?.profileColorCalculated ?? .accent,
-                        imageName: avatar?.profileImageName,
-                        onImagePressed: onAvatarImagePressed
-                    )
-                    .onAppear(perform: {
-                        onMessageDidAppear(message: message)
-                    })
-                    .id(message.id)
-                }
-            }
-            .frame(maxWidth: .infinity)
-            .padding(8)
-            .rotationEffect(.degrees(180)) // 将内容反转, 目的是让内容贴近输入框
-        }
-        // 将 scrollview 反转,目的是让内容贴近输入框
-        .rotationEffect(.degrees(180))
-        .scrollPosition(id: $scrollPosition, anchor: .center)
-        // .default 动画 搭配scrollview 绝配
-        .animation(.default, value: chatMessages.count)
-    }
-
-    private func onMessageDidAppear(message: ChatMessageModel) {
+    func onMessageDidAppear(message: ChatMessageModel) {
         Task {
             do {
-                let uid = try authManager.getCurrentUserId()
+                let uid = try interactor.getCurrentUserId()
                 let chatId = try getChatId()
                 guard !message.hasBeenSeenBy(userId: uid) else { return }
-                try await chatManager.markChatMessageAsSeen(chatId: chatId, messageId: message.id, userId: uid)
+                try await interactor.markChatMessageAsSeen(chatId: chatId, messageId: message.id, userId: uid)
             } catch {
-                logManager.trackEvent(event: Event.messageSeenFail(error: error))
+                interactor.trackEvent(event: Event.messageSeenFail(error: error))
             }
         }
     }
 
     /// 大于 45 分钟 返回true
-    private func messageIsDelayed(message: ChatMessageModel) -> Bool {
+    func messageIsDelayed(message: ChatMessageModel) -> Bool {
         let currentMessageDate = message.dateCreatedCalculated
         guard let index = chatMessages.firstIndex(where: { $0.id == message.id }), chatMessages.indices.contains(index - 1) else {
             return false
@@ -194,76 +130,29 @@ struct ChatView: View {
         return timeDiff > threshold
     }
 
-    private func timestampView(date: Date) -> some View {
-        Group {
-            Text(date.formatted(date: .abbreviated, time: .omitted))
-                +
-                Text(" • ")
-                +
-                Text(date.formatted(date: .omitted, time: .shortened))
-        }
-        .foregroundStyle(.secondary)
-        .font(.callout)
-    }
-
-    private var textFieldSection: some View {
-        TextField("Say something...", text: $textfieldText)
-            .keyboardType(.alphabet)
-            .autocorrectionDisabled()
-            .padding(12)
-            .padding(.trailing, 60) // textfield 在发送按钮的左边
-            .overlay(alignment: .trailing, content: {
-                Image(systemName: "arrow.up.circle.fill")
-                    .font(.system(size: 32))
-                    .padding(.trailing, 4)
-                    .foregroundStyle(.accent)
-                    .anyButton {
-                        onSendMessagePressed()
-                    }
-            })
-            .background(
-                ZStack {
-                    // 背景
-                    RoundedRectangle(cornerRadius: 100)
-                        .fill(Color(uiColor: .systemBackground))
-                    // 描边
-                    RoundedRectangle(cornerRadius: 100)
-                        .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                }
-            )
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
-            .background(Color(uiColor: .secondarySystemBackground))
-    }
-}
-
-// MARK: 事件
-
-extension ChatView {
-    private func onSendMessagePressed() {
+    func onSendMessagePressed() {
         let content = textfieldText
-        logManager.trackEvent(event: Event.sendMessageStart(chat: chat, avatar: avatar))
+        interactor.trackEvent(event: Event.sendMessageStart(chat: chat, avatar: avatar))
         Task {
             do {
-                
                 // show paywall if needed
                 // User is NOT premium
                 // Chat has >= 3 messages
-                let isPremium = purchaseManager.entitlements.hasActiveEntitlement
+                let isPremium = interactor.entitlements.hasActiveEntitlement
                 if !isPremium && chatMessages.count >= 3 {
                     showPaywallViwe = true
                     return
                 }
-                
+
                 // get userId
-                let uid = try authManager.getCurrentUserId()
+                let uid = try interactor.getCurrentUserId()
 
                 // validate textField text
                 try TextValidationHelper.checkIfTextIsValid(text: content)
 
                 // if chat is nil, then create a new chat
                 if chat == nil {
-                    chat = try await createNewChat(uid: uid)
+                    chat = try await createNewChat(uid: uid, avatarId: avatar?.avatarId ?? "")
                 }
 
                 // If there is no chat, throw error (should never happen)
@@ -276,9 +165,9 @@ extension ChatView {
                 let newUserMessage = ChatMessageModel.newUserMessage(chatId: chat.id, userId: uid, message: newChatMessage)
 
                 // Upload user chat to the firestore
-                try await chatManager.addChatMessage(chatId: chat.id, message: newUserMessage)
+                try await interactor.addChatMessage(chatId: chat.id, message: newUserMessage)
 
-                logManager.trackEvent(event: Event.sendMessageSent(chat: chat, avatar: avatar, message: newUserMessage))
+                interactor.trackEvent(event: Event.sendMessageSent(chat: chat, avatar: avatar, message: newUserMessage))
 
                 // Clear the textField & scroll to the bottom
                 textfieldText = ""
@@ -293,28 +182,28 @@ extension ChatView {
                     )
                     aiChats.insert(systemMessage, at: 0)
                 }
-                let aiResponse = try await aiManager.generateText(chats: aiChats)
+                let aiResponse = try await interactor.generateText(chats: aiChats)
 
                 // Create AI Chat
-                let newAIMessage = ChatMessageModel.newAIMessage(chatId: chat.id, userId: avatarId, message: aiResponse)
+                let newAIMessage = ChatMessageModel.newAIMessage(chatId: chat.id, userId: avatar?.avatarId ?? "", message: aiResponse)
 
-                logManager.trackEvent(event: Event.sendMessageResponse(chat: chat, avatar: avatar, message: newAIMessage))
+                interactor.trackEvent(event: Event.sendMessageResponse(chat: chat, avatar: avatar, message: newAIMessage))
 
                 // Upload AI chat to the firestore
-                try await chatManager.addChatMessage(chatId: chat.id, message: newAIMessage)
+                try await interactor.addChatMessage(chatId: chat.id, message: newAIMessage)
 
-                logManager.trackEvent(event: Event.sendMessageResponseSent(chat: chat, avatar: avatar, message: newAIMessage))
+                interactor.trackEvent(event: Event.sendMessageResponseSent(chat: chat, avatar: avatar, message: newAIMessage))
             } catch {
                 alertItem = AnyAppAlertItem(error: error)
-                logManager.trackEvent(event: Event.sendMessageFail(error: error))
+                interactor.trackEvent(event: Event.sendMessageFail(error: error))
             }
         }
     }
 
-    private func createNewChat(uid: String) async throws -> ChatModel {
-        logManager.trackEvent(event: Event.createChatStart)
+    func createNewChat(uid: String, avatarId: String) async throws -> ChatModel {
+        interactor.trackEvent(event: Event.createChatStart)
         let newChat = ChatModel.newChat(userId: uid, avatarId: avatarId)
-        try await chatManager.createNewChat(chat: newChat)
+        try await interactor.createNewChat(chat: newChat)
 
         // defer: 在 createNewChat 函数结束调用
         defer {
@@ -326,8 +215,8 @@ extension ChatView {
         return newChat
     }
 
-    private func onChatSettingsPressed() {
-        logManager.trackEvent(event: Event.chatSettingsPressed)
+    func onChatSettingsPressed(onDismiss: @escaping () -> Void) {
+        interactor.trackEvent(event: Event.chatSettingsPressed)
         dialogItem = AnyAppAlertItem(
             title: "",
             subtitle: "What would you like to do?",
@@ -335,10 +224,10 @@ extension ChatView {
                 AnyView(
                     Group {
                         Button("Report User / Chat", role: .destructive) {
-                            onReportChatPressed()
+                            self.onReportChatPressed()
                         }
                         Button("Delete Chat", role: .destructive) {
-                            onDeleteChatPressed()
+                            self.onDeleteChatPressed(onDismiss: onDismiss)
                         }
                     }
                 )
@@ -346,54 +235,54 @@ extension ChatView {
         )
     }
 
-    private func onReportChatPressed() {
-        logManager.trackEvent(event: Event.reportChatStart)
+    func onReportChatPressed() {
+        interactor.trackEvent(event: Event.reportChatStart)
         Task {
             do {
                 let chatId = try getChatId()
-                let uid = try authManager.getCurrentUserId()
-                try await chatManager.reportChat(chatId: chatId, userId: uid)
+                let uid = try interactor.getCurrentUserId()
+                try await interactor.reportChat(chatId: chatId, userId: uid)
                 alertItem = AnyAppAlertItem(
                     title: "👮🏻 Reported 👮🏻",
                     subtitle: "We will review the chat shortly. You may leave the chat at any time. Thanks for bringing this to our attention!"
                 )
-                logManager.trackEvent(event: Event.reportChatSuccess)
+                interactor.trackEvent(event: Event.reportChatSuccess)
             } catch {
                 alertItem = AnyAppAlertItem(
                     title: "Something went wrong",
                     subtitle: "Please check your internet connection and try again."
                 )
-                logManager.trackEvent(event: Event.reportChatFail(error: error))
+                interactor.trackEvent(event: Event.reportChatFail(error: error))
             }
         }
     }
 
-    private func onDeleteChatPressed() {
-        logManager.trackEvent(event: Event.deleteChatStart)
+    func onDeleteChatPressed(onDismiss: @escaping () -> Void) {
+        interactor.trackEvent(event: Event.deleteChatStart)
         Task {
             do {
                 let chatId = try getChatId()
-                try await chatManager.deleteChat(chatId: chatId)
-                dismiss()
-                logManager.trackEvent(event: Event.deleteChatSuccess)
+                try await interactor.deleteChat(chatId: chatId)
+                onDismiss()
+                interactor.trackEvent(event: Event.deleteChatSuccess)
             } catch {
                 print("Failed to delete chat: \(error)")
                 alertItem = AnyAppAlertItem(
                     title: "Something went wrong",
                     subtitle: "Please check your internet connection and try again."
                 )
-                logManager.trackEvent(event: Event.deleteChatFail(error: error))
+                interactor.trackEvent(event: Event.deleteChatFail(error: error))
             }
         }
     }
 
-    private func onAvatarImagePressed() {
+    func onAvatarImagePressed() {
         showProfileModalView = true
-        logManager.trackEvent(event: Event.avatarImagePressed(avatar: avatar))
+        interactor.trackEvent(event: Event.avatarImagePressed(avatar: avatar))
     }
 }
 
-extension ChatView {
+extension ChatViewModel {
     enum Event: LoggableEvent {
         case loadAvatarStart
         case loadAvatarSuccess(avatar: AvatarModel)
@@ -502,12 +391,5 @@ extension ChatView {
                 return .analytic
             }
         }
-    }
-}
-
-#Preview {
-    NavigationStack {
-        ChatView()
-            .previewEnvironment()
     }
 }
