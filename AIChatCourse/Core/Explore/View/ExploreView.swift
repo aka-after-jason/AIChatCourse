@@ -55,7 +55,7 @@ struct ExploreView: View {
                 }
             })
             .sheet(isPresented: $viewModel.showDevSettings, content: {
-                DevSettingsView()
+                DevSettingsView(viewModel: DevSettingsViewModel(interactor: CoreInteractor(container: container)))
             })
             .sheet(isPresented: $viewModel.showCreateAccountView, content: {
                 CreateAccountView(viewModel: CreateAccountViewModel(interactor: CoreInteractor(container: container)))
