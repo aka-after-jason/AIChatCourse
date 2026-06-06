@@ -9,6 +9,7 @@ import SwiftfulUtilities
 import SwiftUI
 
 struct SettingsView: View {
+    @Environment(DependencyContainer.self) private var container
     @Environment(AppState.self) private var appState
     @Environment(\.dismiss) private var dismiss
     @Environment(AuthManager.self) private var authManager
@@ -37,7 +38,7 @@ struct SettingsView: View {
             .sheet(isPresented: $showCreateAccountView, onDismiss: {
                 setAnonymousAccountStatus()
             }, content: {
-                CreateAccountView()
+                CreateAccountView(viewModel: CreateAccountViewModel(interactor: CoreInteractor(container: container)))
                     .presentationDetents([.medium])
             })
             .showCustomAlert(alertItem: $showAlert)

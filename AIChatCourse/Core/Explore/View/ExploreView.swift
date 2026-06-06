@@ -8,7 +8,7 @@ import SwiftUI
 
 struct ExploreView: View {
     @State var viewModel: ExploreViewModel
-
+    @Environment(DependencyContainer.self) private var container
     var body: some View {
         NavigationStack(path: $viewModel.path) {
             List {
@@ -58,7 +58,7 @@ struct ExploreView: View {
                 DevSettingsView()
             })
             .sheet(isPresented: $viewModel.showCreateAccountView, content: {
-                CreateAccountView()
+                CreateAccountView(viewModel: CreateAccountViewModel(interactor: CoreInteractor(container: container)))
                     .presentationDetents([.medium])
             })
             .showModal(showModal: $viewModel.showPushNotificationModal, content: {

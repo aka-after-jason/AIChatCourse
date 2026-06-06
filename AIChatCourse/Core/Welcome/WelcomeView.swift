@@ -10,6 +10,7 @@ import SwiftUI
 struct WelcomeView: View {
     @State var imageName: String = Constants.randomImageUrl
     @State private var showSignIn: Bool = false
+    @Environment(DependencyContainer.self) private var container
     @Environment(AppState.self) private var appState
     @Environment(LogManager.self) private var logManager
     var body: some View {
@@ -29,6 +30,7 @@ struct WelcomeView: View {
         }
         .sheet(isPresented: $showSignIn) {
             CreateAccountView(
+                viewModel: CreateAccountViewModel(interactor: CoreInteractor(container: container)),
                 title: "Sign in",
                 subtitle: "Connect to an existing account.",
                 onDidSignIn: { isNewUser in

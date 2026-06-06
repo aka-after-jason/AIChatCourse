@@ -64,10 +64,6 @@ struct CoreInteractor {
         userManager.currentUser
     }
     
-    func login(auth: UserAuthInfoModel, isNewUser: Bool) async throws {
-        try await userManager.login(auth: auth, isNewUser: isNewUser)
-    }
-    
     func markOnboardingCompleteForCurrentUser(profileColorHex: String) async throws {
         try await userManager.markOnboardingCompleteForCurrentUser(profileColorHex: profileColorHex)
     }
@@ -242,17 +238,23 @@ struct CoreInteractor {
     func purchaseProduct(productId: String) async throws -> [PurchasedEntitlement] {
         try await purchaseManager.purchaseProduct(productId: productId)
     }
-    
-    @discardableResult
-    func logIn(userId: String, attributes: PurchaseProfileAttributes? = nil) async throws -> [PurchasedEntitlement] {
-        try await purchaseManager.logIn(userId: userId, attributes: attributes)
-    }
-    
+        
     func updateProfileAttributes(attributes: PurchaseProfileAttributes) async throws {
         try await purchaseManager.updateProfileAttributes(attributes: attributes)
     }
     
     // MARK: SHARED 因为 manager 里面有同名的方法, 这里都放在一起
+    
+    /// 用户登录和订阅登录放到了一起
+    func login(user: UserAuthInfoModel, isNewUser: Bool) async throws {
+        try await userManager.login(auth: user, isNewUser: isNewUser)
+        try await purchaseManager.logIn(userId: user.uid, attributes: PurchaseProfileAttributes(
+            email: user.email,
+            firebaseAppInstanceID: FirebaseAnalyticsService.appInstanceID,
+            mixpanelDistinctID: MixpanelService.distinctId
+        ))
+    }
+    
     func signOut() async throws {
         try authManager.signOut()
         try await purchaseManager.logOut()
