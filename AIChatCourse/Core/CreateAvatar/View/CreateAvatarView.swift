@@ -133,7 +133,7 @@ extension CreateAvatarView {
 
 #Preview {
     CreateAvatarView(
-        viewModel: CreateAvatarViewModel(container: DevPreview.shared.container)
+        viewModel: CreateAvatarViewModel(interactor: CoreInteractor(container: DevPreview.shared.container))
     )
     .previewEnvironment()
 }

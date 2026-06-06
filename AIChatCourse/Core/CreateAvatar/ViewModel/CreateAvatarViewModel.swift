@@ -7,20 +7,22 @@
 
 import SwiftUI
 
+protocol CreateAvatarViewModelInteractor {
+    func trackEvent(event: LoggableEvent)
+    func generateImage(prompt: String) async throws -> UIImage
+    func getCurrentUserId() throws -> String
+    func createAvatar(avatar: AvatarModel, image: UIImage) async throws
+}
+
+extension CoreInteractor: CreateAvatarViewModelInteractor {}
+
 @Observable
 @MainActor
 final class CreateAvatarViewModel {
-    // 注入 managers
-    private let aiManager: AIManager
-    private let authManager: AuthManager
-    private let avatarManager: AvatarManager
-    private let logManager: LogManager
     
-    init(container: DependencyContainer) {
-        self.aiManager = container.resolve(AIManager.self)!
-        self.authManager = container.resolve(AuthManager.self)!
-        self.avatarManager = container.resolve(AvatarManager.self)!
-        self.logManager = container.resolve(LogManager.self)!
+    private let interactor: CreateAvatarViewModelInteractor
+    init (interactor: CreateAvatarViewModelInteractor) {
+        self.interactor = interactor
     }
 
     private(set) var isGenerating: Bool = false
@@ -34,12 +36,12 @@ final class CreateAvatarViewModel {
     var showAlert: AnyAppAlertItem?
 
     func onBackButtonPressed(onDismiss: () -> Void) {
-        logManager.trackEvent(event: Event.backButtonPressed)
+        interactor.trackEvent(event: Event.backButtonPressed)
         onDismiss()
     }
 
     func onGenerateImagePressed() {
-        logManager.trackEvent(event: Event.generateImageStart)
+        interactor.trackEvent(event: Event.generateImageStart)
         isGenerating = true
         Task {
             do {
@@ -48,33 +50,33 @@ final class CreateAvatarViewModel {
                     characterAction: characterAction,
                     characterLocation: characterLocation
                 )
-                generatedImage = try await aiManager.generateImage(prompt: avatarDescriptionBuilder.characterDescription)
-                logManager.trackEvent(event: Event.generateImageSuccess(avatarDescriptionBuilder: avatarDescriptionBuilder))
+                generatedImage = try await interactor.generateImage(prompt: avatarDescriptionBuilder.characterDescription)
+                interactor.trackEvent(event: Event.generateImageSuccess(avatarDescriptionBuilder: avatarDescriptionBuilder))
             } catch {
-                logManager.trackEvent(event: Event.generateImageFail(error: error))
+                interactor.trackEvent(event: Event.generateImageFail(error: error))
             }
             isGenerating = false
         }
     }
 
     func onSavePressed(onDismiss: @escaping () -> Void) {
-        logManager.trackEvent(event: Event.saveAvatarStart)
+        interactor.trackEvent(event: Event.saveAvatarStart)
         guard let generatedImage else { return }
         isSvaing = true
         Task {
             do {
                 try TextValidationHelper.checkIfTextIsValid(text: avatarName, minimumCharacterCount: 3)
-                let uid = try authManager.getCurrentUserId()
+                let uid = try interactor.getCurrentUserId()
                 let newAvatar = AvatarModel.newAvatar(name: avatarName, option: characterOption, action: characterAction, location: characterLocation, authorId: uid)
 
                 // UPLOAD!
-                try await avatarManager.createAvatar(avatar: newAvatar, image: generatedImage)
-                logManager.trackEvent(event: Event.saveAvatarSuccess(avatar: newAvatar))
+                try await interactor.createAvatar(avatar: newAvatar, image: generatedImage)
+                interactor.trackEvent(event: Event.saveAvatarSuccess(avatar: newAvatar))
                 // dismiss screen
                 onDismiss()
             } catch {
                 showAlert = AnyAppAlertItem(error: error)
-                logManager.trackEvent(event: Event.saveAvatarFail(error: error))
+                interactor.trackEvent(event: Event.saveAvatarFail(error: error))
             }
             isSvaing = false
         }
