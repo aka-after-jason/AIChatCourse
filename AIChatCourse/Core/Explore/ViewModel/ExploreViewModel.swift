@@ -34,7 +34,7 @@ final class ExploreViewModel {
     private(set) var isLoadingFeatured: Bool = true
     private(set) var isLoadingPopular: Bool = true
 
-    var path: [NavigationPathOption] = []
+    var path: [NavTabbarPathOption] = []
     var showDevSettings: Bool = false
     var showNotificationButton: Bool = false
     var showPushNotificationModal: Bool = false

@@ -17,7 +17,7 @@ struct ProfileView: View {
                 myAvatarsSection
             }
             .navigationTitle("Profile")
-            .customNavigationDestinationForCoreModule(path: $viewModel.path)
+            .customNavDestiForTabbarModule(path: $viewModel.path)
             .appearAnalyticsViewModifier(name: "ProfileView")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {

@@ -86,7 +86,7 @@ final class ProfileViewModel {
     var showAlert: AnyAppAlertItem?
     var showCreateAvatarView: Bool = false
     var showSettingsView: Bool = false
-    var path: [NavigationPathOption] = []
+    var path: [NavTabbarPathOption] = []
 
     func loadData() async {
         currentUser = interactor.currentUser

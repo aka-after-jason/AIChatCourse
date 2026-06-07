@@ -20,7 +20,7 @@ struct ChatsView: View {
             }
             .navigationTitle("Chats")
             .appearAnalyticsViewModifier(name: "ChatsView")
-            .customNavigationDestinationForCoreModule(path: $viewModel.path)
+            .customNavDestiForTabbarModule(path: $viewModel.path)
             .task {
                 await viewModel.loadChats()
             }

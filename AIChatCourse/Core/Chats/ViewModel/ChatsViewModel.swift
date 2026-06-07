@@ -27,7 +27,7 @@ final class ChatsViewModel {
 
     private(set) var chats: [ChatModel] = []
     private(set) var recentAvatars: [AvatarModel] = []
-    var path: [NavigationPathOption] = []
+    var path: [NavTabbarPathOption] = []
 
     func loadChats() async {
         interactor.trackEvent(event: Event.loadChatsStart)

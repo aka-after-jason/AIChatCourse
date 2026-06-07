@@ -10,6 +10,7 @@ import SwiftUI
 struct OnboardingColorView: View {
     @Environment(DependencyContainer.self) private var container
     @State var viewModel: OnboardingColorViewModel
+    @Binding var path: [NavOnboardingPathOption]
     var body: some View {
         VStack {
             ScrollView {
@@ -42,15 +43,11 @@ struct OnboardingColorView: View {
 
 extension OnboardingColorView {
     private func ctaButton(selectedColor: Color) -> some View {
-        NavigationLink {
-            OnboardingCompletedView(
-                viewModel: OnboardingCompletedViewModel(interactor: CoreInteractor(container: container)),
-                selectedColor: selectedColor
-            )
-        } label: {
-            Text("Continue")
-                .callToActionButton()
-        }
+        Text("Continue")
+            .callToActionButton()
+            .anyButton(.press, action: {
+                viewModel.onContinueButtonPressed(path: $path)
+            })
     }
 
     private var colorGrid: some View {
@@ -84,7 +81,10 @@ extension OnboardingColorView {
 
 #Preview {
     NavigationStack {
-        OnboardingColorView(viewModel: OnboardingColorViewModel(interactor: CoreInteractor(container: DevPreview.shared.container)))
+        OnboardingColorView(
+            viewModel: OnboardingColorViewModel(interactor: CoreInteractor(container: DevPreview.shared.container)),
+            path: .constant([])
+        )
     }
     .environment(AppState())
     .previewEnvironment()

@@ -10,21 +10,19 @@ import SwiftUI
 struct OnboardingIntroView: View {
     @State var viewModel: OnboardingIntroViewModel
     @Environment(DependencyContainer.self) private var container
+    @Binding var path: [NavOnboardingPathOption]
     var body: some View {
         VStack {
             Text(avatarsAndrealConversations())
                 .frame(maxHeight: .infinity)
-
-            NavigationLink {
-                if viewModel.activeABTestModel.onboardingCommunityTest {
-                    OnboardingCommunityView()
-                } else {
-                    OnboardingColorView(viewModel: OnboardingColorViewModel(interactor: CoreInteractor(container: container)))
-                }
-            } label: {
-                Text("Continue")
-                    .callToActionButton()
-            }
+            
+            Text("Continue")
+                .callToActionButton()
+                .anyButton(.press, action: {
+                    viewModel.onContinueButtonPressed(path: $path)
+                })
+                .accessibilityIdentifier("ContinueButton")
+            
         }
         .toolbar(.hidden, for: .navigationBar)
         .padding(24)
@@ -48,7 +46,7 @@ struct OnboardingIntroView: View {
 
 #Preview("Original") {
     NavigationStack {
-        OnboardingIntroView(viewModel: OnboardingIntroViewModel(interactor: CoreInteractor(container: DevPreview.shared.container)))
+        OnboardingIntroView(viewModel: OnboardingIntroViewModel(interactor: CoreInteractor(container: DevPreview.shared.container)), path: .constant([]))
     }
     .previewEnvironment()
 }
@@ -57,7 +55,10 @@ struct OnboardingIntroView: View {
     let container = DevPreview.shared.container
     container.regiser(ABTestManager.self, manager: ABTestManager(service: MockABTestService(onboardingCommunityTest: true)))
     return NavigationStack {
-        OnboardingIntroView(viewModel: OnboardingIntroViewModel(interactor: CoreInteractor(container: container)))
+        OnboardingIntroView(
+            viewModel: OnboardingIntroViewModel(interactor: CoreInteractor(container: container)),
+            path: .constant([])
+        )
     }
     .previewEnvironment()
 }

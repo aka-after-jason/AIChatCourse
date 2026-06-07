@@ -20,8 +20,13 @@ final class WelcomeViewModel {
         self.interactor = interactor
     }
 
+    var path: [NavOnboardingPathOption] = []
     var showSignIn: Bool = false
     private(set) var imageName: String = Constants.randomImageUrl
+    
+    func onGetStartedPressed() {
+        path.append(.introView)
+    }
 
     func onSignInPressed() {
         interactor.trackEvent(event: Event.signInPressed)

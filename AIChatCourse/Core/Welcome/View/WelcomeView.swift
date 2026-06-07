@@ -12,7 +12,7 @@ struct WelcomeView: View {
     @Environment(DependencyContainer.self) private var container
     @Environment(AppState.self) private var appState
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $viewModel.path) {
             VStack(spacing: 8) {
                 ImageLoaderView(urlString: viewModel.imageName)
                     .ignoresSafeArea()
@@ -25,6 +25,7 @@ struct WelcomeView: View {
 
                 policyLinks
             }
+            .customNavDestiForOnboardingModule(path: $viewModel.path)
         }
         .sheet(isPresented: $viewModel.showSignIn) {
             CreateAccountView(
@@ -60,12 +61,15 @@ extension WelcomeView {
 
     private var ctaButtons: some View {
         VStack(spacing: 8) {
-            NavigationLink {
-                OnboardingIntroView(viewModel: OnboardingIntroViewModel(interactor: CoreInteractor(container: container)))
-            } label: {
-                Text("Get Started")
-                    .callToActionButton()
-            }
+            Text("Get Started")
+                .callToActionButton()
+                .lineLimit(1)
+                .minimumScaleFactor(0.5)
+                .anyButton(.press, action: {
+                    viewModel.onGetStartedPressed()
+                })
+                .accessibilityIdentifier("StartButton")
+                .frame(maxWidth: 500)
 
             Text("Already have an account? Sign in!")
                 .underline()

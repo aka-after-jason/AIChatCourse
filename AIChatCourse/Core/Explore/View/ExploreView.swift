@@ -64,7 +64,7 @@ struct ExploreView: View {
             .showModal(showModal: $viewModel.showPushNotificationModal, content: {
                 pushNotificationModal
             })
-            .customNavigationDestinationForCoreModule(path: $viewModel.path)
+            .customNavDestiForTabbarModule(path: $viewModel.path)
             .task {
                 await viewModel.loadFeaturedAvatars() // 没有先后顺序
             }

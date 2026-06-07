@@ -8,24 +8,25 @@
 import SwiftUI
 
 struct OnboardingCommunityView: View {
+    @State var viewModel: OnboardingCommunityViewModel
     @Environment(DependencyContainer.self) private var container
+    @Binding var path: [NavOnboardingPathOption]
     var body: some View {
         VStack {
             VStack(spacing: 30) {
                 ImageLoaderView()
                     .frame(width: 150, height: 150)
                     .clipShape(Circle())
-                
+
                 Text(avatarsAndrealConversations())
             }
             .frame(maxHeight: .infinity)
-
-            NavigationLink {
-                OnboardingColorView(viewModel: OnboardingColorViewModel(interactor: CoreInteractor(container: container)))
-            } label: {
-                Text("Continue")
-                    .callToActionButton()
-            }
+            
+            Text("Continue")
+                .callToActionButton()
+                .anyButton(.press, action: {
+                    viewModel.onContinueButtonPressed(path: $path)
+                })
         }
         .toolbar(.hidden, for: .navigationBar)
         .padding(24)
@@ -44,6 +45,9 @@ struct OnboardingCommunityView: View {
 }
 
 #Preview {
-    OnboardingCommunityView()
+    OnboardingCommunityView(
+        viewModel: OnboardingCommunityViewModel(interactor: CoreInteractor(container: DevPreview.shared.container)),
+        path: .constant([])
+    )
         .previewEnvironment()
 }

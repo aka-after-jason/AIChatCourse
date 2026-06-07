@@ -23,4 +23,12 @@ final class OnboardingIntroViewModel {
     var activeABTestModel: ActiveABTestModel {
         interactor.activeABTestModel
     }
+    
+    func onContinueButtonPressed(path: Binding<[NavOnboardingPathOption]>) {
+        if activeABTestModel.onboardingCommunityTest {
+            path.wrappedValue.append(.communityView)
+        } else {
+            path.wrappedValue.append(.colorView)
+        }
+    }
 }

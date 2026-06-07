@@ -11,7 +11,7 @@ struct CategoryListView: View {
     @State var viewModel: CategoryListViewModel
 
     // 下面这几个属性保留在 view 里面, 没有放在 viewModel 中
-    @Binding var path: [NavigationPathOption] // 这个是从 ExploreView 传过来的
+    @Binding var path: [NavTabbarPathOption] // 这个是从 ExploreView 传过来的
     var category: CharacterOption = .alien
     var imageName: String = Constants.randomImageUrl
 
@@ -55,7 +55,7 @@ struct CategoryListView: View {
         .appearAnalyticsViewModifier(name: "CategoryListView")
         .ignoresSafeArea()
         .listStyle(.plain)
-        .customNavigationDestinationForCoreModule(path: $path)
+        .customNavDestiForTabbarModule(path: $path)
         .showCustomAlert(alertItem: $viewModel.showAlert)
         .task {
             await viewModel.loadAvatars(category: category)
