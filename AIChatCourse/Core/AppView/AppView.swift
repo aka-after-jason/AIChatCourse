@@ -15,6 +15,7 @@ import SwiftUI
 
 struct AppView: View {
     // 由于使用了 @Observable, 这里需要使用 @State
+    @Environment(DependencyContainer.self) private var container
     @State var appState: AppState = .init()
     @Environment(AuthManager.self) private var authManager
     @Environment(UserManager.self) private var userManager
@@ -41,7 +42,7 @@ struct AppView: View {
                     TabBarView()
                 },
                 onboardingView: {
-                    WelcomeView()
+                    WelcomeView(viewModel: WelcomeViewModel(interactor: CoreInteractor(container: container)))
                 }
             )
             // 由于使用了 @Observable, 这里需要使用 environment,不是 environmentObject
