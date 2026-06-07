@@ -26,7 +26,7 @@ struct ProfileView: View {
             }
         }
         .sheet(isPresented: $viewModel.showSettingsView) {
-            SettingsView()
+            SettingsView(viewModel: SettingsViewModel(interactor: CoreInteractor(container: container)))
         }
         .showCustomAlert(alertItem: $viewModel.showAlert)
         .fullScreenCover(
