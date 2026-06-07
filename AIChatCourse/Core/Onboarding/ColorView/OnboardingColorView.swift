@@ -86,6 +86,5 @@ extension OnboardingColorView {
             path: .constant([])
         )
     }
-    .environment(AppState())
     .previewEnvironment()
 }

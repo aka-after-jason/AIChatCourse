@@ -17,6 +17,7 @@ protocol SettingsViewModelInteractor {
     func removeAuthorIdFromAllUserAvatars(userId: String) async throws
     func deleteAllChatsForUser(userId: String) async throws
     func deleteUserProfile()
+    func updateAppState(showTabBarView: Bool)
 }
 
 extension CoreInteractor: SettingsViewModelInteractor {}
@@ -50,6 +51,7 @@ final class SettingsViewModel {
             do {
                 try await interactor.signOut()
                 await onDismiss()
+                interactor.updateAppState(showTabBarView: false)
                 interactor.trackEvent(event: Event.signOutSuccess)
             } catch {
                 showAlert = AnyAppAlertItem(error: error)
@@ -96,6 +98,7 @@ final class SettingsViewModel {
                 interactor.deleteUserProfile()
                 interactor.trackEvent(event: Event.deleteAccountSuccess)
                 await onDismiss()
+                interactor.updateAppState(showTabBarView: false)
             } catch {
                 showAlert = AnyAppAlertItem(error: error)
                 interactor.trackEvent(event: Event.deleteAccountFail(error: error))

@@ -10,7 +10,6 @@ import SwiftfulUtilities
 struct SettingsView: View {
     @State var viewModel: SettingsViewModel
     @Environment(DependencyContainer.self) private var container
-    @Environment(AppState.self) private var appState
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -41,7 +40,6 @@ struct SettingsView: View {
     func dismissScreen() async {
         dismiss()
         try? await Task.sleep(nanoseconds: 1_000_000_000)
-        appState.updateViewState(showTabBarView: false)
     }
 }
 

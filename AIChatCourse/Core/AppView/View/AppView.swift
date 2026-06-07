@@ -15,7 +15,6 @@ struct AppView: View {
     @State var viewModel: AppViewModel
     // 由于使用了 @Observable, 这里需要使用 @State
     @Environment(DependencyContainer.self) private var container
-    @State var appState: AppState = .init()
     @Environment(\.scenePhase) private var scenePhase // LifeCycle: SwiftUI 使用这个
 
     var body: some View {
@@ -33,7 +32,7 @@ struct AppView: View {
             )
         ) {
             AppViewBuilder(
-                showTabBar: appState.showTabBar,
+                showTabBar: viewModel.showTabBar,
                 tabbarView: {
                     TabBarView()
                 },
@@ -42,7 +41,6 @@ struct AppView: View {
                 }
             )
             // 由于使用了 @Observable, 这里需要使用 environment,不是 environmentObject
-            .environment(appState) // TabBarView 和 WelcomeView 都能访问
             // .environment(<#T##object: (Observable & AnyObject)?##(Observable & AnyObject)?#>) // 用于class, 且遵循了 @Observable
             // .environment(<#T##keyPath: WritableKeyPath<EnvironmentValues, V>##WritableKeyPath<EnvironmentValues, V>#>, <#T##value: V##V#>) // 用于struct
             .task {
@@ -58,7 +56,7 @@ struct AppView: View {
                 await viewModel.showATTPromptIfNeeded()
             }
             // 监听 appState 中的 showTabBar
-            .onChange(of: appState.showTabBar) { _, showTabBar in
+            .onChange(of: viewModel.showTabBar) { _, showTabBar in
                 if !showTabBar {
                     Task { await viewModel.checkUserStatus() }
                 }
@@ -95,9 +93,9 @@ struct AppView: View {
     let container = DevPreview.shared.container
     container.regiser(UserManager.self, manager: UserManager(services: MockUserServices(user: .mock)))
     container.regiser(AuthManager.self, manager: AuthManager(service: MockAuthService(user: .mock(isAnonymous: true))))
+    container.regiser(AppState.self, manager: AppState(showTabBar: true))
     return AppView(
-        viewModel: AppViewModel(interactor: CoreInteractor(container: container)),
-        appState: AppState(showTabBar: true)
+        viewModel: AppViewModel(interactor: CoreInteractor(container: container))
     )
     .previewEnvironment()
 }
@@ -106,6 +104,7 @@ struct AppView: View {
     let container = DevPreview.shared.container
     container.regiser(UserManager.self, manager: UserManager(services: MockUserServices(user: nil)))
     container.regiser(AuthManager.self, manager: AuthManager(service: MockAuthService(user: nil)))
+    container.regiser(AppState.self, manager: AppState(showTabBar: false))
     return AppView(
         viewModel: AppViewModel(interactor: CoreInteractor(container: container))
     )

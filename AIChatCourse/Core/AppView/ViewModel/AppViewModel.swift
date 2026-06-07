@@ -9,6 +9,7 @@ import FirebaseFunctions
 
 protocol AppViewModelInteractor {
     var authUser: UserAuthInfoModel? { get }
+    var showTabBar: Bool { get }
     func trackEvent(event: LoggableEvent)
     func trackEvent(eventName: String, parameters: [String: Any]?, type: CustomLogType)
     func login(user: UserAuthInfoModel, isNewUser: Bool) async throws
@@ -27,6 +28,10 @@ final class AppViewModel {
 
     var authUser: UserAuthInfoModel? {
         interactor.authUser
+    }
+    
+    var showTabBar: Bool {
+        interactor.showTabBar
     }
 
     /// Test
