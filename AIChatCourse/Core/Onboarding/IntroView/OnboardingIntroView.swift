@@ -8,17 +8,18 @@
 import SwiftUI
 
 struct OnboardingIntroView: View {
-    @Environment(ABTestManager.self) private var abtestManager
+    @State var viewModel: OnboardingIntroViewModel
+    @Environment(DependencyContainer.self) private var container
     var body: some View {
         VStack {
             Text(avatarsAndrealConversations())
                 .frame(maxHeight: .infinity)
 
             NavigationLink {
-                if abtestManager.activeABTestModel.onboardingCommunityTest {
+                if viewModel.activeABTestModel.onboardingCommunityTest {
                     OnboardingCommunityView()
                 } else {
-                    OnboardingColorView()
+                    OnboardingColorView(viewModel: OnboardingColorViewModel(interactor: CoreInteractor(container: container)))
                 }
             } label: {
                 Text("Continue")
@@ -47,15 +48,16 @@ struct OnboardingIntroView: View {
 
 #Preview("Original") {
     NavigationStack {
-        OnboardingIntroView()
+        OnboardingIntroView(viewModel: OnboardingIntroViewModel(interactor: CoreInteractor(container: DevPreview.shared.container)))
     }
     .previewEnvironment()
 }
 
 #Preview("OnboardingCommunityTest") {
-    NavigationStack {
-        OnboardingIntroView()
+    let container = DevPreview.shared.container
+    container.regiser(ABTestManager.self, manager: ABTestManager(service: MockABTestService(onboardingCommunityTest: true)))
+    return NavigationStack {
+        OnboardingIntroView(viewModel: OnboardingIntroViewModel(interactor: CoreInteractor(container: container)))
     }
-    .environment(ABTestManager(service: MockABTestService(onboardingCommunityTest: true)))
     .previewEnvironment()
 }

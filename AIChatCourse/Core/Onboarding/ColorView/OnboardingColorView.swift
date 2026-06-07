@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct OnboardingColorView: View {
-    let colors: [Color] = [.red, .green, .orange, .blue, .mint, .purple, .cyan, .teal, .indigo]
-    @State private var selectedColor: Color?
+    @Environment(DependencyContainer.self) private var container
+    @State var viewModel: OnboardingColorViewModel
     var body: some View {
         VStack {
             ScrollView {
@@ -22,7 +22,7 @@ struct OnboardingColorView: View {
                 spacing: 16,
                 content: {
                     ZStack {
-                        if let selectedColor {
+                        if let selectedColor = viewModel.selectedColor {
                             ctaButton(selectedColor: selectedColor)
                                 .transition(AnyTransition.move(edge: .bottom))
                         }
@@ -34,23 +34,19 @@ struct OnboardingColorView: View {
                 }
             )
             .toolbar(.hidden, for: .navigationBar)
-            .animation(.bouncy, value: selectedColor)
+            .animation(.bouncy, value: viewModel.selectedColor)
             .appearAnalyticsViewModifier(name: "OnboardingColorView")
         }
     }
 }
 
-#Preview {
-    NavigationStack {
-        OnboardingColorView()
-    }
-    .environment(AppState())
-}
-
 extension OnboardingColorView {
     private func ctaButton(selectedColor: Color) -> some View {
         NavigationLink {
-            OnboardingCompletedView(selectedColor: selectedColor)
+            OnboardingCompletedView(
+                viewModel: OnboardingCompletedViewModel(interactor: CoreInteractor(container: container)),
+                selectedColor: selectedColor
+            )
         } label: {
             Text("Continue")
                 .callToActionButton()
@@ -66,16 +62,16 @@ extension OnboardingColorView {
             pinnedViews: [.sectionHeaders],
             content: {
                 Section {
-                    ForEach(colors, id: \.self) { color in
+                    ForEach(viewModel.colors, id: \.self) { color in
                         Circle()
                             .fill(.accent)
                             .overlay {
                                 color
                                     .clipShape(Circle())
-                                    .padding(selectedColor == color ? 10 : 0)
+                                    .padding(viewModel.selectedColor == color ? 10 : 0)
                             }
                             .onTapGesture {
-                                selectedColor = color
+                                viewModel.onColorPressed(color: color)
                             }
                     }
                 } header: {
@@ -84,4 +80,12 @@ extension OnboardingColorView {
             }
         )
     }
+}
+
+#Preview {
+    NavigationStack {
+        OnboardingColorView(viewModel: OnboardingColorViewModel(interactor: CoreInteractor(container: DevPreview.shared.container)))
+    }
+    .environment(AppState())
+    .previewEnvironment()
 }
