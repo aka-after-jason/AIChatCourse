@@ -70,7 +70,7 @@ struct AIChatCourseApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     var body: some Scene {
         WindowGroup {
-            AppView()
+            AppView(viewModel: AppViewModel(interactor: CoreInteractor(container: delegate.dependencies.container)))
                 .environment(delegate.dependencies.container)
                 .environment(delegate.dependencies.purchaseManager)
                 .environment(delegate.dependencies.aiManager)
