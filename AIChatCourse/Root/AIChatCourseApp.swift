@@ -61,7 +61,6 @@ struct AIChatCourseApp: App {
         WindowGroup {
             delegate.builder.appView()
             .environment(delegate.dependencies.logManager)
-            .environment(delegate.builder)
         }
     }
 }

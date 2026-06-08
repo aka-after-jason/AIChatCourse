@@ -18,7 +18,8 @@ struct CategoryListDelegate {
 struct CategoryListView: View {
     @State var viewModel: CategoryListViewModel
     let delegate: CategoryListDelegate
-
+    @ViewBuilder var chatView: (ChatViewDelegate) -> AnyView
+    @ViewBuilder var categoryListView: (CategoryListDelegate) -> AnyView
     var body: some View {
         List {
             CategoryCellView(
@@ -59,7 +60,11 @@ struct CategoryListView: View {
         .appearAnalyticsViewModifier(name: "CategoryListView")
         .ignoresSafeArea()
         .listStyle(.plain)
-        .customNavDestiForTabbarModule(path: delegate.path)
+        .customNavDestiForTabbarModule(
+            path: delegate.path,
+            chatView: chatView,
+            categoryListView: categoryListView
+        )
         .showCustomAlert(alertItem: $viewModel.showAlert)
         .task {
             await viewModel.loadAvatars(category: delegate.category)

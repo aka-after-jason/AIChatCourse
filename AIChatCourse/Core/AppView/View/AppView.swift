@@ -12,11 +12,10 @@ import SwiftUI
 // onboarding - signed out
 
 struct AppView: View {
-    @State var viewModel: AppViewModel
-    // 由于使用了 @Observable, 这里需要使用 @State
-    @Environment(CoreBuilder.self) private var builder
     @Environment(\.scenePhase) private var scenePhase // LifeCycle: SwiftUI 使用这个
-
+    @State var viewModel: AppViewModel
+    @ViewBuilder var tabbarView: () -> AnyView
+    @ViewBuilder var onboardingView: () -> AnyView
     var body: some View {
         // RootView 来自 SwiftfulUI 框架
         RootView(
@@ -34,10 +33,10 @@ struct AppView: View {
             AppViewBuilder(
                 showTabBar: viewModel.showTabBar,
                 tabbarView: {
-                    builder.tabbarView()
+                    tabbarView()
                 },
                 onboardingView: {
-                    builder.welcomeView()
+                    onboardingView()
                 }
             )
             // 由于使用了 @Observable, 这里需要使用 environment,不是 environmentObject

@@ -9,7 +9,11 @@ import SwiftUI
 
 struct WelcomeView: View {
     @State var viewModel: WelcomeViewModel
-    @Environment(CoreBuilder.self) private var builder
+    @ViewBuilder var createAccountView: (CreateAccountDelegate) -> AnyView
+    @ViewBuilder var onboardingColorView: (OnboardingColorDelete) -> AnyView
+    @ViewBuilder var onboardingCommunityView: (OnboardingCommunityDelete) -> AnyView
+    @ViewBuilder var onboardingIntroView: (OnboardingIntroDelete) -> AnyView
+    @ViewBuilder var onboardingCompletedView: (OnboardingCompletedDelete) -> AnyView
     var body: some View {
         NavigationStack(path: $viewModel.path) {
             VStack(spacing: 8) {
@@ -24,11 +28,17 @@ struct WelcomeView: View {
 
                 policyLinks
             }
-            .customNavDestiForOnboardingModule(path: $viewModel.path)
+            .customNavDestiForOnboardingModule(
+                path: $viewModel.path,
+                onboardingColorView: onboardingColorView,
+                onboardingCommunityView: onboardingCommunityView,
+                onboardingIntroView: onboardingIntroView,
+                onboardingCompletedView: onboardingCompletedView
+            )
         }
         .sheet(isPresented: $viewModel.showSignIn) {
-            builder.createAccountView(
-                delegate: CreateAccountDelegate(
+            createAccountView(
+                CreateAccountDelegate(
                     title: "Sign in",
                     subtitle: "Connect to an existing account.",
                     onDidSignIn: { isNewUser in

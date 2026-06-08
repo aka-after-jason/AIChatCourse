@@ -8,8 +8,10 @@
 import SwiftUI
 
 struct ChatsView: View {
-    @Environment(CoreBuilder.self) private var builder
     @State var viewModel: ChatsViewModel
+    @ViewBuilder var chatRowCellViewBuilder: (ChatRowCellViewDelegate) -> AnyView
+    @ViewBuilder var chatView: (ChatViewDelegate) -> AnyView
+    @ViewBuilder var categoryListView: (CategoryListDelegate) -> AnyView
     var body: some View {
         NavigationStack(path: $viewModel.path) {
             List {
@@ -20,7 +22,11 @@ struct ChatsView: View {
             }
             .navigationTitle("Chats")
             .appearAnalyticsViewModifier(name: "ChatsView")
-            .customNavDestiForTabbarModule(path: $viewModel.path)
+            .customNavDestiForTabbarModule(
+                path: $viewModel.path,
+                chatView: chatView,
+                categoryListView: categoryListView
+            )
             .task {
                 await viewModel.loadChats()
             }
@@ -44,7 +50,7 @@ extension ChatsView {
             } else {
                 ForEach(viewModel.chats) { chat in
                     // ChatRowCellViewBuilder 用了自己的 viewmodel
-                    builder.chatRowCellViewBuilder(delegate: ChatRowCellViewDelegate(chat: chat))
+                    chatRowCellViewBuilder(ChatRowCellViewDelegate(chat: chat))
                         .anyButton(.highlight, action: {
                             viewModel.onChatPressed(chat: chat)
                         })

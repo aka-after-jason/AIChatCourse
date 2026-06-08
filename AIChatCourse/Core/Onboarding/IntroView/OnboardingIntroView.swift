@@ -13,7 +13,6 @@ struct OnboardingIntroDelete {
 
 struct OnboardingIntroView: View {
     @State var viewModel: OnboardingIntroViewModel
-    @Environment(CoreBuilder.self) private var builder
     let delegate: OnboardingIntroDelete
     var body: some View {
         VStack {

@@ -122,7 +122,6 @@ struct Dependencies {
 extension View {
     func previewEnvironment(isSignedIn: Bool = true) -> some View {
         environment(LogManager(services: []))
-            .environment(CoreBuilder(interactor: CoreInteractor(container: DevPreview.shared.container)))
     }
 }
 

@@ -9,7 +9,10 @@ import SwiftUI
 
 struct ProfileView: View {
     @State var viewModel: ProfileViewModel
-    @Environment(CoreBuilder.self) private var builder
+    @ViewBuilder var settingsView: () -> AnyView
+    @ViewBuilder var createAvatarView: () -> AnyView
+    @ViewBuilder var chatView: (ChatViewDelegate) -> AnyView
+    @ViewBuilder var categoryListView: (CategoryListDelegate) -> AnyView
     var body: some View {
         NavigationStack(path: $viewModel.path) {
             List {
@@ -17,7 +20,11 @@ struct ProfileView: View {
                 myAvatarsSection
             }
             .navigationTitle("Profile")
-            .customNavDestiForTabbarModule(path: $viewModel.path)
+            .customNavDestiForTabbarModule(
+                path: $viewModel.path,
+                chatView: chatView,
+                categoryListView: categoryListView
+            )
             .appearAnalyticsViewModifier(name: "ProfileView")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -26,7 +33,7 @@ struct ProfileView: View {
             }
         }
         .sheet(isPresented: $viewModel.showSettingsView) {
-            builder.settingsView()
+            settingsView()
         }
         .showCustomAlert(alertItem: $viewModel.showAlert)
         .fullScreenCover(
@@ -37,7 +44,7 @@ struct ProfileView: View {
                 }
             },
             content: {
-                builder.createAvatarView()
+                createAvatarView()
             }
         )
         .task {

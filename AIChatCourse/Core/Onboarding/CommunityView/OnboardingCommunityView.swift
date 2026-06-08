@@ -13,7 +13,6 @@ struct OnboardingCommunityDelete {
 
 struct OnboardingCommunityView: View {
     @State var viewModel: OnboardingCommunityViewModel
-    @Environment(CoreBuilder.self) private var builder
     let delegate: OnboardingCommunityDelete
     var body: some View {
         VStack {

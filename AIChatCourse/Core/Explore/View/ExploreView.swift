@@ -6,9 +6,16 @@
 //
 import SwiftUI
 
+/// struct ExploreView<DevSettingsView: View, CreateAccountView: View>: View {
 struct ExploreView: View {
+    // @ViewBuilder var devSettingsView: () -> DevSettingsView
+    // @ViewBuilder var createAccountView: () -> CreateAccountView
+
     @State var viewModel: ExploreViewModel
-    @Environment(CoreBuilder.self) private var builder
+    @ViewBuilder var devSettingsView: () -> AnyView // 可以使用泛型,也可以使用 AnyView
+    @ViewBuilder var createAccountView: () -> AnyView
+    @ViewBuilder var chatView: (ChatViewDelegate) -> AnyView
+    @ViewBuilder var categoryListView: (CategoryListDelegate) -> AnyView
     var body: some View {
         NavigationStack(path: $viewModel.path) {
             List {
@@ -55,16 +62,20 @@ struct ExploreView: View {
                 }
             })
             .sheet(isPresented: $viewModel.showDevSettings, content: {
-                builder.devSettingsView()
+                devSettingsView()
             })
             .sheet(isPresented: $viewModel.showCreateAccountView, content: {
-                builder.createAccountView()
+                createAccountView()
                     .presentationDetents([.medium])
             })
             .showModal(showModal: $viewModel.showPushNotificationModal, content: {
                 pushNotificationModal
             })
-            .customNavDestiForTabbarModule(path: $viewModel.path)
+            .customNavDestiForTabbarModule(
+                path: $viewModel.path,
+                chatView: chatView,
+                categoryListView: categoryListView
+            )
             .task {
                 await viewModel.loadFeaturedAvatars() // 没有先后顺序
             }
@@ -214,6 +225,27 @@ extension ExploreView {
 }
 
 // MARK: Previews
+
+#Preview("Without Builder") {
+    let container = DevPreview.shared.container
+    container.regiser(AvatarManager.self, manager: AvatarManager(service: MockAvatarService()))
+    return ExploreView(
+        viewModel: ExploreViewModel(interactor: CoreInteractor(container: container)),
+        devSettingsView: {
+            Color.red.any()
+        },
+        createAccountView: {
+            Color.green.any()
+        },
+        chatView: { _ in
+            Color.blue.any()
+        },
+        categoryListView: { _ in
+            Color.orange.any()
+        }
+    )
+    .previewEnvironment()
+}
 
 #Preview("Has data") {
     let container = DevPreview.shared.container

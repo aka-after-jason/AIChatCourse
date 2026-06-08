@@ -4,8 +4,8 @@
 //
 //  Created by Elaine on 2026/6/7.
 //
-import SwiftUI
 import Foundation
+import SwiftUI
 
 enum NavOnboardingPathOption: Hashable {
     case colorView
@@ -15,27 +15,44 @@ enum NavOnboardingPathOption: Hashable {
 }
 
 struct NavDestiForOnboardingModuleViewModifier: ViewModifier {
-    @Environment(CoreBuilder.self) private var builder
     let path: Binding<[NavOnboardingPathOption]>
+    @ViewBuilder var onboardingColorView: (OnboardingColorDelete) -> AnyView
+    @ViewBuilder var onboardingCommunityView: (OnboardingCommunityDelete) -> AnyView
+    @ViewBuilder var onboardingIntroView: (OnboardingIntroDelete) -> AnyView
+    @ViewBuilder var onboardingCompletedView: (OnboardingCompletedDelete) -> AnyView
     func body(content: Content) -> some View {
         content
             .navigationDestination(for: NavOnboardingPathOption.self) { newValue in
                 switch newValue {
                 case .colorView:
-                    builder.onboardingColorView(delegate: OnboardingColorDelete(path: path))
+                    onboardingColorView(OnboardingColorDelete(path: path))
                 case .communityView:
-                    builder.onboardingCommunityView(delegate: OnboardingCommunityDelete(path: path))
+                    onboardingCommunityView(OnboardingCommunityDelete(path: path))
                 case .introView:
-                    builder.onboardingIntroView(delegate: OnboardingIntroDelete(path: path))
+                    onboardingIntroView(OnboardingIntroDelete(path: path))
                 case .completedView(selectedColor: let selectedColor):
-                    builder.onboardingCompletedView(delegate: OnboardingCompletedDelete(selectedColor: selectedColor))
+                    onboardingCompletedView(OnboardingCompletedDelete(selectedColor: selectedColor))
                 }
             }
     }
 }
 
 extension View {
-    func customNavDestiForOnboardingModule(path: Binding<[NavOnboardingPathOption]>) -> some View {
-        modifier(NavDestiForOnboardingModuleViewModifier(path: path))
+    func customNavDestiForOnboardingModule(
+        path: Binding<[NavOnboardingPathOption]>,
+        @ViewBuilder onboardingColorView: @escaping (OnboardingColorDelete) -> AnyView,
+        @ViewBuilder onboardingCommunityView: @escaping (OnboardingCommunityDelete) -> AnyView,
+        @ViewBuilder onboardingIntroView: @escaping (OnboardingIntroDelete) -> AnyView,
+        @ViewBuilder onboardingCompletedView: @escaping (OnboardingCompletedDelete) -> AnyView
+    ) -> some View {
+        modifier(
+            NavDestiForOnboardingModuleViewModifier(
+                path: path,
+                onboardingColorView: onboardingColorView,
+                onboardingCommunityView: onboardingCommunityView,
+                onboardingIntroView: onboardingIntroView,
+                onboardingCompletedView: onboardingCompletedView
+            )
+        )
     }
 }
