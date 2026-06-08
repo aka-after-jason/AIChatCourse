@@ -9,7 +9,7 @@ import SwiftUI
 
 struct WelcomeView: View {
     @State var viewModel: WelcomeViewModel
-    @Environment(DependencyContainer.self) private var container
+    @Environment(CoreBuilder.self) private var builder
     var body: some View {
         NavigationStack(path: $viewModel.path) {
             VStack(spacing: 8) {
@@ -27,13 +27,14 @@ struct WelcomeView: View {
             .customNavDestiForOnboardingModule(path: $viewModel.path)
         }
         .sheet(isPresented: $viewModel.showSignIn) {
-            CreateAccountView(
-                viewModel: CreateAccountViewModel(interactor: CoreInteractor(container: container)),
-                title: "Sign in",
-                subtitle: "Connect to an existing account.",
-                onDidSignIn: { isNewUser in
-                    viewModel.handleDidSignIn(isNewUser: isNewUser)
-                }
+            builder.createAccountView(
+                delegate: CreateAccountDelegate(
+                    title: "Sign in",
+                    subtitle: "Connect to an existing account.",
+                    onDidSignIn: { isNewUser in
+                        viewModel.handleDidSignIn(isNewUser: isNewUser)
+                    }
+                )
             )
             .presentationDetents([.medium])
         }

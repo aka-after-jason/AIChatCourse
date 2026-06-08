@@ -8,7 +8,7 @@ import SwiftUI
 
 struct ExploreView: View {
     @State var viewModel: ExploreViewModel
-    @Environment(DependencyContainer.self) private var container
+    @Environment(CoreBuilder.self) private var builder
     var body: some View {
         NavigationStack(path: $viewModel.path) {
             List {
@@ -55,10 +55,10 @@ struct ExploreView: View {
                 }
             })
             .sheet(isPresented: $viewModel.showDevSettings, content: {
-                DevSettingsView(viewModel: DevSettingsViewModel(interactor: CoreInteractor(container: container)))
+                builder.devSettingsView()
             })
             .sheet(isPresented: $viewModel.showCreateAccountView, content: {
-                CreateAccountView(viewModel: CreateAccountViewModel(interactor: CoreInteractor(container: container)))
+                builder.createAccountView()
                     .presentationDetents([.medium])
             })
             .showModal(showModal: $viewModel.showPushNotificationModal, content: {
@@ -218,21 +218,24 @@ extension ExploreView {
 #Preview("Has data") {
     let container = DevPreview.shared.container
     container.regiser(AvatarManager.self, manager: AvatarManager(service: MockAvatarService()))
-    return ExploreView(viewModel: ExploreViewModel(interactor: CoreInteractor(container: container)))
+    let builder = CoreBuilder(interactor: CoreInteractor(container: container))
+    return builder.exploreView()
         .previewEnvironment()
 }
 
 #Preview("No data") {
     let container = DevPreview.shared.container
     container.regiser(AvatarManager.self, manager: AvatarManager(service: MockAvatarService(avatars: [], delay: 1.0)))
-    return ExploreView(viewModel: ExploreViewModel(interactor: CoreInteractor(container: container)))
+    let builder = CoreBuilder(interactor: CoreInteractor(container: container))
+    return builder.exploreView()
         .previewEnvironment()
 }
 
 #Preview("Slow loading") {
     let container = DevPreview.shared.container
     container.regiser(AvatarManager.self, manager: AvatarManager(service: MockAvatarService()))
-    return ExploreView(viewModel: ExploreViewModel(interactor: CoreInteractor(container: container)))
+    let builder = CoreBuilder(interactor: CoreInteractor(container: container))
+    return builder.exploreView()
         .previewEnvironment()
 }
 
@@ -241,27 +244,31 @@ extension ExploreView {
     container.regiser(AvatarManager.self, manager: AvatarManager(service: MockAvatarService()))
     container.regiser(AuthManager.self, manager: AuthManager(service: MockAuthService(user: .mock(isAnonymous: true))))
     container.regiser(ABTestManager.self, manager: ABTestManager(service: MockABTestService(createAccountTest: true)))
-    return ExploreView(viewModel: ExploreViewModel(interactor: CoreInteractor(container: container)))
+    let builder = CoreBuilder(interactor: CoreInteractor(container: container))
+    return builder.exploreView()
         .previewEnvironment()
 }
 
 #Preview("CategoryRowTest: original") {
     let container = DevPreview.shared.container
     container.regiser(ABTestManager.self, manager: ABTestManager(service: MockABTestService(categoryRowTest: .original)))
-    return ExploreView(viewModel: ExploreViewModel(interactor: CoreInteractor(container: container)))
+    let builder = CoreBuilder(interactor: CoreInteractor(container: container))
+    return builder.exploreView()
         .previewEnvironment()
 }
 
 #Preview("CategoryRowTest: top") {
     let container = DevPreview.shared.container
     container.regiser(ABTestManager.self, manager: ABTestManager(service: MockABTestService(categoryRowTest: .top)))
-    return ExploreView(viewModel: ExploreViewModel(interactor: CoreInteractor(container: container)))
+    let builder = CoreBuilder(interactor: CoreInteractor(container: container))
+    return builder.exploreView()
         .previewEnvironment()
 }
 
 #Preview("CategoryRowTest: hidden") {
     let container = DevPreview.shared.container
     container.regiser(ABTestManager.self, manager: ABTestManager(service: MockABTestService(categoryRowTest: .hidden)))
-    return ExploreView(viewModel: ExploreViewModel(interactor: CoreInteractor(container: container)))
+    let builder = CoreBuilder(interactor: CoreInteractor(container: container))
+    return builder.exploreView()
         .previewEnvironment()
 }

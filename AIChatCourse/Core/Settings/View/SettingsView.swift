@@ -11,6 +11,7 @@ struct SettingsView: View {
     @State var viewModel: SettingsViewModel
     @Environment(DependencyContainer.self) private var container
     @Environment(\.dismiss) private var dismiss
+    @Environment(CoreBuilder.self) private var builder
 
     var body: some View {
         NavigationStack {
@@ -27,7 +28,7 @@ struct SettingsView: View {
             .sheet(isPresented: $viewModel.showCreateAccountView, onDismiss: {
                 viewModel.setAnonymousAccountStatus()
             }, content: {
-                CreateAccountView(viewModel: CreateAccountViewModel(interactor: CoreInteractor(container: container)))
+                builder.createAccountView()
                     .presentationDetents([.medium])
             })
             .showCustomAlert(alertItem: $viewModel.showAlert)

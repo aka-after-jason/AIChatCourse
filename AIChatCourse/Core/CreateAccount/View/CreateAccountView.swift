@@ -8,20 +8,24 @@
 import AuthenticationServices
 import SwiftUI
 
-struct CreateAccountView: View {
-    @State var viewModel: CreateAccountViewModel
-    @Environment(\.dismiss) private var dismiss
+struct CreateAccountDelegate {
     var title: String = "Create Account?"
     var subtitle: String = "Don't lose your data! Connect to an SSO provider to save your account."
     var onDidSignIn: ((_ isNewUser: Bool) -> Void)?
+}
+
+struct CreateAccountView: View {
+    @State var viewModel: CreateAccountViewModel
+    @Environment(\.dismiss) private var dismiss
+    var delegate: CreateAccountDelegate = CreateAccountDelegate()
     var body: some View {
         VStack(spacing: 24) {
             VStack(alignment: .leading, spacing: 10) {
-                Text(title)
+                Text(delegate.title)
                     .font(.largeTitle)
                     .fontWeight(.semibold)
 
-                Text(subtitle)
+                Text(delegate.subtitle)
                     .font(.body)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -34,7 +38,7 @@ struct CreateAccountView: View {
             .frame(height: 50)
             .anyButton(.press, action: {
                 viewModel.onSignInApplePressed(onDidSignInSuccessfully: {isNewUser in
-                    onDidSignIn?(isNewUser)
+                    delegate.onDidSignIn?(isNewUser)
                     dismiss()
                 })
             })

@@ -123,6 +123,7 @@ extension View {
     func previewEnvironment(isSignedIn: Bool = true) -> some View {
         environment(DevPreview.shared.container)
             .environment(LogManager(services: []))
+            .environment(CoreBuilder(interactor: CoreInteractor(container: DevPreview.shared.container)))
     }
 }
 
