@@ -52,6 +52,7 @@ struct CreateAccountView: View {
 }
 
 #Preview {
-    CreateAccountView(viewModel: CreateAccountViewModel(interactor: CoreInteractor(container: DevPreview.shared.container)))
+    let builder = CoreBuilder(interactor: CoreInteractor(container: DevPreview.shared.container))
+    return builder.createAccountView()
         .previewEnvironment()
 }

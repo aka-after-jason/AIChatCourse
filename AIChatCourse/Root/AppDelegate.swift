@@ -7,6 +7,31 @@
 import SwiftUI
 import FirebaseCore
 
+class AppDelegate: NSObject, UIApplicationDelegate {
+    var dependencies: Dependencies!
+    var builder: CoreBuilder!
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
+        let config: BuildConfiguration
+
+        #if MOCK
+        config = .mock(isSignedIn: true) // isSignedIn: default by true
+        #elseif DEV
+        config = .dev
+        #else
+        config = .prod
+        #endif
+
+        config.configure() // 先执行 FirebaseApp.configure()
+        dependencies = Dependencies(config: config)
+        builder = CoreBuilder(interactor: CoreInteractor(container: dependencies.container))
+
+        // JPush
+        // JPushManager.shared.configure(launchOptions: launchOptions)
+
+        return true
+    }
+}
+
 enum BuildConfiguration {
     case mock(isSignedIn: Bool)
     case dev
@@ -28,29 +53,6 @@ enum BuildConfiguration {
             let options = FirebaseOptions(contentsOfFile: plist)!
             FirebaseApp.configure(options: options)
         }
-    }
-}
-
-class AppDelegate: NSObject, UIApplicationDelegate {
-    var dependencies: Dependencies!
-    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
-        let config: BuildConfiguration
-
-        #if MOCK
-        config = .mock(isSignedIn: true) // isSignedIn: default by true
-        #elseif DEV
-        config = .dev
-        #else
-        config = .prod
-        #endif
-
-        config.configure() // 先执行 FirebaseApp.configure()
-        dependencies = Dependencies(config: config)
-
-        // JPush
-        // JPushManager.shared.configure(launchOptions: launchOptions)
-
-        return true
     }
 }
 

@@ -9,21 +9,21 @@ import SwiftUI
 
 struct TabBarView: View {
     
-    @Environment(DependencyContainer.self) private var container
+    @Environment(CoreBuilder.self) private var builder
     
     var body: some View {
         TabView {
-            ExploreView(viewModel: ExploreViewModel(interactor: CoreInteractor(container: container)))
+            builder.exploreView()
                 .tabItem {
                     Label("Explore", systemImage: "eyes")
                 }
 
-            ChatsView(viewModel: ChatsViewModel(interactor: CoreInteractor(container: container)))
+            builder.chatsView()
                 .tabItem {
                     Label("Chats", systemImage: "bubble.left.and.bubble.right")
                 }
 
-            ProfileView(viewModel: ProfileViewModel(interactor: CoreInteractor(container: container)))
+            builder.profileView()
                 .tabItem {
                     Label("Profile", systemImage: "person.fill")
                 }

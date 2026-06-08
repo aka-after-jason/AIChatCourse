@@ -93,6 +93,7 @@ extension WelcomeView {
 }
 
 #Preview {
-    WelcomeView(viewModel: WelcomeViewModel(interactor: CoreInteractor(container: DevPreview.shared.container)))
+    CoreBuilder(interactor: CoreInteractor(container: DevPreview.shared.container))
+        .welcomeView()
         .previewEnvironment()
 }

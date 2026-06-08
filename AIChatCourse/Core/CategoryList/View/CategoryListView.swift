@@ -7,19 +7,23 @@
 
 import SwiftUI
 
-struct CategoryListView: View {
-    @State var viewModel: CategoryListViewModel
-
+/// CategoryListView页面需要的参数
+struct CategoryListDelegate {
     // 下面这几个属性保留在 view 里面, 没有放在 viewModel 中
-    @Binding var path: [NavTabbarPathOption] // 这个是从 ExploreView 传过来的
+    var path: Binding<[NavTabbarPathOption]> // 这个是从 ExploreView 传过来的
     var category: CharacterOption = .alien
     var imageName: String = Constants.randomImageUrl
+}
+
+struct CategoryListView: View {
+    @State var viewModel: CategoryListViewModel
+    let delegate: CategoryListDelegate
 
     var body: some View {
         List {
             CategoryCellView(
-                title: category.plural.capitalized,
-                imageName: imageName,
+                title: delegate.category.plural.capitalized,
+                imageName: delegate.imageName,
                 font: .largeTitle,
                 cornerRadius: 0
             )
@@ -46,7 +50,7 @@ struct CategoryListView: View {
                         subTitle: avatar.characterDescription
                     )
                     .anyButton(.highlight) {
-                        viewModel.onAvatarPressed(avatar: avatar, path: $path)
+                        viewModel.onAvatarPressed(avatar: avatar, path: delegate.path)
                     }
                     .removeListRowFormatting()
                 }
@@ -55,10 +59,10 @@ struct CategoryListView: View {
         .appearAnalyticsViewModifier(name: "CategoryListView")
         .ignoresSafeArea()
         .listStyle(.plain)
-        .customNavDestiForTabbarModule(path: $path)
+        .customNavDestiForTabbarModule(path: delegate.path)
         .showCustomAlert(alertItem: $viewModel.showAlert)
         .task {
-            await viewModel.loadAvatars(category: category)
+            await viewModel.loadAvatars(category: delegate.category)
         }
     }
 }
@@ -68,27 +72,35 @@ struct CategoryListView: View {
 #Preview("Has data") {
     let container = DevPreview.shared.container
     container.regiser(AvatarManager.self, manager: AvatarManager(service: MockAvatarService()))
-    return CategoryListView(viewModel: CategoryListViewModel(interactor: CoreInteractor(container: container)), path: .constant([]))
+    let builder = CoreBuilder(interactor: CoreInteractor(container: container))
+    let delegate = CategoryListDelegate(path: .constant([]))
+    return builder.categoryListView(delegate: delegate)
         .previewEnvironment()
 }
 
 #Preview("No data") {
     let container = DevPreview.shared.container
     container.regiser(AvatarManager.self, manager: AvatarManager(service: MockAvatarService(avatars: [])))
-    return CategoryListView(viewModel: CategoryListViewModel(interactor: CoreInteractor(container: container)), path: .constant([]))
+    let builder = CoreBuilder(interactor: CoreInteractor(container: container))
+    let delegate = CategoryListDelegate(path: .constant([]))
+    return builder.categoryListView(delegate: delegate)
         .previewEnvironment()
 }
 
 #Preview("Slow loading") {
     let container = DevPreview.shared.container
     container.regiser(AvatarManager.self, manager: AvatarManager(service: MockAvatarService(delay: 2.0)))
-    return CategoryListView(viewModel: CategoryListViewModel(interactor: CoreInteractor(container: container)), path: .constant([]))
+    let builder = CoreBuilder(interactor: CoreInteractor(container: container))
+    let delegate = CategoryListDelegate(path: .constant([]))
+    return builder.categoryListView(delegate: delegate)
         .previewEnvironment()
 }
 
 #Preview("Error loading") {
     let container = DevPreview.shared.container
     container.regiser(AvatarManager.self, manager: AvatarManager(service: MockAvatarService(delay: 2.0, showError: true)))
-    return CategoryListView(viewModel: CategoryListViewModel(interactor: CoreInteractor(container: container)), path: .constant([]))
+    let builder = CoreBuilder(interactor: CoreInteractor(container: container))
+    let delegate = CategoryListDelegate(path: .constant([]))
+    return builder.categoryListView(delegate: delegate)
         .previewEnvironment()
 }

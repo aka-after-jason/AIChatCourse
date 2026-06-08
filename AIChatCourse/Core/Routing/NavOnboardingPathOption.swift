@@ -15,32 +15,20 @@ enum NavOnboardingPathOption: Hashable {
 }
 
 struct NavDestiForOnboardingModuleViewModifier: ViewModifier {
-    @Environment(DependencyContainer.self) private var container
+    @Environment(CoreBuilder.self) private var builder
     let path: Binding<[NavOnboardingPathOption]>
     func body(content: Content) -> some View {
         content
             .navigationDestination(for: NavOnboardingPathOption.self) { newValue in
                 switch newValue {
                 case .colorView:
-                    OnboardingColorView(
-                        viewModel: OnboardingColorViewModel(interactor: CoreInteractor(container: container)),
-                        path: path
-                    )
+                    builder.onboardingColorView(delegate: OnboardingColorDelete(path: path))
                 case .communityView:
-                    OnboardingCommunityView(
-                        viewModel: OnboardingCommunityViewModel(interactor: CoreInteractor(container: container)),
-                        path: path
-                    )
+                    builder.onboardingCommunityView(delegate: OnboardingCommunityDelete(path: path))
                 case .introView:
-                    OnboardingIntroView(
-                        viewModel: OnboardingIntroViewModel(interactor: CoreInteractor(container: container)),
-                        path: path
-                    )
+                    builder.onboardingIntroView(delegate: OnboardingIntroDelete(path: path))
                 case .completedView(selectedColor: let selectedColor):
-                    OnboardingCompletedView(
-                        viewModel: OnboardingCompletedViewModel(interactor: CoreInteractor(container: container)),
-                        selectedColor: selectedColor
-                    )
+                    builder.onboardingCompletedView(delegate: OnboardingCompletedDelete(selectedColor: selectedColor))
                 }
             }
     }

@@ -4,12 +4,11 @@
 //
 //  Created by Elaine on 2026/3/16.
 //
-import SwiftUI
 import SwiftfulUtilities
+import SwiftUI
 
 struct SettingsView: View {
     @State var viewModel: SettingsViewModel
-    @Environment(DependencyContainer.self) private var container
     @Environment(\.dismiss) private var dismiss
     @Environment(CoreBuilder.self) private var builder
 
@@ -37,7 +36,7 @@ struct SettingsView: View {
             }
         }
     }
-    
+
     func dismissScreen() async {
         dismiss()
         try? await Task.sleep(nanoseconds: 1_000_000_000)
@@ -168,7 +167,8 @@ private extension View {
     container.regiser(AvatarManager.self, manager: AvatarManager(service: MockAvatarService()))
     container.regiser(AuthManager.self, manager: AuthManager(service: MockAuthService(user: nil)))
     container.regiser(UserManager.self, manager: UserManager(services: MockUserServices(user: nil)))
-    return SettingsView(viewModel: SettingsViewModel(interactor: CoreInteractor(container: container)))
+    let builder = CoreBuilder(interactor: CoreInteractor(container: container))
+    return builder.settingsView()
         .previewEnvironment()
 }
 
@@ -177,7 +177,8 @@ private extension View {
     container.regiser(AvatarManager.self, manager: AvatarManager(service: MockAvatarService()))
     container.regiser(AuthManager.self, manager: AuthManager(service: MockAuthService(user: UserAuthInfoModel.mock(isAnonymous: true))))
     container.regiser(UserManager.self, manager: UserManager(services: MockUserServices(user: .mock)))
-    return SettingsView(viewModel: SettingsViewModel(interactor: CoreInteractor(container: container)))
+    let builder = CoreBuilder(interactor: CoreInteractor(container: container))
+    return builder.settingsView()
         .previewEnvironment()
 }
 
@@ -186,6 +187,7 @@ private extension View {
     container.regiser(AvatarManager.self, manager: AvatarManager(service: MockAvatarService()))
     container.regiser(AuthManager.self, manager: AuthManager(service: MockAuthService(user: UserAuthInfoModel.mock(isAnonymous: false))))
     container.regiser(UserManager.self, manager: UserManager(services: MockUserServices(user: .mock)))
-    return SettingsView(viewModel: SettingsViewModel(interactor: CoreInteractor(container: container)))
+    let builder = CoreBuilder(interactor: CoreInteractor(container: container))
+    return builder.settingsView()
         .previewEnvironment()
 }

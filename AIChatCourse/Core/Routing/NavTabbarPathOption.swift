@@ -14,25 +14,16 @@ enum NavTabbarPathOption: Hashable {
 }
 
 struct NavDestiForTabbarModuleViewModifier: ViewModifier {
-    @Environment(DependencyContainer.self) private var container
+    @Environment(CoreBuilder.self) private var builder
     let path: Binding<[NavTabbarPathOption]>
     func body(content: Content) -> some View {
         content
             .navigationDestination(for: NavTabbarPathOption.self) { newValue in
                 switch newValue {
                 case .chatView(avatarId: let avatarId, chat: let chat):
-                    ChatView(
-                        viewModel: ChatViewModel(interactor: CoreInteractor(container: container)),
-                        chat: chat,
-                        avatarId: avatarId
-                    )
+                    builder.chatView(delegate: ChatViewDelegate(chat: chat, avatarId: avatarId))
                 case .categoryListView(category: let category, imageName: let imageName):
-                    CategoryListView(
-                        viewModel: CategoryListViewModel(interactor: CoreInteractor(container: container)),
-                        path: path,
-                        category: category,
-                        imageName: imageName
-                    )
+                    builder.categoryListView(delegate: CategoryListDelegate(path: path, category: category, imageName: imageName))
                 }
             }
     }

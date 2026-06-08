@@ -7,10 +7,13 @@
 
 import SwiftUI
 
+struct ChatRowCellViewDelegate {
+    var chat: ChatModel = .mock // view to view
+}
+
 struct ChatRowCellViewBuilder: View {
     @State var viewModel: ChatRowCellViewModel
-    var chat: ChatModel = .mock // view to view
-
+    let delegate: ChatRowCellViewDelegate
     var body: some View {
         ChatRowCellView(
             imageName: viewModel.avatar?.profileImageName,
@@ -21,23 +24,19 @@ struct ChatRowCellViewBuilder: View {
         .redacted(reason: viewModel.isLoading ? .placeholder : [])
         .task {
             // get the avatar
-            await viewModel.loadAvatar(chat: chat)
+            await viewModel.loadAvatar(chat: delegate.chat)
         }
         .task {
             // get last chat message
-            await viewModel.loadLastChatMessage(chat: chat)
+            await viewModel.loadLastChatMessage(chat: delegate.chat)
         }
     }
 }
 
 #Preview {
-    VStack {
-        ChatRowCellViewBuilder(
-            viewModel: ChatRowCellViewModel(
-                interactor: CoreInteractor(container: DevPreview.shared.container)
-            ),
-            chat: .mock
-        )
+    let builder = CoreBuilder(interactor: CoreInteractor(container: DevPreview.shared.container))
+    return VStack {
+        builder.chatRowCellViewBuilder()
 
         // 使用类型擦除的方式
         ChatRowCellViewBuilder(
@@ -51,7 +50,7 @@ struct ChatRowCellViewBuilder: View {
                     return ChatMessageModel.mock
                 }
             )),
-            chat: .mock
+            delegate: ChatRowCellViewDelegate()
         )
 
         // 使用类型擦除的方式
@@ -64,7 +63,7 @@ struct ChatRowCellViewBuilder: View {
                     ChatMessageModel.mock
                 }
             )),
-            chat: .mock
+            delegate: ChatRowCellViewDelegate()
         )
 
         // 使用类型擦除的方式
@@ -77,7 +76,7 @@ struct ChatRowCellViewBuilder: View {
                     throw URLError(.badURL)
                 }
             )),
-            chat: .mock
+            delegate: ChatRowCellViewDelegate()
         )
     }
 }

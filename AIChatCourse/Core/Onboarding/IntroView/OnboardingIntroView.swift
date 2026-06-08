@@ -7,22 +7,25 @@
 
 import SwiftUI
 
+struct OnboardingIntroDelete {
+    var path: Binding<[NavOnboardingPathOption]>
+}
+
 struct OnboardingIntroView: View {
     @State var viewModel: OnboardingIntroViewModel
-    @Environment(DependencyContainer.self) private var container
-    @Binding var path: [NavOnboardingPathOption]
+    @Environment(CoreBuilder.self) private var builder
+    let delegate: OnboardingIntroDelete
     var body: some View {
         VStack {
             Text(avatarsAndrealConversations())
                 .frame(maxHeight: .infinity)
-            
+
             Text("Continue")
                 .callToActionButton()
                 .anyButton(.press, action: {
-                    viewModel.onContinueButtonPressed(path: $path)
+                    viewModel.onContinueButtonPressed(path: delegate.path)
                 })
                 .accessibilityIdentifier("ContinueButton")
-            
         }
         .toolbar(.hidden, for: .navigationBar)
         .padding(24)
@@ -45,8 +48,10 @@ struct OnboardingIntroView: View {
 }
 
 #Preview("Original") {
-    NavigationStack {
-        OnboardingIntroView(viewModel: OnboardingIntroViewModel(interactor: CoreInteractor(container: DevPreview.shared.container)), path: .constant([]))
+    let builder = CoreBuilder(interactor: CoreInteractor(container: DevPreview.shared.container))
+    let delegate = OnboardingIntroDelete(path: .constant([]))
+    return NavigationStack {
+        builder.onboardingIntroView(delegate: delegate)
     }
     .previewEnvironment()
 }
@@ -54,11 +59,10 @@ struct OnboardingIntroView: View {
 #Preview("OnboardingCommunityTest") {
     let container = DevPreview.shared.container
     container.regiser(ABTestManager.self, manager: ABTestManager(service: MockABTestService(onboardingCommunityTest: true)))
+    let builder = CoreBuilder(interactor: CoreInteractor(container: container))
+    let delegate = OnboardingIntroDelete(path: .constant([]))
     return NavigationStack {
-        OnboardingIntroView(
-            viewModel: OnboardingIntroViewModel(interactor: CoreInteractor(container: container)),
-            path: .constant([])
-        )
+        builder.onboardingIntroView(delegate: delegate)
     }
     .previewEnvironment()
 }

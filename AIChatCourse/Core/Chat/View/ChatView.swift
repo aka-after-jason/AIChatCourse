@@ -7,12 +7,16 @@
 
 import SwiftUI
 
+struct ChatViewDelegate {
+    var chat: ChatModel? // public, 让外面传进来
+    var avatarId: String = AvatarModel.mock.avatarId // 外面传进来
+}
+
 struct ChatView: View {
     @State var viewModel: ChatViewModel
     @Environment(\.dismiss) private var dismiss
-    @Environment(DependencyContainer.self) private var container
-    var chat: ChatModel? // public, 让外面传进来
-    var avatarId: String = AvatarModel.mock.avatarId // 外面传进来
+    @Environment(CoreBuilder.self) private var builder
+    let delegate: ChatViewDelegate
     var body: some View {
         VStack {
             scrollviewSection
@@ -42,18 +46,18 @@ struct ChatView: View {
             }
         }
         .sheet(isPresented: $viewModel.showPaywallViwe, content: {
-            PaywallView(viewModel: PaywallViewModel(interactor: CoreInteractor(container: container)))
+            builder.paywallView()
         })
         .task {
-            await viewModel.loadAvatar(avatarId: avatarId)
+            await viewModel.loadAvatar(avatarId: delegate.avatarId)
         }
         .task {
-            await viewModel.loadChat(avatarId: avatarId)
+            await viewModel.loadChat(avatarId: delegate.avatarId)
             // 放在下面
             await viewModel.listenForChatMessages()
         }
         .onFirstAppear {
-            viewModel.onViewFirstAppear(chat: chat)
+            viewModel.onViewFirstAppear(chat: delegate.chat)
         }
     }
 
@@ -146,9 +150,22 @@ struct ChatView: View {
     }
 }
 
-#Preview {
-    NavigationStack {
-        ChatView(viewModel: ChatViewModel(interactor: CoreInteractor(container: DevPreview.shared.container)))
+#Preview("Working chat - Not Premium") {
+    let container = DevPreview.shared.container
+    let builder = CoreBuilder(interactor: CoreInteractor(container: container))
+    return NavigationStack {
+        builder.chatView()
+            .previewEnvironment()
+    }
+}
+
+#Preview("Working chat - Premium") {
+    let container = DevPreview.shared.container
+    container.regiser(PurchaseManager.self, manager: PurchaseManager(service: MockPurchaseService(activeEntitlements: [.mock])))
+    let builder = CoreBuilder(interactor: CoreInteractor(container: container))
+    let delegate = ChatViewDelegate()
+    return NavigationStack {
+        builder.chatView(delegate: delegate)
             .previewEnvironment()
     }
 }

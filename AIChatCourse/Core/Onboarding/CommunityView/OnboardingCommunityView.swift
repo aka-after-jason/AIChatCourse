@@ -7,10 +7,14 @@
 
 import SwiftUI
 
+struct OnboardingCommunityDelete {
+    var path: Binding<[NavOnboardingPathOption]>
+}
+
 struct OnboardingCommunityView: View {
     @State var viewModel: OnboardingCommunityViewModel
-    @Environment(DependencyContainer.self) private var container
-    @Binding var path: [NavOnboardingPathOption]
+    @Environment(CoreBuilder.self) private var builder
+    let delegate: OnboardingCommunityDelete
     var body: some View {
         VStack {
             VStack(spacing: 30) {
@@ -21,11 +25,11 @@ struct OnboardingCommunityView: View {
                 Text(avatarsAndrealConversations())
             }
             .frame(maxHeight: .infinity)
-            
+
             Text("Continue")
                 .callToActionButton()
                 .anyButton(.press, action: {
-                    viewModel.onContinueButtonPressed(path: $path)
+                    viewModel.onContinueButtonPressed(path: delegate.path)
                 })
         }
         .toolbar(.hidden, for: .navigationBar)
@@ -45,9 +49,9 @@ struct OnboardingCommunityView: View {
 }
 
 #Preview {
-    OnboardingCommunityView(
-        viewModel: OnboardingCommunityViewModel(interactor: CoreInteractor(container: DevPreview.shared.container)),
-        path: .constant([])
-    )
-        .previewEnvironment()
+    let builder = CoreBuilder(interactor: CoreInteractor(container: DevPreview.shared.container))
+    return NavigationStack {
+        builder.onboardingCommunityView(delegate: OnboardingCommunityDelete(path: .constant([])))
+    }
+    .previewEnvironment()
 }

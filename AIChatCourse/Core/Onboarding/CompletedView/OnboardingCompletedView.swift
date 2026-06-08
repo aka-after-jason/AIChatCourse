@@ -7,16 +7,19 @@
 
 import SwiftUI
 
+struct OnboardingCompletedDelete {
+    var selectedColor: Color = .orange // 保存 OnboardingColorView 中选择的颜色
+}
+
 struct OnboardingCompletedView: View {
     @State var viewModel: OnboardingCompletedViewModel
-    var selectedColor: Color = .orange // 保存 OnboardingColorView 中选择的颜色
-
+    var delegate: OnboardingCompletedDelete = OnboardingCompletedDelete()
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Setup complete!")
                 .font(.largeTitle)
                 .fontWeight(.semibold)
-                .foregroundStyle(selectedColor)
+                .foregroundStyle(delegate.selectedColor)
 
             Text("We've set up your profile and you're ready to start chatting.")
                 .font(.title)
@@ -38,7 +41,7 @@ struct OnboardingCompletedView: View {
             isLoading: viewModel.isCompletingProfileSetup,
             title: "Finish",
             action: {
-                viewModel.onFinishButtonPressed(selectedColor: selectedColor)
+                viewModel.onFinishButtonPressed(selectedColor: delegate.selectedColor)
             }
         )
     }
@@ -47,9 +50,7 @@ struct OnboardingCompletedView: View {
 #Preview {
     let container = DevPreview.shared.container
     container.regiser(UserManager.self, manager: UserManager(services: MockUserServices()))
-    return OnboardingCompletedView(
-        viewModel: OnboardingCompletedViewModel(interactor: CoreInteractor(container: container)),
-        selectedColor: .mint
-    )
-    .previewEnvironment()
+    let builder = CoreBuilder(interactor: CoreInteractor(container: container))
+    return builder.onboardingCompletedView(delegate: OnboardingCompletedDelete(selectedColor: .mint))
+        .previewEnvironment()
 }

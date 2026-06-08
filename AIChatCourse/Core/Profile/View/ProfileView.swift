@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ProfileView: View {
     @State var viewModel: ProfileViewModel
-    @Environment(DependencyContainer.self) private var container
+    @Environment(CoreBuilder.self) private var builder
     var body: some View {
         NavigationStack(path: $viewModel.path) {
             List {
@@ -26,7 +26,7 @@ struct ProfileView: View {
             }
         }
         .sheet(isPresented: $viewModel.showSettingsView) {
-            SettingsView(viewModel: SettingsViewModel(interactor: CoreInteractor(container: container)))
+            builder.settingsView()
         }
         .showCustomAlert(alertItem: $viewModel.showAlert)
         .fullScreenCover(
@@ -37,9 +37,7 @@ struct ProfileView: View {
                 }
             },
             content: {
-                CreateAvatarView(
-                    viewModel: CreateAvatarViewModel(interactor: CoreInteractor(container: container))
-                )
+                builder.createAvatarView()
             }
         )
         .task {
@@ -123,10 +121,7 @@ extension ProfileView {
 }
 
 #Preview {
-    let container = DevPreview.shared.container
-    // 可以自定义
-    // container.regiser(AuthManager.self, manager: AuthManager(service: MockAuthService()))
-    
-    return ProfileView(viewModel: ProfileViewModel(interactor: CoreInteractor(container: container)))
+    let builder = CoreBuilder(interactor: CoreInteractor(container: DevPreview.shared.container))
+    return builder.profileView()
         .previewEnvironment()
 }

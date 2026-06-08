@@ -14,7 +14,7 @@ import SwiftUI
 struct AppView: View {
     @State var viewModel: AppViewModel
     // 由于使用了 @Observable, 这里需要使用 @State
-    @Environment(DependencyContainer.self) private var container
+    @Environment(CoreBuilder.self) private var builder
     @Environment(\.scenePhase) private var scenePhase // LifeCycle: SwiftUI 使用这个
 
     var body: some View {
@@ -34,10 +34,10 @@ struct AppView: View {
             AppViewBuilder(
                 showTabBar: viewModel.showTabBar,
                 tabbarView: {
-                    TabBarView()
+                    builder.tabbarView()
                 },
                 onboardingView: {
-                    WelcomeView(viewModel: WelcomeViewModel(interactor: CoreInteractor(container: container)))
+                    builder.welcomeView()
                 }
             )
             // 由于使用了 @Observable, 这里需要使用 environment,不是 environmentObject
@@ -94,10 +94,9 @@ struct AppView: View {
     container.regiser(UserManager.self, manager: UserManager(services: MockUserServices(user: .mock)))
     container.regiser(AuthManager.self, manager: AuthManager(service: MockAuthService(user: .mock(isAnonymous: true))))
     container.regiser(AppState.self, manager: AppState(showTabBar: true))
-    return AppView(
-        viewModel: AppViewModel(interactor: CoreInteractor(container: container))
-    )
-    .previewEnvironment()
+    let builder = CoreBuilder(interactor: CoreInteractor(container: container))
+    return builder.appView()
+        .previewEnvironment()
 }
 
 #Preview("AppView Onboarding") {
@@ -105,8 +104,7 @@ struct AppView: View {
     container.regiser(UserManager.self, manager: UserManager(services: MockUserServices(user: nil)))
     container.regiser(AuthManager.self, manager: AuthManager(service: MockAuthService(user: nil)))
     container.regiser(AppState.self, manager: AppState(showTabBar: false))
-    return AppView(
-        viewModel: AppViewModel(interactor: CoreInteractor(container: container))
-    )
+    let builder = CoreBuilder(interactor: CoreInteractor(container: container))
+    return builder.appView()
     .previewEnvironment()
 }

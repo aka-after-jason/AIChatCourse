@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ChatsView: View {
-    @Environment(DependencyContainer.self) private var container
+    @Environment(CoreBuilder.self) private var builder
     @State var viewModel: ChatsViewModel
     var body: some View {
         NavigationStack(path: $viewModel.path) {
@@ -44,14 +44,11 @@ extension ChatsView {
             } else {
                 ForEach(viewModel.chats) { chat in
                     // ChatRowCellViewBuilder 用了自己的 viewmodel
-                    ChatRowCellViewBuilder(
-                        viewModel: ChatRowCellViewModel(interactor: CoreInteractor(container: container)),
-                        chat: chat
-                    )
-                    .anyButton(.highlight, action: {
-                        viewModel.onChatPressed(chat: chat)
-                    })
-                    .removeListRowFormatting()
+                    builder.chatRowCellViewBuilder(delegate: ChatRowCellViewDelegate(chat: chat))
+                        .anyButton(.highlight, action: {
+                            viewModel.onChatPressed(chat: chat)
+                        })
+                        .removeListRowFormatting()
                 }
             }
         } header: {
@@ -65,10 +62,13 @@ extension ChatsView {
                 LazyHStack(spacing: 8) {
                     ForEach(viewModel.recentAvatars, id: \.self) { avatar in
                         if let imageName = avatar.profileImageName {
-                            RecentAvatarView(imageName: imageName, title: avatar.name ?? "")
-                                .anyButton {
-                                    viewModel.onAvatarPressed(avatar: avatar)
-                                }
+                            RecentAvatarView(
+                                imageName: imageName,
+                                title: avatar.name ?? ""
+                            )
+                            .anyButton {
+                                viewModel.onAvatarPressed(avatar: avatar)
+                            }
                         }
                     }
                 }
@@ -98,7 +98,7 @@ struct RecentAvatarView: View {
 }
 
 #Preview {
-    let container = DevPreview.shared.container
-    ChatsView(viewModel: ChatsViewModel(interactor: CoreInteractor(container: container)))
+    let builder = CoreBuilder(interactor: CoreInteractor(container: DevPreview.shared.container))
+    return builder.chatsView()
         .previewEnvironment()
 }
