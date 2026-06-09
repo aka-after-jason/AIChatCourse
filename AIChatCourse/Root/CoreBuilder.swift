@@ -54,9 +54,12 @@ struct CoreRouter {
         }
     }
 
-    func showCreateAvatarView() {
+    func showCreateAvatarView(onDisappear: @escaping () -> Void) {
         router.showScreen(.fullScreenCover) { _ in
             builder.createAvatarView()
+                .onDisappear {
+                    onDisappear()
+                }
         }
     }
 
@@ -69,6 +72,12 @@ struct CoreRouter {
     }
 
     // MARK: sheets
+    
+    func showSettingsView() {
+        router.showScreen(.sheet) { _ in
+            builder.settingsView()
+        }
+    }
 
     func showDevSettingsView() {
         router.showScreen(.sheet) { _ in
@@ -110,6 +119,10 @@ struct CoreRouter {
 
     func showAlert(type: CustomRouting.AlertType, title: String, subtitle: String?, buttons: (() -> AnyView)?) {
         router.showAlert(type: type, title: title, subtitle: subtitle, buttons: buttons)
+    }
+    
+    func showAlert(title: String, subtitle: String?) {
+        router.showAlert(type: .alert, title: title, subtitle: subtitle, buttons: nil)
     }
 
     func showAlert(error: Error) {
@@ -192,8 +205,8 @@ struct CoreBuilder {
                     .any()
                 }),
                 TabBarScreen(title: "Profile", systemImage: "person.fill", screen: {
-                    RouterView { _ in
-                        profileView()
+                    RouterView { router in
+                        profileView(router: router)
                     }
                     .any()
                 })
@@ -344,21 +357,12 @@ struct CoreBuilder {
 
     // MARK: ProfileView
 
-    func profileView() -> AnyView {
+    func profileView(router: Router) -> AnyView {
         ProfileView(
-            viewModel: ProfileViewModel(interactor: interactor),
-            settingsView: {
-                settingsView()
-            },
-            createAvatarView: {
-                createAvatarView()
-            },
-            chatView: { delegate in
-                chatView(delegate: delegate)
-            },
-            categoryListView: { delegate in
-                categoryListView(delegate: delegate)
-            }
+            viewModel: ProfileViewModel(
+                interactor: interactor,
+                router: CoreRouter(router: router, builder: self)
+            )
         )
         .any()
     }

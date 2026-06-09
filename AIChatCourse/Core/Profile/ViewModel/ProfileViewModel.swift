@@ -22,71 +22,31 @@ protocol ProfileViewModelInteractor {
     func trackEvent(event: LoggableEvent)
 }
 
-/// 这里使用 CoreInteractor
 extension CoreInteractor: ProfileViewModelInteractor {}
 
-// 也可以单独设置 ProductProfileViewModelInteractor
-/*
- @MainActor
- struct ProductProfileViewModelInteractor: ProfileViewModelInteractor {
+@MainActor
+protocol ProfileViewModelRouter {
+    func showSettingsView()
+    func showCreateAvatarView(onDisappear: @escaping () -> Void)
+    func showAlert(title: String, subtitle: String?)
+    func showChatView(delegate: ChatViewDelegate)
+}
 
-     // 注入 managers
-     let userManager: UserManager
-     let avatarManager: AvatarManager
-     let authManager: AuthManager
-     let logManager: LogManager
-
-     init(container: DependencyContainer) {
-         self.userManager = container.resolve(UserManager.self)!
-         self.avatarManager = container.resolve(AvatarManager.self)!
-         self.authManager = container.resolve(AuthManager.self)!
-         self.logManager = container.resolve(LogManager.self)!
-     }
-
-     var currentUser: UserModel? {
-         userManager.currentUser
-     }
-
-     func getCurrentUserId() throws -> String {
-         try authManager.getCurrentUserId()
-     }
-
-     func getAvatarsForAuthor(userId: String) async throws -> [AvatarModel] {
-         try await avatarManager.getAvatarsForAuthor(userId: userId)
-     }
-
-     func removeAuthorIdFromAvatar(avatarId: String) async throws {
-         try await avatarManager.removeAuthorIdFromAvatar(avatarId: avatarId)
-     }
-
-     func trackEvent(event: any LoggableEvent) {
-         logManager.trackEvent(event: event)
-     }
- }
-  */
+extension CoreRouter: ProfileViewModelRouter {}
 
 @MainActor
 @Observable
 final class ProfileViewModel {
-    /*
-     private let interactor: ProfileViewModelInteractor
-     init(interactor: ProfileViewModelInteractor) {
-         self.interactor = interactor
-     }
-      */
     private let interactor: ProfileViewModelInteractor
-    init(interactor: ProfileViewModelInteractor) {
+    private let router: ProfileViewModelRouter
+    init(interactor: ProfileViewModelInteractor, router: ProfileViewModelRouter) {
         self.interactor = interactor
+        self.router = router
     }
 
     private(set) var currentUser: UserModel?
     private(set) var myAvatars: [AvatarModel] = []
     private(set) var isLoading: Bool = true
-
-    var showAlert: AnyAppAlertItem?
-    var showCreateAvatarView: Bool = false
-    var showSettingsView: Bool = false
-    var path: [NavTabbarPathOption] = []
 
     func loadData() async {
         currentUser = interactor.currentUser
@@ -103,12 +63,16 @@ final class ProfileViewModel {
 
     func onSettingsButtonPressed() {
         interactor.trackEvent(event: Event.settingPressed)
-        showSettingsView.toggle()
+        router.showSettingsView()
     }
 
     func onNewAvatarButtonPressed() {
         interactor.trackEvent(event: Event.newAvatarPressed)
-        showCreateAvatarView = true
+        router.showCreateAvatarView(onDisappear: {
+            Task {
+                await self.loadData()
+            }
+        })
     }
 
     func onDeleteAvatar(indexSet: IndexSet) {
@@ -121,15 +85,16 @@ final class ProfileViewModel {
                 myAvatars.remove(at: index)
                 interactor.trackEvent(event: Event.deleteAvatarSuccess(avatar: avatar))
             } catch {
-                showAlert = AnyAppAlertItem(title: "Unable to delete avatar.", subtitle: "Please try again.")
                 interactor.trackEvent(event: Event.deleteAvatarFail(error: error))
+                router.showAlert(title: "Unable to delete avatar.", subtitle: "Please try again.")
             }
         }
     }
 
     func onAvatarPressed(avatar: AvatarModel) {
         interactor.trackEvent(event: Event.avatarPressed(avatar: avatar))
-        path.append(.chatView(avatarId: avatar.avatarId, chat: nil))
+        let delegate = ChatViewDelegate(chat: nil, avatarId: avatar.avatarId)
+        router.showChatView(delegate: delegate)
     }
 }
 

@@ -9,44 +9,18 @@ import SwiftUI
 
 struct ProfileView: View {
     @State var viewModel: ProfileViewModel
-    @ViewBuilder var settingsView: () -> AnyView
-    @ViewBuilder var createAvatarView: () -> AnyView
-    @ViewBuilder var chatView: (ChatViewDelegate) -> AnyView
-    @ViewBuilder var categoryListView: (CategoryListDelegate) -> AnyView
     var body: some View {
-        NavigationStack(path: $viewModel.path) {
-            List {
-                myInfoSection
-                myAvatarsSection
-            }
-            .navigationTitle("Profile")
-            .customNavDestiForTabbarModule(
-                path: $viewModel.path,
-                chatView: chatView,
-                categoryListView: categoryListView
-            )
-            .appearAnalyticsViewModifier(name: "ProfileView")
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    settingsButton
-                }
+        List {
+            myInfoSection
+            myAvatarsSection
+        }
+        .navigationTitle("Profile")
+        .appearAnalyticsViewModifier(name: "ProfileView")
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                settingsButton
             }
         }
-        .sheet(isPresented: $viewModel.showSettingsView) {
-            settingsView()
-        }
-        .showCustomAlert(alertItem: $viewModel.showAlert)
-        .fullScreenCover(
-            isPresented: $viewModel.showCreateAvatarView,
-            onDismiss: {
-                Task {
-                    await viewModel.loadData() // avatar 创建完成, 自动刷新
-                }
-            },
-            content: {
-                createAvatarView()
-            }
-        )
         .task {
             await viewModel.loadData()
         }
@@ -129,6 +103,8 @@ extension ProfileView {
 
 #Preview {
     let builder = CoreBuilder(interactor: CoreInteractor(container: DevPreview.shared.container))
-    return builder.profileView()
-        .previewEnvironment()
+    return RouterView { router in
+        builder.profileView(router: router)
+            .previewEnvironment()
+    }
 }
