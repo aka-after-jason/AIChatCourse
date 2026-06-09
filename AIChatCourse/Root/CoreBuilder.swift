@@ -19,8 +19,8 @@ struct CoreRouter {
     // MARK: segues
 
     func showCategoryListView(delegate: CategoryListDelegate) {
-        router.showScreen(.push) { _ in
-            builder.categoryListView(delegate: delegate)
+        router.showScreen(.push) { router in
+            builder.categoryListView(router: router, delegate: delegate)
         }
     }
 
@@ -227,16 +227,13 @@ struct CoreBuilder {
 
     // MARK: CategoryListView
 
-    func categoryListView(delegate: CategoryListDelegate) -> AnyView {
+    func categoryListView(router: Router, delegate: CategoryListDelegate) -> AnyView {
         CategoryListView(
-            viewModel: CategoryListViewModel(interactor: interactor),
-            delegate: delegate,
-            chatView: { delegate in
-                chatView(delegate: delegate)
-            },
-            categoryListView: { delegate in
-                categoryListView(delegate: delegate)
-            }
+            viewModel: CategoryListViewModel(
+                interactor: interactor,
+                router: CoreRouter(router: router, builder: self)
+            ),
+            delegate: delegate
         )
         .any()
     }
