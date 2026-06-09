@@ -6,29 +6,38 @@
 //
 import SwiftUI
 
+@MainActor
 protocol OnboardingIntroViewModelInteractor {
     var activeABTestModel: ActiveABTestModel { get }
 }
-
 extension CoreInteractor: OnboardingIntroViewModelInteractor {}
+
+@MainActor
+protocol OnboardingIntroViewModelRouter {
+    func showOnboardingCommunityView(delegate: OnboardingCommunityDelete)
+    func showOnboardingColorView(delegate: OnboardingColorDelete)
+}
+extension CoreRouter: OnboardingIntroViewModelRouter {}
 
 @MainActor
 @Observable
 final class OnboardingIntroViewModel {
     private let interactor: OnboardingIntroViewModelInteractor
-    init(interactor: OnboardingIntroViewModelInteractor) {
+    private let router: OnboardingIntroViewModelRouter
+    init(interactor: OnboardingIntroViewModelInteractor, router: OnboardingIntroViewModelRouter) {
         self.interactor = interactor
+        self.router = router
     }
 
     var activeABTestModel: ActiveABTestModel {
         interactor.activeABTestModel
     }
     
-    func onContinueButtonPressed(path: Binding<[NavOnboardingPathOption]>) {
+    func onContinueButtonPressed() {
         if activeABTestModel.onboardingCommunityTest {
-            path.wrappedValue.append(.communityView)
+            router.showOnboardingCommunityView(delegate: OnboardingCommunityDelete())
         } else {
-            path.wrappedValue.append(.colorView)
+            router.showOnboardingColorView(delegate: OnboardingColorDelete())
         }
     }
 }

@@ -7,9 +7,7 @@
 
 import SwiftUI
 
-struct OnboardingCommunityDelete {
-    var path: Binding<[NavOnboardingPathOption]>
-}
+struct OnboardingCommunityDelete {}
 
 struct OnboardingCommunityView: View {
     @State var viewModel: OnboardingCommunityViewModel
@@ -28,7 +26,7 @@ struct OnboardingCommunityView: View {
             Text("Continue")
                 .callToActionButton()
                 .anyButton(.press, action: {
-                    viewModel.onContinueButtonPressed(path: delegate.path)
+                    viewModel.onContinueButtonPressed()
                 })
         }
         .toolbar(.hidden, for: .navigationBar)
@@ -49,8 +47,9 @@ struct OnboardingCommunityView: View {
 
 #Preview {
     let builder = CoreBuilder(interactor: CoreInteractor(container: DevPreview.shared.container))
-    return NavigationStack {
-        builder.onboardingCommunityView(delegate: OnboardingCommunityDelete(path: .constant([])))
+    let delegate = OnboardingCommunityDelete()
+    return RouterView { router in
+        builder.onboardingCommunityView(router: router, delegate: delegate)
+            .previewEnvironment()
     }
-    .previewEnvironment()
 }

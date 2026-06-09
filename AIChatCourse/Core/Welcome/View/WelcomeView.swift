@@ -9,44 +9,18 @@ import SwiftUI
 
 struct WelcomeView: View {
     @State var viewModel: WelcomeViewModel
-    @ViewBuilder var createAccountView: (CreateAccountDelegate) -> AnyView
-    @ViewBuilder var onboardingColorView: (OnboardingColorDelete) -> AnyView
-    @ViewBuilder var onboardingCommunityView: (OnboardingCommunityDelete) -> AnyView
-    @ViewBuilder var onboardingIntroView: (OnboardingIntroDelete) -> AnyView
-    @ViewBuilder var onboardingCompletedView: (OnboardingCompletedDelete) -> AnyView
     var body: some View {
-        NavigationStack(path: $viewModel.path) {
-            VStack(spacing: 8) {
-                ImageLoaderView(urlString: viewModel.imageName)
-                    .ignoresSafeArea()
+        VStack(spacing: 8) {
+            ImageLoaderView(urlString: viewModel.imageName)
+                .ignoresSafeArea()
 
-                titleSection
-                    .padding(.top, 24)
+            titleSection
+                .padding(.top, 24)
 
-                ctaButtons
-                    .padding(16)
+            ctaButtons
+                .padding(16)
 
-                policyLinks
-            }
-            .customNavDestiForOnboardingModule(
-                path: $viewModel.path,
-                onboardingColorView: onboardingColorView,
-                onboardingCommunityView: onboardingCommunityView,
-                onboardingIntroView: onboardingIntroView,
-                onboardingCompletedView: onboardingCompletedView
-            )
-        }
-        .sheet(isPresented: $viewModel.showSignIn) {
-            createAccountView(
-                CreateAccountDelegate(
-                    title: "Sign in",
-                    subtitle: "Connect to an existing account.",
-                    onDidSignIn: { isNewUser in
-                        viewModel.handleDidSignIn(isNewUser: isNewUser)
-                    }
-                )
-            )
-            .presentationDetents([.medium])
+            policyLinks
         }
         .appearAnalyticsViewModifier(name: "WelcomeView")
     }

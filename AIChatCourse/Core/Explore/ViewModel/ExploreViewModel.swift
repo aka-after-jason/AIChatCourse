@@ -25,7 +25,7 @@ protocol ExploreViewModelRouter {
     func showChatView(delegate: ChatViewDelegate)
     func showCreateAccountView(delegate: CreateAccountDelegate)
     func showPushNotificationModal(onEnablePressed: @escaping () -> Void, onCancelPressed: @escaping () -> Void)
-    func showDevSettings()
+    func showDevSettingsView()
     func dismissModal()
 }
 
@@ -143,7 +143,7 @@ final class ExploreViewModel {
 
     func onDevSettingsButtonPressed() {
         interactor.trackEvent(event: Event.devSettingsPressed)
-        router.showDevSettings()
+        router.showDevSettingsView()
     }
 
     func loadFeaturedAvatars() async {

@@ -16,6 +16,8 @@ struct CoreRouter {
     let router: Router
     let builder: CoreBuilder
 
+    // MARK: segues
+
     func showCategoryListView(delegate: CategoryListDelegate) {
         router.showScreen(.push) { _ in
             builder.categoryListView(delegate: delegate)
@@ -27,18 +29,48 @@ struct CoreRouter {
             builder.chatView(delegate: delegate)
         }
     }
-    
+
+    func showOnboardingIntroView(delegate: OnboardingIntroDelete) {
+        router.showScreen(.push) { router in
+            builder.onboardingIntroView(router: router, delegate: delegate)
+        }
+    }
+
+    func showOnboardingCommunityView(delegate: OnboardingCommunityDelete) {
+        router.showScreen(.push) { router in
+            builder.onboardingCommunityView(router: router, delegate: delegate)
+        }
+    }
+
+    func showOnboardingColorView(delegate: OnboardingColorDelete) {
+        router.showScreen(.push) { router in
+            builder.onboardingColorView(router: router, delegate: delegate)
+        }
+    }
+
+    func showOnboardingCompletedView(delegate: OnboardingCompletedDelete) {
+        router.showScreen(.push) { router in
+            builder.onboardingCompletedView(router: router, delegate: delegate)
+        }
+    }
+
+    func showCreateAvatarView() {
+        router.showScreen(.fullScreenCover) { _ in
+            builder.createAvatarView()
+        }
+    }
+
     func dismissScreen() {
         router.dismissScreen()
     }
-    
+
     func dismissModal() {
         router.dismissModal()
     }
 
     // MARK: sheets
 
-    func showDevSettings() {
+    func showDevSettingsView() {
         router.showScreen(.sheet) { _ in
             builder.devSettingsView()
         }
@@ -72,6 +104,20 @@ struct CoreRouter {
                 )
             }
         )
+    }
+
+    // MARK: alerts
+
+    func showAlert(type: CustomRouting.AlertType, title: String, subtitle: String?, buttons: (() -> AnyView)?) {
+        router.showAlert(type: type, title: title, subtitle: subtitle, buttons: buttons)
+    }
+
+    func showAlert(error: Error) {
+        router.showAlert(type: .alert, title: "Error", subtitle: error.localizedDescription, buttons: nil)
+    }
+
+    func dismissAlert() {
+        router.dismissAlert()
     }
 }
 
@@ -133,21 +179,23 @@ struct CoreBuilder {
     func tabbarView() -> AnyView {
         TabBarView(
             tabs: [
-                TabBarScreen(
-                    title: "Explore",
-                    systemImage: "eyes",
-                    screen: {
-                        RouterView { router in
-                            exploreView(router: router)
-                        }
-                        .any()
+                TabBarScreen(title: "Explore", systemImage: "eyes", screen: {
+                    RouterView { router in
+                        exploreView(router: router)
                     }
-                ),
+                    .any()
+                }),
                 TabBarScreen(title: "Chats", systemImage: "bubble.left.and.bubble.right", screen: {
-                    chatsView()
+                    RouterView { _ in
+                        chatsView()
+                    }
+                    .any()
                 }),
                 TabBarScreen(title: "Profile", systemImage: "person.fill", screen: {
-                    profileView()
+                    RouterView { _ in
+                        profileView()
+                    }
+                    .any()
                 })
             ]
         )
@@ -155,24 +203,12 @@ struct CoreBuilder {
     }
 
     func welcomeView() -> AnyView {
-        WelcomeView(
-            viewModel: WelcomeViewModel(interactor: interactor),
-            createAccountView: { delegate in
-                createAccountView(delegate: delegate)
-            },
-            onboardingColorView: { delegate in
-                onboardingColorView(delegate: delegate)
-            },
-            onboardingCommunityView: { delegate in
-                onboardingCommunityView(delegate: delegate)
-            },
-            onboardingIntroView: { delegate in
-                onboardingIntroView(delegate: delegate)
-            },
-            onboardingCompletedView: { delegate in
-                onboardingCompletedView(delegate: delegate)
-            }
-        )
+        RouterView { router in
+            WelcomeView(
+                viewModel: WelcomeViewModel(interactor: interactor, router: CoreRouter(router: router, builder: self))
+            )
+            .any()
+        }
         .any()
     }
 
@@ -247,9 +283,12 @@ struct CoreBuilder {
 
     // MARK: OnboardingColorView
 
-    func onboardingColorView(delegate: OnboardingColorDelete) -> AnyView {
+    func onboardingColorView(router: Router, delegate: OnboardingColorDelete) -> AnyView {
         OnboardingColorView(
-            viewModel: OnboardingColorViewModel(interactor: interactor),
+            viewModel: OnboardingColorViewModel(
+                interactor: interactor,
+                router: CoreRouter(router: router, builder: self)
+            ),
             delegate: delegate
         )
         .any()
@@ -257,9 +296,12 @@ struct CoreBuilder {
 
     // MARK: OnboardingCommunityView
 
-    func onboardingCommunityView(delegate: OnboardingCommunityDelete) -> AnyView {
+    func onboardingCommunityView(router: Router, delegate: OnboardingCommunityDelete) -> AnyView {
         OnboardingCommunityView(
-            viewModel: OnboardingCommunityViewModel(interactor: interactor),
+            viewModel: OnboardingCommunityViewModel(
+                interactor: interactor,
+                router: CoreRouter(router: router, builder: self)
+            ),
             delegate: delegate
         )
         .any()
@@ -267,16 +309,28 @@ struct CoreBuilder {
 
     // MARK: OnboardingCompletedView
 
-    func onboardingCompletedView(delegate: OnboardingCompletedDelete) -> AnyView {
-        OnboardingCompletedView(viewModel: OnboardingCompletedViewModel(interactor: interactor), delegate: delegate)
-            .any()
+    func onboardingCompletedView(router: Router, delegate: OnboardingCompletedDelete) -> AnyView {
+        OnboardingCompletedView(
+            viewModel: OnboardingCompletedViewModel(
+                interactor: interactor,
+                router: CoreRouter(router: router, builder: self)
+            ),
+            delegate: delegate
+        )
+        .any()
     }
 
     // MARK: OnboardingIntroView
 
-    func onboardingIntroView(delegate: OnboardingIntroDelete) -> AnyView {
-        OnboardingIntroView(viewModel: OnboardingIntroViewModel(interactor: interactor), delegate: delegate)
-            .any()
+    func onboardingIntroView(router: Router, delegate: OnboardingIntroDelete) -> AnyView {
+        OnboardingIntroView(
+            viewModel: OnboardingIntroViewModel(
+                interactor: interactor,
+                router: CoreRouter(router: router, builder: self)
+            ),
+            delegate: delegate
+        )
+        .any()
     }
 
     // MARK: SettingsView

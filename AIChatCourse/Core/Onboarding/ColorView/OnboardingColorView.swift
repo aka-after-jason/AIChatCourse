@@ -7,9 +7,7 @@
 
 import SwiftUI
 
-struct OnboardingColorDelete {
-    var path: Binding<[NavOnboardingPathOption]>
-}
+struct OnboardingColorDelete {}
 
 struct OnboardingColorView: View {
     @State var viewModel: OnboardingColorViewModel
@@ -49,7 +47,7 @@ extension OnboardingColorView {
         Text("Continue")
             .callToActionButton()
             .anyButton(.press, action: {
-                viewModel.onContinueButtonPressed(path: delegate.path)
+                viewModel.onContinueButtonPressed()
             })
     }
 
@@ -84,9 +82,9 @@ extension OnboardingColorView {
 
 #Preview {
     let builder = CoreBuilder(interactor: CoreInteractor(container: DevPreview.shared.container))
-    let delegate = OnboardingColorDelete(path: .constant([]))
-    return NavigationStack {
-        builder.onboardingColorView(delegate: delegate)
+    let delegate = OnboardingColorDelete()
+    return RouterView { router in
+        builder.onboardingColorView(router: router, delegate: delegate)
             .previewEnvironment()
     }
 }

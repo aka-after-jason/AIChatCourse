@@ -6,35 +6,47 @@
 //
 import SwiftUI
 
+@MainActor
 protocol WelcomeViewModelInteractor {
     func trackEvent(event: LoggableEvent)
     func updateAppState(showTabBarView: Bool)
 }
-
 extension CoreInteractor: WelcomeViewModelInteractor {}
+
+@MainActor
+protocol WelcomeViewModelRoutre {
+    func showOnboardingIntroView(delegate: OnboardingIntroDelete)
+    func showCreateAccountView(delegate: CreateAccountDelegate)
+}
+extension CoreRouter: WelcomeViewModelRoutre {}
 
 @MainActor
 @Observable
 final class WelcomeViewModel {
     private let interactor: WelcomeViewModelInteractor
-    init(interactor: WelcomeViewModelInteractor) {
+    private let router: WelcomeViewModelRoutre
+    init(interactor: WelcomeViewModelInteractor, router: WelcomeViewModelRoutre) {
         self.interactor = interactor
+        self.router = router
     }
 
-    var path: [NavOnboardingPathOption] = []
-    var showSignIn: Bool = false
     private(set) var imageName: String = Constants.randomImageUrl
     
     func onGetStartedPressed() {
-        path.append(.introView)
+        router.showOnboardingIntroView(delegate: OnboardingIntroDelete())
     }
 
     func onSignInPressed() {
         interactor.trackEvent(event: Event.signInPressed)
-        showSignIn = true
+        let delegate = CreateAccountDelegate(
+            title: "Sign in",
+            subtitle: "Connect to an existing account") { isNewUser in
+                self.handleDidSignIn(isNewUser: isNewUser)
+            }
+        router.showCreateAccountView(delegate: delegate)
     }
 
-    func handleDidSignIn(isNewUser: Bool) {
+    private func handleDidSignIn(isNewUser: Bool) {
         interactor.trackEvent(event: Event.didSignIn(isNewUser: isNewUser))
         if isNewUser {
             // do nothing, user gose through onboading

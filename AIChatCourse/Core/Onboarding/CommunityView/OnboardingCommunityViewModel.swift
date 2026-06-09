@@ -6,19 +6,27 @@
 //
 import SwiftUI
 
+@MainActor
 protocol OnboardingCommunityViewModelInteractor {}
-
 extension CoreInteractor: OnboardingCommunityViewModelInteractor {}
+
+@MainActor
+protocol OnboardingCommunityViewModelRouter {
+    func showOnboardingColorView(delegate: OnboardingColorDelete)
+}
+extension CoreRouter: OnboardingCommunityViewModelRouter {}
 
 @MainActor
 @Observable
 final class OnboardingCommunityViewModel {
     private let interactor: OnboardingCommunityViewModelInteractor
-    init(interactor: OnboardingCommunityViewModelInteractor) {
+    private let router: OnboardingCommunityViewModelRouter
+    init(interactor: OnboardingCommunityViewModelInteractor, router: OnboardingCommunityViewModelRouter) {
         self.interactor = interactor
+        self.router = router
     }
     
-    func onContinueButtonPressed(path: Binding<[NavOnboardingPathOption]>) {
-        path.wrappedValue.append(.colorView)
+    func onContinueButtonPressed() {
+        router.showOnboardingColorView(delegate: OnboardingColorDelete())
     }
 }

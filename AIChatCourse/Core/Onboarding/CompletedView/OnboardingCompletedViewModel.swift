@@ -6,24 +6,31 @@
 //
 import SwiftUI
 
+@MainActor
 protocol OnboardingCompletedViewModelInteractor {
     func trackEvent(event: LoggableEvent)
     func markOnboardingCompleteForCurrentUser(profileColorHex: String) async throws
     func updateAppState(showTabBarView: Bool)
 }
-
 extension CoreInteractor: OnboardingCompletedViewModelInteractor {}
+
+@MainActor
+protocol OnboardingCompletedViewModelRouter {
+    func showAlert(error: Error)
+}
+extension CoreRouter: OnboardingCompletedViewModelRouter {}
 
 @MainActor
 @Observable
 final class OnboardingCompletedViewModel {
     private let interactor: OnboardingCompletedViewModelInteractor
-    init(interactor: OnboardingCompletedViewModelInteractor) {
+    private let router: OnboardingCompletedViewModelRouter
+    init(interactor: OnboardingCompletedViewModelInteractor, router: OnboardingCompletedViewModelRouter) {
         self.interactor = interactor
+        self.router = router
     }
 
     private(set) var isCompletingProfileSetup: Bool = false
-    var showAlert: AnyAppAlertItem?
 
     func onFinishButtonPressed(selectedColor: Color) {
         // other logic to complete onboarding
@@ -39,7 +46,7 @@ final class OnboardingCompletedViewModel {
                 // show tabbar view
                 interactor.updateAppState(showTabBarView: true)
             } catch {
-                showAlert = AnyAppAlertItem(error: error)
+                router.showAlert(error: error)
                 interactor.trackEvent(event: Event.finishFail(error: error))
             }
         }

@@ -33,7 +33,6 @@ struct OnboardingCompletedView: View {
         .toolbar(.hidden, for: .navigationBar)
         .padding(24)
         .appearAnalyticsViewModifier(name: "OnboardingCompletedView")
-        .showCustomAlert(alertItem: $viewModel.showAlert)
     }
 
     private var ctaButton: some View {
@@ -51,6 +50,8 @@ struct OnboardingCompletedView: View {
     let container = DevPreview.shared.container
     container.regiser(UserManager.self, manager: UserManager(services: MockUserServices()))
     let builder = CoreBuilder(interactor: CoreInteractor(container: container))
-    return builder.onboardingCompletedView(delegate: OnboardingCompletedDelete(selectedColor: .mint))
+    return RouterView { router in
+        builder.onboardingCompletedView(router: router, delegate: OnboardingCompletedDelete(selectedColor: .mint))
         .previewEnvironment()
+    }
 }
