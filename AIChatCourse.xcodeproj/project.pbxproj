@@ -12,6 +12,7 @@
 		AF0491DF2FC5ED9B00B751E6 /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = AF0491DE2FC5ED9B00B751E6 /* RevenueCatUI */; };
 		AF05D9542F9D006F00ECB7AD /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = AF05D9532F9D006F00ECB7AD /* FirebaseFirestore */; };
 		AF1479542FA573D800B0C58E /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = AF1479532FA573D800B0C58E /* FirebaseStorage */; };
+		AF167D832FD8046B0084941A /* CustomRouting in Frameworks */ = {isa = PBXBuildFile; productRef = AF167D822FD8046B0084941A /* CustomRouting */; };
 		AF2A19B22F9B8BD100E51154 /* SignInAppleAsync in Frameworks */ = {isa = PBXBuildFile; productRef = AF2A19B12F9B8BD100E51154 /* SignInAppleAsync */; };
 		AF37E5E62FBC46260022252D /* FirebaseFunctions in Frameworks */ = {isa = PBXBuildFile; productRef = AF37E5E52FBC46260022252D /* FirebaseFunctions */; };
 		AF639B9D2F6F977F00979BBA /* SwiftfulUtilities in Frameworks */ = {isa = PBXBuildFile; productRef = AF639B9C2F6F977F00979BBA /* SwiftfulUtilities */; };
@@ -91,6 +92,7 @@
 				AF05D9542F9D006F00ECB7AD /* FirebaseFirestore in Frameworks */,
 				AF37E5E62FBC46260022252D /* FirebaseFunctions in Frameworks */,
 				AF0491DD2FC5ED9B00B751E6 /* RevenueCat in Frameworks */,
+				AF167D832FD8046B0084941A /* CustomRouting in Frameworks */,
 				AF0490872FC5524600B751E6 /* StoreKit.framework in Frameworks */,
 				AF639B9D2F6F977F00979BBA /* SwiftfulUtilities in Frameworks */,
 				AFCBC2242FA9A54D00ACA3CE /* FirebaseAnalytics in Frameworks */,
@@ -174,6 +176,7 @@
 				AF992C052FBEFD51006AFC86 /* FirebaseRemoteConfig */,
 				AF0491DC2FC5ED9B00B751E6 /* RevenueCat */,
 				AF0491DE2FC5ED9B00B751E6 /* RevenueCatUI */,
+				AF167D822FD8046B0084941A /* CustomRouting */,
 			);
 			productName = AIChatCourse;
 			productReference = AFB9EAD72F66B7A500EB3ED3 /* AIChatCourse.app */;
@@ -243,6 +246,7 @@
 				AFBE45942FAEC6B8005E02EE /* XCRemoteSwiftPackageReference "jcore-sdk" */,
 				AFEFB9202FB1471400216A81 /* XCRemoteSwiftPackageReference "SwiftfulUI" */,
 				AF0491DB2FC5E25A00B751E6 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */,
+				AF167D812FD8046B0084941A /* XCRemoteSwiftPackageReference "CustomRouting" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = AFB9EAD82F66B7A500EB3ED3 /* Products */;
@@ -798,6 +802,14 @@
 				minimumVersion = 5.74.0;
 			};
 		};
+		AF167D812FD8046B0084941A /* XCRemoteSwiftPackageReference "CustomRouting" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/aka-after-jason/CustomRouting.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
 		AF2A19B02F9B8BD100E51154 /* XCRemoteSwiftPackageReference "SignInAppleAsync" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/SwiftfulThinking/SignInAppleAsync.git";
@@ -900,6 +912,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = AFED45272F9B09EE0060CA90 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseStorage;
+		};
+		AF167D822FD8046B0084941A /* CustomRouting */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AF167D812FD8046B0084941A /* XCRemoteSwiftPackageReference "CustomRouting" */;
+			productName = CustomRouting;
 		};
 		AF2A19B12F9B8BD100E51154 /* SignInAppleAsync */ = {
 			isa = XCSwiftPackageProductDependency;

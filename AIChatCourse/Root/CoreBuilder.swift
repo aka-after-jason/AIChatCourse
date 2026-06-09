@@ -6,6 +6,75 @@
 //
 import SwiftUI
 
+// @_exported this explicitly tells Xcode to export this imported module to the rest of the target.
+@_exported import CustomRouting // 不加 @_exported, 在使用 typealias 的时候没有用
+
+typealias RouterView = CustomRouting.RouterView
+
+@MainActor
+struct CoreRouter {
+    let router: Router
+    let builder: CoreBuilder
+
+    func showCategoryListView(delegate: CategoryListDelegate) {
+        router.showScreen(.push) { _ in
+            builder.categoryListView(delegate: delegate)
+        }
+    }
+
+    func showChatView(delegate: ChatViewDelegate) {
+        router.showScreen(.push) { _ in
+            builder.chatView(delegate: delegate)
+        }
+    }
+    
+    func dismissScreen() {
+        router.dismissScreen()
+    }
+    
+    func dismissModal() {
+        router.dismissModal()
+    }
+
+    // MARK: sheets
+
+    func showDevSettings() {
+        router.showScreen(.sheet) { _ in
+            builder.devSettingsView()
+        }
+    }
+
+    func showCreateAccountView(delegate: CreateAccountDelegate) {
+        router.showScreen(.sheet) { _ in
+            builder.createAccountView(delegate: delegate)
+                .presentationDetents([.medium])
+        }
+    }
+
+    // MARK: modals
+
+    func showPushNotificationModal(onEnablePressed: @escaping () -> Void, onCancelPressed: @escaping () -> Void) {
+        router.showModal(
+            backgroundColor: Color.black.opacity(0.6),
+            transition: .move(edge: .bottom),
+            destination: {
+                CustomModalView(
+                    title: "Enable push notifications?",
+                    subtitle: "We'll send you reminders and updates!",
+                    primaryButtonTitle: "Enable",
+                    primaryButtonAction: {
+                        onEnablePressed()
+                    },
+                    secondaryButtonTitle: "Cancel",
+                    secondaryButtonAction: {
+                        onCancelPressed()
+                    }
+                )
+            }
+        )
+    }
+}
+
 @MainActor
 struct CoreBuilder {
     let interactor: CoreInteractor
@@ -19,12 +88,12 @@ struct CoreBuilder {
         )
         .any()
     }
-    
+
     func createAccountView() -> AnyView {
         CreateAccountView(viewModel: CreateAccountViewModel(interactor: interactor))
             .any()
     }
-    
+
     // MARK: DevSettingsView
 
     func devSettingsView() -> AnyView {
@@ -33,28 +102,19 @@ struct CoreBuilder {
         )
         .any()
     }
-    
+
     // MARK: ExploreView
 
-    func exploreView() -> AnyView {
+    func exploreView(router: Router) -> AnyView {
         ExploreView(
-            viewModel: ExploreViewModel(interactor: interactor),
-            devSettingsView: {
-                devSettingsView()
-            },
-            createAccountView: {
-                createAccountView()
-            },
-            chatView: { delegate in
-                chatView(delegate: delegate)
-            },
-            categoryListView: { delegate in
-                categoryListView(delegate: delegate)
-            }
+            viewModel: ExploreViewModel(
+                interactor: interactor,
+                router: CoreRouter(router: router, builder: self)
+            )
         )
         .any()
     }
-    
+
     // MARK: AppView
 
     func appView() -> AnyView {
@@ -69,13 +129,20 @@ struct CoreBuilder {
         )
         .any()
     }
-    
+
     func tabbarView() -> AnyView {
         TabBarView(
             tabs: [
-                TabBarScreen(title: "Explore", systemImage: "eyes", screen: {
-                    exploreView()
-                }),
+                TabBarScreen(
+                    title: "Explore",
+                    systemImage: "eyes",
+                    screen: {
+                        RouterView { router in
+                            exploreView(router: router)
+                        }
+                        .any()
+                    }
+                ),
                 TabBarScreen(title: "Chats", systemImage: "bubble.left.and.bubble.right", screen: {
                     chatsView()
                 }),
@@ -86,7 +153,7 @@ struct CoreBuilder {
         )
         .any()
     }
-    
+
     func welcomeView() -> AnyView {
         WelcomeView(
             viewModel: WelcomeViewModel(interactor: interactor),
@@ -108,7 +175,7 @@ struct CoreBuilder {
         )
         .any()
     }
-    
+
     // MARK: CategoryListView
 
     func categoryListView(delegate: CategoryListDelegate) -> AnyView {
@@ -124,14 +191,14 @@ struct CoreBuilder {
         )
         .any()
     }
-    
+
     // MARK: PaywallView
 
     func paywallView() -> AnyView {
         PaywallView(viewModel: PaywallViewModel(interactor: interactor))
             .any()
     }
-    
+
     // MARK: ChatView
 
     func chatView(delegate: ChatViewDelegate = ChatViewDelegate()) -> AnyView {
@@ -144,7 +211,7 @@ struct CoreBuilder {
         )
         .any()
     }
-    
+
     // MARK: ChatsView
 
     func chatRowCellViewBuilder(delegate: ChatRowCellViewDelegate = ChatRowCellViewDelegate()) -> AnyView {
@@ -154,7 +221,7 @@ struct CoreBuilder {
         )
         .any()
     }
-    
+
     func chatsView() -> AnyView {
         ChatsView(
             viewModel: ChatsViewModel(interactor: interactor),
@@ -170,14 +237,14 @@ struct CoreBuilder {
         )
         .any()
     }
-    
+
     // MARK: CreateAvatarView
 
     func createAvatarView() -> AnyView {
         CreateAvatarView(viewModel: CreateAvatarViewModel(interactor: interactor))
             .any()
     }
-    
+
     // MARK: OnboardingColorView
 
     func onboardingColorView(delegate: OnboardingColorDelete) -> AnyView {
@@ -187,7 +254,7 @@ struct CoreBuilder {
         )
         .any()
     }
-    
+
     // MARK: OnboardingCommunityView
 
     func onboardingCommunityView(delegate: OnboardingCommunityDelete) -> AnyView {
@@ -197,21 +264,21 @@ struct CoreBuilder {
         )
         .any()
     }
-    
+
     // MARK: OnboardingCompletedView
 
     func onboardingCompletedView(delegate: OnboardingCompletedDelete) -> AnyView {
         OnboardingCompletedView(viewModel: OnboardingCompletedViewModel(interactor: interactor), delegate: delegate)
             .any()
     }
-    
+
     // MARK: OnboardingIntroView
 
     func onboardingIntroView(delegate: OnboardingIntroDelete) -> AnyView {
         OnboardingIntroView(viewModel: OnboardingIntroViewModel(interactor: interactor), delegate: delegate)
             .any()
     }
-    
+
     // MARK: SettingsView
 
     func settingsView() -> AnyView {
@@ -223,7 +290,7 @@ struct CoreBuilder {
         )
         .any()
     }
-    
+
     // MARK: ProfileView
 
     func profileView() -> AnyView {

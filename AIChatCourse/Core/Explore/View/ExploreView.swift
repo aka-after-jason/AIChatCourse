@@ -6,92 +6,67 @@
 //
 import SwiftUI
 
-/// struct ExploreView<DevSettingsView: View, CreateAccountView: View>: View {
 struct ExploreView: View {
-    // @ViewBuilder var devSettingsView: () -> DevSettingsView
-    // @ViewBuilder var createAccountView: () -> CreateAccountView
-
     @State var viewModel: ExploreViewModel
-    @ViewBuilder var devSettingsView: () -> AnyView // 可以使用泛型,也可以使用 AnyView
-    @ViewBuilder var createAccountView: () -> AnyView
-    @ViewBuilder var chatView: (ChatViewDelegate) -> AnyView
-    @ViewBuilder var categoryListView: (CategoryListDelegate) -> AnyView
     var body: some View {
-        NavigationStack(path: $viewModel.path) {
-            List {
-                if viewModel.featuredAvatars.isEmpty && viewModel.popularAvatars.isEmpty {
-                    ZStack {
-                        if viewModel.isLoadingFeatured || viewModel.isLoadingPopular {
-                            loadingIndicator
-                        } else {
-                            // for edge case 边缘测试
-                            errorMessageView
-                        }
+        List {
+            if viewModel.featuredAvatars.isEmpty && viewModel.popularAvatars.isEmpty {
+                ZStack {
+                    if viewModel.isLoadingFeatured || viewModel.isLoadingPopular {
+                        loadingIndicator
+                    } else {
+                        // for edge case 边缘测试
+                        errorMessageView
                     }
-                    .removeListRowFormatting()
                 }
+                .removeListRowFormatting()
+            }
 
-                if !viewModel.popularAvatars.isEmpty {
-                    if viewModel.categroyRowTest == .top {
-                        categorySection
-                    }
+            if !viewModel.popularAvatars.isEmpty {
+                if viewModel.categroyRowTest == .top {
+                    categorySection
                 }
+            }
 
-                if !viewModel.featuredAvatars.isEmpty {
-                    featuredSection
+            if !viewModel.featuredAvatars.isEmpty {
+                featuredSection
+            }
+            if !viewModel.popularAvatars.isEmpty {
+                if viewModel.categroyRowTest == .original {
+                    categorySection
                 }
-                if !viewModel.popularAvatars.isEmpty {
-                    if viewModel.categroyRowTest == .original {
-                        categorySection
-                    }
-                    popularSection
+                popularSection
+            }
+        }
+        .navigationTitle("Explore")
+        .appearAnalyticsViewModifier(name: "ExploreView")
+        .toolbar(content: {
+            ToolbarItem(placement: .topBarLeading) {
+                if viewModel.showDevSettingsButton {
+                    devSettingsButton
                 }
             }
-            .navigationTitle("Explore")
-            .appearAnalyticsViewModifier(name: "ExploreView")
-            .toolbar(content: {
-                ToolbarItem(placement: .topBarLeading) {
-                    if viewModel.showDevSettingsButton {
-                        devSettingsButton
-                    }
+            ToolbarItem(placement: .topBarTrailing) {
+                if viewModel.showNotificationButton {
+                    pushNotificationButton
                 }
-                ToolbarItem(placement: .topBarTrailing) {
-                    if viewModel.showNotificationButton {
-                        pushNotificationButton
-                    }
-                }
-            })
-            .sheet(isPresented: $viewModel.showDevSettings, content: {
-                devSettingsView()
-            })
-            .sheet(isPresented: $viewModel.showCreateAccountView, content: {
-                createAccountView()
-                    .presentationDetents([.medium])
-            })
-            .showModal(showModal: $viewModel.showPushNotificationModal, content: {
-                pushNotificationModal
-            })
-            .customNavDestiForTabbarModule(
-                path: $viewModel.path,
-                chatView: chatView,
-                categoryListView: categoryListView
-            )
-            .task {
-                await viewModel.loadFeaturedAvatars() // 没有先后顺序
             }
-            .task {
-                await viewModel.loadPopularAvatars() // 没有先后顺序
-            }
-            .task {
-                await viewModel.handleShowPushNotificationButton()
-            }
-            .onFirstAppear {
-                viewModel.schedulePushNotifications()
-                viewModel.showCreateAccountScreenIfNeeded()
-            }
-            .onOpenURL { url in
-                viewModel.handleDeepLink(url: url)
-            }
+        })
+        .task {
+            await viewModel.loadFeaturedAvatars() // 没有先后顺序
+        }
+        .task {
+            await viewModel.loadPopularAvatars() // 没有先后顺序
+        }
+        .task {
+            await viewModel.handleShowPushNotificationButton()
+        }
+        .onFirstAppear {
+            viewModel.schedulePushNotifications()
+            viewModel.showCreateAccountScreenIfNeeded()
+        }
+        .onOpenURL { url in
+            viewModel.handleDeepLink(url: url)
         }
     }
 
@@ -112,21 +87,6 @@ struct ExploreView: View {
             .anyButton {
                 viewModel.onPushNotificationButtonPressed()
             }
-    }
-
-    private var pushNotificationModal: some View {
-        CustomModalView(
-            title: "Enable push notifications?",
-            subtitle: "We'll send you reminders and updates!",
-            primaryButtonTitle: "Enable",
-            primaryButtonAction: {
-                viewModel.onEnablePushNotificationPressed()
-            },
-            secondaryButtonTitle: "Cancel",
-            secondaryButtonAction: {
-                viewModel.onCancelPushNotificationPressed()
-            }
-        )
     }
 }
 
@@ -226,49 +186,34 @@ extension ExploreView {
 
 // MARK: Previews
 
-#Preview("Without Builder") {
-    let container = DevPreview.shared.container
-    container.regiser(AvatarManager.self, manager: AvatarManager(service: MockAvatarService()))
-    return ExploreView(
-        viewModel: ExploreViewModel(interactor: CoreInteractor(container: container)),
-        devSettingsView: {
-            Color.red.any()
-        },
-        createAccountView: {
-            Color.green.any()
-        },
-        chatView: { _ in
-            Color.blue.any()
-        },
-        categoryListView: { _ in
-            Color.orange.any()
-        }
-    )
-    .previewEnvironment()
-}
-
 #Preview("Has data") {
     let container = DevPreview.shared.container
     container.regiser(AvatarManager.self, manager: AvatarManager(service: MockAvatarService()))
     let builder = CoreBuilder(interactor: CoreInteractor(container: container))
-    return builder.exploreView()
-        .previewEnvironment()
+    return RouterView { router in
+        builder.exploreView(router: router)
+    }
+    .previewEnvironment()
 }
 
 #Preview("No data") {
     let container = DevPreview.shared.container
     container.regiser(AvatarManager.self, manager: AvatarManager(service: MockAvatarService(avatars: [], delay: 1.0)))
     let builder = CoreBuilder(interactor: CoreInteractor(container: container))
-    return builder.exploreView()
-        .previewEnvironment()
+    return RouterView { router in
+        builder.exploreView(router: router)
+    }
+    .previewEnvironment()
 }
 
 #Preview("Slow loading") {
     let container = DevPreview.shared.container
     container.regiser(AvatarManager.self, manager: AvatarManager(service: MockAvatarService()))
     let builder = CoreBuilder(interactor: CoreInteractor(container: container))
-    return builder.exploreView()
-        .previewEnvironment()
+    return RouterView { router in
+        builder.exploreView(router: router)
+    }
+    .previewEnvironment()
 }
 
 #Preview("Has data With CreateAccount") {
@@ -277,30 +222,38 @@ extension ExploreView {
     container.regiser(AuthManager.self, manager: AuthManager(service: MockAuthService(user: .mock(isAnonymous: true))))
     container.regiser(ABTestManager.self, manager: ABTestManager(service: MockABTestService(createAccountTest: true)))
     let builder = CoreBuilder(interactor: CoreInteractor(container: container))
-    return builder.exploreView()
-        .previewEnvironment()
+    return RouterView { router in
+        builder.exploreView(router: router)
+    }
+    .previewEnvironment()
 }
 
 #Preview("CategoryRowTest: original") {
     let container = DevPreview.shared.container
     container.regiser(ABTestManager.self, manager: ABTestManager(service: MockABTestService(categoryRowTest: .original)))
     let builder = CoreBuilder(interactor: CoreInteractor(container: container))
-    return builder.exploreView()
-        .previewEnvironment()
+    return RouterView { router in
+        builder.exploreView(router: router)
+    }
+    .previewEnvironment()
 }
 
 #Preview("CategoryRowTest: top") {
     let container = DevPreview.shared.container
     container.regiser(ABTestManager.self, manager: ABTestManager(service: MockABTestService(categoryRowTest: .top)))
     let builder = CoreBuilder(interactor: CoreInteractor(container: container))
-    return builder.exploreView()
-        .previewEnvironment()
+    return RouterView { router in
+        builder.exploreView(router: router)
+    }
+    .previewEnvironment()
 }
 
 #Preview("CategoryRowTest: hidden") {
     let container = DevPreview.shared.container
     container.regiser(ABTestManager.self, manager: ABTestManager(service: MockABTestService(categoryRowTest: .hidden)))
     let builder = CoreBuilder(interactor: CoreInteractor(container: container))
-    return builder.exploreView()
-        .previewEnvironment()
+    return RouterView { router in
+        builder.exploreView(router: router)
+    }
+    .previewEnvironment()
 }

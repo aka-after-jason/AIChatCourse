@@ -5,7 +5,6 @@
 //  Created by Elaine on 2026/6/7.
 //
 import SwiftUI
-import SwiftfulUtilities
 
 protocol SettingsViewModelInteractor {
     var authUser: UserAuthInfoModel? { get }

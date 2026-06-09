@@ -20,12 +20,26 @@ protocol ExploreViewModelInteractor {
 
 extension CoreInteractor: ExploreViewModelInteractor {}
 
+protocol ExploreViewModelRouter {
+    func showCategoryListView(delegate: CategoryListDelegate)
+    func showChatView(delegate: ChatViewDelegate)
+    func showCreateAccountView(delegate: CreateAccountDelegate)
+    func showPushNotificationModal(onEnablePressed: @escaping () -> Void, onCancelPressed: @escaping () -> Void)
+    func showDevSettings()
+    func dismissModal()
+}
+
+extension CoreRouter: ExploreViewModelRouter {}
+
 @MainActor
 @Observable
 final class ExploreViewModel {
-    let interactor: ExploreViewModelInteractor
-    init(interactor: ExploreViewModelInteractor) {
+    private let interactor: ExploreViewModelInteractor
+    private let router: ExploreViewModelRouter
+
+    init(interactor: ExploreViewModelInteractor, router: ExploreViewModelRouter) {
         self.interactor = interactor
+        self.router = router
     }
 
     private(set) var categories: [CharacterOption] = CharacterOption.allCases
@@ -33,12 +47,7 @@ final class ExploreViewModel {
     private(set) var popularAvatars: [AvatarModel] = []
     private(set) var isLoadingFeatured: Bool = true
     private(set) var isLoadingPopular: Bool = true
-
-    var path: [NavTabbarPathOption] = []
-    var showDevSettings: Bool = false
     var showNotificationButton: Bool = false
-    var showPushNotificationModal: Bool = false
-    var showCreateAccountView: Bool = false
 
     var categroyRowTest: CategoryRowTestOption {
         interactor.categoryRowTest
@@ -61,7 +70,7 @@ final class ExploreViewModel {
             guard interactor.authUser?.isAnonymous == true && interactor.createAccountTest == true else {
                 return
             }
-            showCreateAccountView = true
+            router.showCreateAccountView(delegate: CreateAccountDelegate())
         }
     }
 
@@ -85,7 +94,12 @@ final class ExploreViewModel {
             // 解析 queryItem
             if queryItem.name == "category", let value = queryItem.value, let category = CharacterOption(rawValue: value) {
                 let imageName = popularAvatars.first(where: { $0.characterOption == category })?.profileImageName ?? Constants.randomImageUrl
-                path.append(.categoryListView(category: category, imageName: imageName))
+                let delegate = CategoryListDelegate(
+                    path: .constant([]),
+                    category: category,
+                    imageName: imageName
+                )
+                router.showCategoryListView(delegate: delegate)
                 interactor.trackEvent(event: Event.deeplinkCategory(category: category))
                 return
             }
@@ -102,12 +116,19 @@ final class ExploreViewModel {
     }
 
     func onPushNotificationButtonPressed() {
-        showPushNotificationModal = true
         interactor.trackEvent(event: Event.pushNotificationStart)
+        router.showPushNotificationModal(
+            onEnablePressed: {
+                self.onEnablePushNotificationPressed()
+            },
+            onCancelPressed: {
+                self.onCancelPushNotificationPressed()
+            }
+        )
     }
 
     func onEnablePushNotificationPressed() {
-        showPushNotificationModal = false
+        router.dismissModal()
         Task {
             let isAuthorized = try await interactor.requestAuthorization()
             interactor.trackEvent(event: Event.pushNotificationEnable(isAuthorized: isAuthorized))
@@ -116,13 +137,13 @@ final class ExploreViewModel {
     }
 
     func onCancelPushNotificationPressed() {
-        showPushNotificationModal = false
         interactor.trackEvent(event: Event.pushNotificationCancel)
+        router.dismissModal()
     }
 
     func onDevSettingsButtonPressed() {
-        showDevSettings = true
         interactor.trackEvent(event: Event.devSettingsPressed)
+        router.showDevSettings()
     }
 
     func loadFeaturedAvatars() async {
@@ -153,12 +174,18 @@ final class ExploreViewModel {
 
     func onAvatarPressed(avatar: AvatarModel) {
         interactor.trackEvent(event: Event.avatarPressed(avatar: avatar))
-        path.append(.chatView(avatarId: avatar.avatarId, chat: nil))
+        let delegate = ChatViewDelegate(chat: nil, avatarId: avatar.avatarId)
+        router.showChatView(delegate: delegate)
     }
 
     func onCategoryPressed(category: CharacterOption, imageName: String) {
         interactor.trackEvent(event: Event.categoryPressed(category: category))
-        path.append(.categoryListView(category: category, imageName: imageName))
+        let delegate = CategoryListDelegate(
+            path: .constant([]),
+            category: category,
+            imageName: imageName
+        )
+        router.showCategoryListView(delegate: delegate)
     }
 
     func onTryAgainPressed() {

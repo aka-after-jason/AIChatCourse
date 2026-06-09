@@ -4,7 +4,6 @@
 //
 //  Created by Elaine on 2026/3/15.
 //
-import SwiftfulUtilities
 import SwiftUI
 
 // MARK: SwiftUI advanced architecture
