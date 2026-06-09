@@ -14,20 +14,26 @@ protocol ChatsViewModelInteractor {
     func getAllChats(userId: String) async throws -> [ChatModel]
     func getRecentAvatars() throws -> [AvatarModel]
 }
-
 extension CoreInteractor: ChatsViewModelInteractor {}
+
+@MainActor
+protocol ChatsViewModelRouter {
+    func showChatView(delegate: ChatViewDelegate)
+}
+extension CoreRouter: ChatsViewModelRouter {}
 
 @MainActor
 @Observable
 final class ChatsViewModel {
     private let interactor: ChatsViewModelInteractor
-    init(interactor: ChatsViewModelInteractor) {
+    private let router: ChatsViewModelRouter
+    init(interactor: ChatsViewModelInteractor, router: ChatsViewModelRouter) {
         self.interactor = interactor
+        self.router = router
     }
 
     private(set) var chats: [ChatModel] = []
     private(set) var recentAvatars: [AvatarModel] = []
-    var path: [NavTabbarPathOption] = []
 
     func loadChats() async {
         interactor.trackEvent(event: Event.loadChatsStart)
@@ -53,13 +59,15 @@ final class ChatsViewModel {
     }
 
     func onChatPressed(chat: ChatModel) {
-        path.append(.chatView(avatarId: chat.avatarId, chat: chat))
         interactor.trackEvent(event: Event.chatPressed(chat: chat))
+        let delegate = ChatViewDelegate(chat: chat, avatarId: chat.avatarId)
+        router.showChatView(delegate: delegate)
     }
 
     func onAvatarPressed(avatar: AvatarModel) {
-        path.append(.chatView(avatarId: avatar.avatarId, chat: nil))
         interactor.trackEvent(event: Event.avatarPressed(avatar: avatar))
+        let delegate = ChatViewDelegate(chat: nil, avatarId: avatar.avatarId)
+        router.showChatView(delegate: delegate)
     }
 }
 

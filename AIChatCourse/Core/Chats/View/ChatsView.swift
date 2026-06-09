@@ -10,29 +10,20 @@ import SwiftUI
 struct ChatsView: View {
     @State var viewModel: ChatsViewModel
     @ViewBuilder var chatRowCellViewBuilder: (ChatRowCellViewDelegate) -> AnyView
-    @ViewBuilder var chatView: (ChatViewDelegate) -> AnyView
-    @ViewBuilder var categoryListView: (CategoryListDelegate) -> AnyView
     var body: some View {
-        NavigationStack(path: $viewModel.path) {
-            List {
-                if !viewModel.recentAvatars.isEmpty {
-                    recentsSection
-                }
-                chatsSection
+        List {
+            if !viewModel.recentAvatars.isEmpty {
+                recentsSection
             }
-            .navigationTitle("Chats")
-            .appearAnalyticsViewModifier(name: "ChatsView")
-            .customNavDestiForTabbarModule(
-                path: $viewModel.path,
-                chatView: chatView,
-                categoryListView: categoryListView
-            )
-            .task {
-                await viewModel.loadChats()
-            }
-            .onAppear {
-                viewModel.loadRecentAvatars()
-            }
+            chatsSection
+        }
+        .navigationTitle("Chats")
+        .appearAnalyticsViewModifier(name: "ChatsView")
+        .task {
+            await viewModel.loadChats()
+        }
+        .onAppear {
+            viewModel.loadRecentAvatars()
         }
     }
 }
@@ -105,6 +96,8 @@ struct RecentAvatarView: View {
 
 #Preview {
     let builder = CoreBuilder(interactor: CoreInteractor(container: DevPreview.shared.container))
-    return builder.chatsView()
-        .previewEnvironment()
+    return RouterView { router in
+        builder.chatsView(router: router)
+            .previewEnvironment()
+    }
 }

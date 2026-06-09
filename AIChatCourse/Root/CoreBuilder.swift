@@ -186,8 +186,8 @@ struct CoreBuilder {
                     .any()
                 }),
                 TabBarScreen(title: "Chats", systemImage: "bubble.left.and.bubble.right", screen: {
-                    RouterView { _ in
-                        chatsView()
+                    RouterView { router in
+                        chatsView(router: router)
                     }
                     .any()
                 }),
@@ -258,17 +258,14 @@ struct CoreBuilder {
         .any()
     }
 
-    func chatsView() -> AnyView {
+    func chatsView(router: Router) -> AnyView {
         ChatsView(
-            viewModel: ChatsViewModel(interactor: interactor),
+            viewModel: ChatsViewModel(
+                interactor: interactor,
+                router: CoreRouter(router: router, builder: self)
+            ),
             chatRowCellViewBuilder: { delegate in
                 chatRowCellViewBuilder(delegate: delegate)
-            },
-            chatView: { delegate in
-                chatView(delegate: delegate)
-            },
-            categoryListView: { delegate in
-                categoryListView(delegate: delegate)
             }
         )
         .any()
