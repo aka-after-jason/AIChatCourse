@@ -7,26 +7,11 @@
 import SwiftUI
 
 @MainActor
-protocol DevSettingsViewModelInteractor {
-    var activeABTestModel: ActiveABTestModel { get }
-    var currentUser: UserModel? { get }
-    var authUser: UserAuthInfoModel? { get }
-    func override(updateABTestModel: ActiveABTestModel) throws
-}
-extension CoreInteractor: DevSettingsViewModelInteractor {}
-
-@MainActor
-protocol DevSettingsViewModelRouter {
-    func dismissScreen()
-}
-extension CoreRouter: DevSettingsViewModelRouter {}
-
-@MainActor
 @Observable
-final class DevSettingsViewModel {
-    private let interactor: DevSettingsViewModelInteractor
-    private let router: DevSettingsViewModelRouter
-    init(interactor: DevSettingsViewModelInteractor, router: DevSettingsViewModelRouter) {
+final class DevSettingsPresenter {
+    private let interactor: DevSettingsInteractor
+    private let router: DevSettingsRouter
+    init(interactor: DevSettingsInteractor, router: DevSettingsRouter) {
         self.interactor = interactor
         self.router = router
     }

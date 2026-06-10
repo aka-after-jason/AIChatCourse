@@ -37,7 +37,7 @@ struct CoreBuilder {
 
     func devSettingsView(router: Router) -> AnyView {
         DevSettingsView(
-            viewModel: DevSettingsViewModel(
+            presenter: DevSettingsPresenter(
                 interactor: interactor,
                 router: CoreRouter(router: router, builder: self)
             )

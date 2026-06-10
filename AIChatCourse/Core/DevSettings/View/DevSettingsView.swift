@@ -7,7 +7,7 @@
 import SwiftUI
 
 struct DevSettingsView: View {
-    @State var viewModel: DevSettingsViewModel
+    @State var presenter: DevSettingsPresenter
     var body: some View {
         // This is a sheet, new environment
         List {
@@ -24,7 +24,7 @@ struct DevSettingsView: View {
             }
         }
         .onFirstAppear {
-            viewModel.loadABTest()
+            presenter.loadABTest()
         }
     }
 }
@@ -32,7 +32,7 @@ struct DevSettingsView: View {
 extension DevSettingsView {
     private var backButtonView: some View {
         Button(action: {
-            viewModel.onBackButtonPressed()
+            presenter.onBackButtonPressed()
         }, label: {
             Image(systemName: "xmark")
         })
@@ -40,25 +40,25 @@ extension DevSettingsView {
 
     private var abtestSection: some View {
         Section {
-            Toggle("Create Account Test", isOn: $viewModel.createAccountTest)
-                .onChange(of: viewModel.createAccountTest, viewModel.handleCreateAccountChange)
+            Toggle("Create Account Test", isOn: $presenter.createAccountTest)
+                .onChange(of: presenter.createAccountTest, presenter.handleCreateAccountChange)
 
-            Toggle("Onboarding Community Test", isOn: $viewModel.onboardingCommunityTest)
-                .onChange(of: viewModel.onboardingCommunityTest, viewModel.handleOnboardingCommunityChange)
+            Toggle("Onboarding Community Test", isOn: $presenter.onboardingCommunityTest)
+                .onChange(of: presenter.onboardingCommunityTest, presenter.handleOnboardingCommunityChange)
 
-            Picker("Category Row Test", selection: $viewModel.categoryRowTest) {
+            Picker("Category Row Test", selection: $presenter.categoryRowTest) {
                 ForEach(CategoryRowTestOption.allCases, id: \.self) { option in
                     Text(option.rawValue).id(option)
                 }
             }
-            .onChange(of: viewModel.categoryRowTest, viewModel.handleCategoryRowTestChange)
+            .onChange(of: presenter.categoryRowTest, presenter.handleCategoryRowTestChange)
 
-            Picker("Paywall Test", selection: $viewModel.paywallTest) {
+            Picker("Paywall Test", selection: $presenter.paywallTest) {
                 ForEach(PaywallTestOption.allCases, id: \.self) { option in
                     Text(option.rawValue).id(option)
                 }
             }
-            .onChange(of: viewModel.paywallTest, viewModel.handlePaywallTestChange)
+            .onChange(of: presenter.paywallTest, presenter.handlePaywallTestChange)
 
         } header: {
             Text("ABTest")
@@ -68,7 +68,7 @@ extension DevSettingsView {
 
     private var deviceInfoSection: some View {
         Section {
-            ForEach(viewModel.utilitiesData, id: \.key) { item in
+            ForEach(presenter.utilitiesData, id: \.key) { item in
                 itemRow(item: item)
             }
         } header: {
@@ -79,7 +79,7 @@ extension DevSettingsView {
     private var userInfoSection: some View {
         Section {
             // 将字典转成数组, 因为这里的 Foreach 遍历需要有序
-            ForEach(viewModel.userData, id: \.key) { item in
+            ForEach(presenter.userData, id: \.key) { item in
                 itemRow(item: item)
             }
         } header: {
@@ -90,7 +90,7 @@ extension DevSettingsView {
     private var authInfoSection: some View {
         Section {
             // 将字典转成数组, 因为这里的 Foreach 遍历需要有序
-            ForEach(viewModel.authData, id: \.key) { item in
+            ForEach(presenter.authData, id: \.key) { item in
                 itemRow(item: item)
             }
         } header: {
