@@ -8,28 +8,11 @@ import SwiftUI
 import StoreKit
 
 @MainActor
-protocol PaywallViewModelInteractor {
-    var activeABTestModel: ActiveABTestModel { get }
-    func trackEvent(event: LoggableEvent)
-    func getProducts(productIds: [String]) async throws -> [AnyProduct]
-    func restorePurchase() async throws -> [PurchasedEntitlement]
-    func purchaseProduct(productId: String) async throws -> [PurchasedEntitlement]
-}
-extension CoreInteractor: PaywallViewModelInteractor {}
-
-@MainActor
-protocol PaywallViewModelRouter {
-    func dismissScreen()
-    func showAlert(error: Error)
-}
-extension CoreRouter: PaywallViewModelRouter {}
-
-@MainActor
 @Observable
-final class PaywallViewModel {
-    private let interactor: PaywallViewModelInteractor
-    private let router: PaywallViewModelRouter
-    init(interactor: PaywallViewModelInteractor, router: PaywallViewModelRouter) {
+final class PaywallPresenter {
+    private let interactor: PaywallInteractor
+    private let router: PaywallRouter
+    init(interactor: PaywallInteractor, router: PaywallRouter) {
         self.interactor = interactor
         self.router = router
     }
@@ -112,7 +95,7 @@ final class PaywallViewModel {
     }
 }
 
-extension PaywallViewModel {
+extension PaywallPresenter {
     enum Event: LoggableEvent {
         case purchaseStart(product: AnyProduct)
         case purchaseSuccess(product: AnyProduct)

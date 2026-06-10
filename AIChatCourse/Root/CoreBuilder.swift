@@ -125,7 +125,7 @@ struct CoreBuilder {
 
     func paywallView(router: Router) -> AnyView {
         PaywallView(
-            viewModel: PaywallViewModel(
+            presenter: PaywallPresenter(
                 interactor: interactor,
                 router: CoreRouter(router: router, builder: self)
             )
