@@ -7,25 +7,11 @@
 import SwiftUI
 
 @MainActor
-protocol WelcomeViewModelInteractor {
-    func trackEvent(event: LoggableEvent)
-    func updateAppState(showTabBarView: Bool)
-}
-extension CoreInteractor: WelcomeViewModelInteractor {}
-
-@MainActor
-protocol WelcomeViewModelRoutre {
-    func showOnboardingIntroView(delegate: OnboardingIntroDelete)
-    func showCreateAccountView(delegate: CreateAccountDelegate, onDisappear: (() -> Void)?)
-}
-extension CoreRouter: WelcomeViewModelRoutre {}
-
-@MainActor
 @Observable
-final class WelcomeViewModel {
-    private let interactor: WelcomeViewModelInteractor
-    private let router: WelcomeViewModelRoutre
-    init(interactor: WelcomeViewModelInteractor, router: WelcomeViewModelRoutre) {
+final class WelcomePresenter {
+    private let interactor: WelcomeInteractor
+    private let router: WelcomeRouter
+    init(interactor: WelcomeInteractor, router: WelcomeRouter) {
         self.interactor = interactor
         self.router = router
     }
@@ -57,7 +43,7 @@ final class WelcomeViewModel {
     }
 }
 
-extension WelcomeViewModel {
+extension WelcomePresenter {
     enum Event: LoggableEvent {
         case didSignIn(isNewUser: Bool)
         case signInPressed

@@ -101,7 +101,7 @@ struct CoreBuilder {
     func welcomeView() -> AnyView {
         RouterView { router in
             WelcomeView(
-                viewModel: WelcomeViewModel(interactor: interactor, router: CoreRouter(router: router, builder: self))
+                viewModel: WelcomePresenter(interactor: interactor, router: CoreRouter(router: router, builder: self))
             )
             .any()
         }

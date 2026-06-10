@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct WelcomeView: View {
-    @State var viewModel: WelcomeViewModel
+    @State var viewModel: WelcomePresenter
     var body: some View {
         VStack(spacing: 8) {
             ImageLoaderView(urlString: viewModel.imageName)
