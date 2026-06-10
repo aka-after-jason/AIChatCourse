@@ -7,12 +7,12 @@
 import SwiftUI
 
 struct ExploreView: View {
-    @State var viewModel: ExploreViewModel
+    @State var presenter: ExplorePresenter
     var body: some View {
         List {
-            if viewModel.featuredAvatars.isEmpty && viewModel.popularAvatars.isEmpty {
+            if presenter.featuredAvatars.isEmpty && presenter.popularAvatars.isEmpty {
                 ZStack {
-                    if viewModel.isLoadingFeatured || viewModel.isLoadingPopular {
+                    if presenter.isLoadingFeatured || presenter.isLoadingPopular {
                         loadingIndicator
                     } else {
                         // for edge case 边缘测试
@@ -22,17 +22,17 @@ struct ExploreView: View {
                 .removeListRowFormatting()
             }
 
-            if !viewModel.popularAvatars.isEmpty {
-                if viewModel.categroyRowTest == .top {
+            if !presenter.popularAvatars.isEmpty {
+                if presenter.categroyRowTest == .top {
                     categorySection
                 }
             }
 
-            if !viewModel.featuredAvatars.isEmpty {
+            if !presenter.featuredAvatars.isEmpty {
                 featuredSection
             }
-            if !viewModel.popularAvatars.isEmpty {
-                if viewModel.categroyRowTest == .original {
+            if !presenter.popularAvatars.isEmpty {
+                if presenter.categroyRowTest == .original {
                     categorySection
                 }
                 popularSection
@@ -42,37 +42,37 @@ struct ExploreView: View {
         .appearAnalyticsViewModifier(name: "ExploreView")
         .toolbar(content: {
             ToolbarItem(placement: .topBarLeading) {
-                if viewModel.showDevSettingsButton {
+                if presenter.showDevSettingsButton {
                     devSettingsButton
                 }
             }
             ToolbarItem(placement: .topBarTrailing) {
-                if viewModel.showNotificationButton {
+                if presenter.showNotificationButton {
                     pushNotificationButton
                 }
             }
         })
         .task {
-            await viewModel.loadFeaturedAvatars() // 没有先后顺序
+            await presenter.loadFeaturedAvatars() // 没有先后顺序
         }
         .task {
-            await viewModel.loadPopularAvatars() // 没有先后顺序
+            await presenter.loadPopularAvatars() // 没有先后顺序
         }
         .task {
-            await viewModel.handleShowPushNotificationButton()
+            await presenter.handleShowPushNotificationButton()
         }
         .onFirstAppear {
-            viewModel.schedulePushNotifications()
-            viewModel.showCreateAccountScreenIfNeeded()
+            presenter.schedulePushNotifications()
+            presenter.showCreateAccountScreenIfNeeded()
         }
         .onOpenURL { url in
-            viewModel.handleDeepLink(url: url)
+            presenter.handleDeepLink(url: url)
         }
     }
 
     private var devSettingsButton: some View {
         Button(action: {
-            viewModel.onDevSettingsButtonPressed()
+            presenter.onDevSettingsButtonPressed()
         }, label: {
             Text("DEV 🤫")
         })
@@ -85,7 +85,7 @@ struct ExploreView: View {
             .tappableBackground()
             .foregroundStyle(.accent)
             .anyButton {
-                viewModel.onPushNotificationButtonPressed()
+                presenter.onPushNotificationButtonPressed()
             }
     }
 }
@@ -107,7 +107,7 @@ extension ExploreView {
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
             Button("Try again") {
-                viewModel.onTryAgainPressed()
+                presenter.onTryAgainPressed()
             }
             .foregroundStyle(.blue)
         }
@@ -119,14 +119,14 @@ extension ExploreView {
     private var featuredSection: some View {
         Section {
             ZStack {
-                CarouselView(items: viewModel.featuredAvatars) { avatar in
+                CarouselView(items: presenter.featuredAvatars) { avatar in
                     HeroCellView(
                         title: avatar.name,
                         subTitle: avatar.characterDescription,
                         imageName: avatar.profileImageName
                     )
                     .anyButton {
-                        viewModel.onAvatarPressed(avatar: avatar)
+                        presenter.onAvatarPressed(avatar: avatar)
                     }
                 }
             }
@@ -141,15 +141,15 @@ extension ExploreView {
             ZStack {
                 ScrollView(.horizontal) {
                     HStack {
-                        ForEach(viewModel.categories, id: \.self) { category in
-                            let imageName = viewModel.popularAvatars.last(where: { $0.characterOption == category })?.profileImageName
+                        ForEach(presenter.categories, id: \.self) { category in
+                            let imageName = presenter.popularAvatars.last(where: { $0.characterOption == category })?.profileImageName
                             if let imageName {
                                 CategoryCellView(
                                     title: category.plural.capitalized,
                                     imageName: imageName
                                 )
                                 .anyButton {
-                                    viewModel.onCategoryPressed(category: category, imageName: imageName)
+                                    presenter.onCategoryPressed(category: category, imageName: imageName)
                                 }
                             }
                         }
@@ -167,14 +167,14 @@ extension ExploreView {
 
     private var popularSection: some View {
         Section {
-            ForEach(viewModel.popularAvatars, id: \.self) { avatar in
+            ForEach(presenter.popularAvatars, id: \.self) { avatar in
                 CustomListCellView(
                     imageName: avatar.profileImageName,
                     title: avatar.name,
                     subTitle: avatar.characterDescription
                 )
                 .anyButton(.highlight, action: {
-                    viewModel.onAvatarPressed(avatar: avatar)
+                    presenter.onAvatarPressed(avatar: avatar)
                 })
                 .removeListRowFormatting()
             }

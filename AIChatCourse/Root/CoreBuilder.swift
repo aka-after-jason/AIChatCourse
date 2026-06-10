@@ -49,7 +49,7 @@ struct CoreBuilder {
 
     func exploreView(router: Router) -> AnyView {
         ExploreView(
-            viewModel: ExploreViewModel(
+            presenter: ExplorePresenter(
                 interactor: interactor,
                 router: CoreRouter(router: router, builder: self)
             )

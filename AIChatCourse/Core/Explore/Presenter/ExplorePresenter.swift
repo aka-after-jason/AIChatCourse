@@ -6,38 +6,13 @@
 //
 import SwiftUI
 
-protocol ExploreViewModelInteractor {
-    var categoryRowTest: CategoryRowTestOption { get }
-    var authUser: UserAuthInfoModel? { get }
-    var createAccountTest: Bool { get }
-    func canRequestAuthorization() async -> Bool
-    func requestAuthorization() async throws -> Bool
-    func schedulePushNotificationsForTheNextWeek()
-    func getFeaturedAvatars() async throws -> [AvatarModel]
-    func getPopularAvatars() async throws -> [AvatarModel]
-    func trackEvent(event: LoggableEvent)
-}
-
-extension CoreInteractor: ExploreViewModelInteractor {}
-
-protocol ExploreViewModelRouter {
-    func showCategoryListView(delegate: CategoryListDelegate)
-    func showChatView(delegate: ChatViewDelegate)
-    func showCreateAccountView(delegate: CreateAccountDelegate, onDisappear: (() -> Void)?)
-    func showPushNotificationModal(onEnablePressed: @escaping () -> Void, onCancelPressed: @escaping () -> Void)
-    func showDevSettingsView()
-    func dismissModal()
-}
-
-extension CoreRouter: ExploreViewModelRouter {}
-
 @MainActor
 @Observable
-final class ExploreViewModel {
-    private let interactor: ExploreViewModelInteractor
-    private let router: ExploreViewModelRouter
+final class ExplorePresenter {
+    private let interactor: ExploreInteractor
+    private let router: ExploreRouter
 
-    init(interactor: ExploreViewModelInteractor, router: ExploreViewModelRouter) {
+    init(interactor: ExploreInteractor, router: ExploreRouter) {
         self.interactor = interactor
         self.router = router
     }
@@ -199,7 +174,7 @@ final class ExploreViewModel {
     }
 }
 
-extension ExploreViewModel {
+extension ExplorePresenter {
     enum Event: LoggableEvent {
         case devSettingsPressed
         case tryAgainPressed
