@@ -34,7 +34,7 @@ struct ProfileViewTests {
         container.regiser(LogManager.self, manager: logManager)
         
         // Given
-        let viewModel = ProfileViewModel(interactor: ProductProfileViewModelInteractor(container: container))
+        let viewModel = ProfilePresenter(interactor: ProductProfileViewModelInteractor(container: container))
         
         // When
         await viewModel.loadData()

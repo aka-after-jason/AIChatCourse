@@ -249,7 +249,7 @@ struct CoreBuilder {
 
     func profileView(router: Router) -> AnyView {
         ProfileView(
-            viewModel: ProfileViewModel(
+            presenter: ProfilePresenter(
                 interactor: interactor,
                 router: CoreRouter(router: router, builder: self)
             )

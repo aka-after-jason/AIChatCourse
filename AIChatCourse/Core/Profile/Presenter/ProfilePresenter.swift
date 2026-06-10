@@ -8,38 +8,12 @@ import SwiftUI
 
 // MARK: MVVM With Protocols
 
-// 目的:
-// 1. 不需要导入manager中所有的方法, 用到什么方法,在 protocol 里面添加
-// 2. 方便单元测试
-
-@MainActor
-protocol ProfileViewModelInteractor {
-    var currentUser: UserModel? { get }
-
-    func getCurrentUserId() throws -> String
-    func getAvatarsForAuthor(userId: String) async throws -> [AvatarModel]
-    func removeAuthorIdFromAvatar(avatarId: String) async throws
-    func trackEvent(event: LoggableEvent)
-}
-
-extension CoreInteractor: ProfileViewModelInteractor {}
-
-@MainActor
-protocol ProfileViewModelRouter {
-    func showSettingsView()
-    func showCreateAvatarView(onDisappear: @escaping () -> Void)
-    func showAlert(title: String, subtitle: String?)
-    func showChatView(delegate: ChatViewDelegate)
-}
-
-extension CoreRouter: ProfileViewModelRouter {}
-
 @MainActor
 @Observable
-final class ProfileViewModel {
-    private let interactor: ProfileViewModelInteractor
-    private let router: ProfileViewModelRouter
-    init(interactor: ProfileViewModelInteractor, router: ProfileViewModelRouter) {
+final class ProfilePresenter {
+    private let interactor: ProfileInteractor
+    private let router: ProfileRouter
+    init(interactor: ProfileInteractor, router: ProfileRouter) {
         self.interactor = interactor
         self.router = router
     }
@@ -98,7 +72,7 @@ final class ProfileViewModel {
     }
 }
 
-extension ProfileViewModel {
+extension ProfilePresenter {
     enum Event: LoggableEvent {
         case loadAvatarStart
         case loadAvatarSuccess(count: Int)

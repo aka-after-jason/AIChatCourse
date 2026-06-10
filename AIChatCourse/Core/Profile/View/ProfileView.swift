@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ProfileView: View {
-    @State var viewModel: ProfileViewModel
+    @State var presenter: ProfilePresenter
     var body: some View {
         List {
             myInfoSection
@@ -22,7 +22,7 @@ struct ProfileView: View {
             }
         }
         .task {
-            await viewModel.loadData()
+            await presenter.loadData()
         }
     }
 }
@@ -31,7 +31,7 @@ extension ProfileView {
     private var myInfoSection: some View {
         Section {
             ZStack {
-                if let color = viewModel.currentUser?.profileColorCalculated {
+                if let color = presenter.currentUser?.profileColorCalculated {
                     Circle()
                         .fill(color)
                 }
@@ -45,9 +45,9 @@ extension ProfileView {
     private var myAvatarsSection: some View {
         Section(
             content: {
-                if viewModel.myAvatars.isEmpty {
+                if presenter.myAvatars.isEmpty {
                     Group {
-                        if viewModel.isLoading {
+                        if presenter.isLoading {
                             ProgressView()
                         } else {
                             Text("Click + to create an avatar")
@@ -59,19 +59,19 @@ extension ProfileView {
                     .foregroundStyle(.secondary)
                     .removeListRowFormatting()
                 } else {
-                    ForEach(viewModel.myAvatars, id: \.self) { avatar in
+                    ForEach(presenter.myAvatars, id: \.self) { avatar in
                         CustomListCellView(
                             imageName: avatar.profileImageName,
                             title: avatar.name,
                             subTitle: nil
                         )
                         .anyButton(.highlight, action: {
-                            viewModel.onAvatarPressed(avatar: avatar)
+                            presenter.onAvatarPressed(avatar: avatar)
                         })
                         .removeListRowFormatting()
                     }
                     .onDelete { indexSet in
-                        viewModel.onDeleteAvatar(indexSet: indexSet)
+                        presenter.onDeleteAvatar(indexSet: indexSet)
                     }
                 }
             },
@@ -81,7 +81,7 @@ extension ProfileView {
                     Spacer()
                     Button(action: {
                         // show create avatar view
-                        viewModel.onNewAvatarButtonPressed()
+                        presenter.onNewAvatarButtonPressed()
                     }, label: {
                         Image(systemName: "plus.circle.fill")
                             .font(.title)
@@ -96,7 +96,7 @@ extension ProfileView {
             .font(.headline)
             .foregroundStyle(.accent)
             .anyButton {
-                viewModel.onSettingsButtonPressed()
+                presenter.onSettingsButtonPressed()
             }
     }
 }
