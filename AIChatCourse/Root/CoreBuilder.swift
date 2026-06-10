@@ -158,7 +158,7 @@ struct CoreBuilder {
 
     func chatsView(router: Router) -> AnyView {
         ChatsView(
-            viewModel: ChatsViewModel(
+            presenter: ChatsPresenter(
                 interactor: interactor,
                 router: CoreRouter(router: router, builder: self)
             ),

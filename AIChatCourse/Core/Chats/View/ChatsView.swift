@@ -8,11 +8,11 @@
 import SwiftUI
 
 struct ChatsView: View {
-    @State var viewModel: ChatsViewModel
+    @State var presenter: ChatsPresenter
     @ViewBuilder var chatRowCellViewBuilder: (ChatRowCellViewDelegate) -> AnyView
     var body: some View {
         List {
-            if !viewModel.recentAvatars.isEmpty {
+            if !presenter.recentAvatars.isEmpty {
                 recentsSection
             }
             chatsSection
@@ -20,10 +20,10 @@ struct ChatsView: View {
         .navigationTitle("Chats")
         .appearAnalyticsViewModifier(name: "ChatsView")
         .task {
-            await viewModel.loadChats()
+            await presenter.loadChats()
         }
         .onAppear {
-            viewModel.loadRecentAvatars()
+            presenter.loadRecentAvatars()
         }
     }
 }
@@ -33,17 +33,17 @@ struct ChatsView: View {
 extension ChatsView {
     private var chatsSection: some View {
         Section {
-            if viewModel.chats.isEmpty {
+            if presenter.chats.isEmpty {
                 ContentUnavailableView("Empty Chats", systemImage: "text.bubble", description: Text("Your chats will appear here!"))
                     .foregroundStyle(.secondary)
                     .padding(40)
                     .removeListRowFormatting()
             } else {
-                ForEach(viewModel.chats) { chat in
+                ForEach(presenter.chats) { chat in
                     // ChatRowCellViewBuilder 用了自己的 viewmodel
                     chatRowCellViewBuilder(ChatRowCellViewDelegate(chat: chat))
                         .anyButton(.highlight, action: {
-                            viewModel.onChatPressed(chat: chat)
+                            presenter.onChatPressed(chat: chat)
                         })
                         .removeListRowFormatting()
                 }
@@ -57,14 +57,14 @@ extension ChatsView {
         Section {
             ScrollView(.horizontal, showsIndicators: false) {
                 LazyHStack(spacing: 8) {
-                    ForEach(viewModel.recentAvatars, id: \.self) { avatar in
+                    ForEach(presenter.recentAvatars, id: \.self) { avatar in
                         if let imageName = avatar.profileImageName {
                             RecentAvatarView(
                                 imageName: imageName,
                                 title: avatar.name ?? ""
                             )
                             .anyButton {
-                                viewModel.onAvatarPressed(avatar: avatar)
+                                presenter.onAvatarPressed(avatar: avatar)
                             }
                         }
                     }

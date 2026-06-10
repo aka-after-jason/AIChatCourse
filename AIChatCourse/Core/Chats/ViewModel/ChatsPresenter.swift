@@ -7,27 +7,11 @@
 import SwiftUI
 
 @MainActor
-protocol ChatsViewModelInteractor {
-    var authUser: UserAuthInfoModel? { get }
-    func trackEvent(event: LoggableEvent)
-    func getCurrentUserId() throws -> String
-    func getAllChats(userId: String) async throws -> [ChatModel]
-    func getRecentAvatars() throws -> [AvatarModel]
-}
-extension CoreInteractor: ChatsViewModelInteractor {}
-
-@MainActor
-protocol ChatsViewModelRouter {
-    func showChatView(delegate: ChatViewDelegate)
-}
-extension CoreRouter: ChatsViewModelRouter {}
-
-@MainActor
 @Observable
-final class ChatsViewModel {
-    private let interactor: ChatsViewModelInteractor
-    private let router: ChatsViewModelRouter
-    init(interactor: ChatsViewModelInteractor, router: ChatsViewModelRouter) {
+final class ChatsPresenter {
+    private let interactor: ChatsInteractor
+    private let router: ChatsRouter
+    init(interactor: ChatsInteractor, router: ChatsRouter) {
         self.interactor = interactor
         self.router = router
     }
@@ -71,7 +55,7 @@ final class ChatsViewModel {
     }
 }
 
-extension ChatsViewModel {
+extension ChatsPresenter {
     enum Event: LoggableEvent {
         case loadAvatarsStart
         case loadAvatarsSuccess(avatarCount: Int)
