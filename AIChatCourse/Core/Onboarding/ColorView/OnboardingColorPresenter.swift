@@ -7,22 +7,11 @@
 import SwiftUI
 
 @MainActor
-protocol OnboardingColorViewModelInteractor {}
-extension CoreInteractor: OnboardingColorViewModelInteractor {}
-
-@MainActor
-protocol OnboardingColorViewModelRouter {
-    func showOnboardingCompletedView(delegate: OnboardingCompletedDelete)
-}
-
-extension CoreRouter: OnboardingColorViewModelRouter {}
-
-@MainActor
 @Observable
-final class OnboardingColorViewModel {
-    private let interactor: OnboardingColorViewModelInteractor
-    private let router: OnboardingColorViewModelRouter
-    init(interactor: OnboardingColorViewModelInteractor, router: OnboardingColorViewModelRouter) {
+final class OnboardingColorPresenter {
+    private let interactor: OnboardingColorInteractor
+    private let router: OnboardingColorRouter
+    init(interactor: OnboardingColorInteractor, router: OnboardingColorRouter) {
         self.interactor = interactor
         self.router = router
     }

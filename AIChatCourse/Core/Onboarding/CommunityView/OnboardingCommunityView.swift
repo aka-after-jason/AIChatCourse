@@ -10,7 +10,7 @@ import SwiftUI
 struct OnboardingCommunityDelete {}
 
 struct OnboardingCommunityView: View {
-    @State var viewModel: OnboardingCommunityViewModel
+    @State var presenter: OnboardingCommunityPresenter
     let delegate: OnboardingCommunityDelete
     var body: some View {
         VStack {
@@ -26,7 +26,7 @@ struct OnboardingCommunityView: View {
             Text("Continue")
                 .callToActionButton()
                 .anyButton(.press, action: {
-                    viewModel.onContinueButtonPressed()
+                    presenter.onContinueButtonPressed()
                 })
         }
         .toolbar(.hidden, for: .navigationBar)

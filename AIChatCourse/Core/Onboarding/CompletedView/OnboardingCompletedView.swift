@@ -12,7 +12,7 @@ struct OnboardingCompletedDelete {
 }
 
 struct OnboardingCompletedView: View {
-    @State var viewModel: OnboardingCompletedViewModel
+    @State var presenter: OnboardingCompletedPresenter
     var delegate: OnboardingCompletedDelete = OnboardingCompletedDelete()
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -37,10 +37,10 @@ struct OnboardingCompletedView: View {
 
     private var ctaButton: some View {
         AsyncCallToActionButton(
-            isLoading: viewModel.isCompletingProfileSetup,
+            isLoading: presenter.isCompletingProfileSetup,
             title: "Finish",
             action: {
-                viewModel.onFinishButtonPressed(selectedColor: delegate.selectedColor)
+                presenter.onFinishButtonPressed(selectedColor: delegate.selectedColor)
             }
         )
     }

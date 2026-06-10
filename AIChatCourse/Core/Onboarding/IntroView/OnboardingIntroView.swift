@@ -10,7 +10,7 @@ import SwiftUI
 struct OnboardingIntroDelete {}
 
 struct OnboardingIntroView: View {
-    @State var viewModel: OnboardingIntroViewModel
+    @State var presenter: OnboardingIntroPresenter
     let delegate: OnboardingIntroDelete
     var body: some View {
         VStack {
@@ -20,7 +20,7 @@ struct OnboardingIntroView: View {
             Text("Continue")
                 .callToActionButton()
                 .anyButton(.press, action: {
-                    viewModel.onContinueButtonPressed()
+                    presenter.onContinueButtonPressed()
                 })
                 .accessibilityIdentifier("ContinueButton")
         }

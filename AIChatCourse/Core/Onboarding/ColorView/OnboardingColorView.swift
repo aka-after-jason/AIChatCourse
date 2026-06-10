@@ -10,7 +10,7 @@ import SwiftUI
 struct OnboardingColorDelete {}
 
 struct OnboardingColorView: View {
-    @State var viewModel: OnboardingColorViewModel
+    @State var presenter: OnboardingColorPresenter
     let delegate: OnboardingColorDelete
     var body: some View {
         VStack {
@@ -24,7 +24,7 @@ struct OnboardingColorView: View {
                 spacing: 16,
                 content: {
                     ZStack {
-                        if let selectedColor = viewModel.selectedColor {
+                        if let selectedColor = presenter.selectedColor {
                             ctaButton(selectedColor: selectedColor)
                                 .transition(AnyTransition.move(edge: .bottom))
                         }
@@ -36,7 +36,7 @@ struct OnboardingColorView: View {
                 }
             )
             .toolbar(.hidden, for: .navigationBar)
-            .animation(.bouncy, value: viewModel.selectedColor)
+            .animation(.bouncy, value: presenter.selectedColor)
             .appearAnalyticsViewModifier(name: "OnboardingColorView")
         }
     }
@@ -47,7 +47,7 @@ extension OnboardingColorView {
         Text("Continue")
             .callToActionButton()
             .anyButton(.press, action: {
-                viewModel.onContinueButtonPressed()
+                presenter.onContinueButtonPressed()
             })
     }
 
@@ -60,16 +60,16 @@ extension OnboardingColorView {
             pinnedViews: [.sectionHeaders],
             content: {
                 Section {
-                    ForEach(viewModel.colors, id: \.self) { color in
+                    ForEach(presenter.colors, id: \.self) { color in
                         Circle()
                             .fill(.accent)
                             .overlay {
                                 color
                                     .clipShape(Circle())
-                                    .padding(viewModel.selectedColor == color ? 10 : 0)
+                                    .padding(presenter.selectedColor == color ? 10 : 0)
                             }
                             .onTapGesture {
-                                viewModel.onColorPressed(color: color)
+                                presenter.onColorPressed(color: color)
                             }
                     }
                 } header: {

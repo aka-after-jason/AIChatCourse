@@ -185,7 +185,7 @@ struct CoreBuilder {
 
     func onboardingColorView(router: Router, delegate: OnboardingColorDelete) -> AnyView {
         OnboardingColorView(
-            viewModel: OnboardingColorViewModel(
+            presenter: OnboardingColorPresenter(
                 interactor: interactor,
                 router: CoreRouter(router: router, builder: self)
             ),
@@ -198,7 +198,7 @@ struct CoreBuilder {
 
     func onboardingCommunityView(router: Router, delegate: OnboardingCommunityDelete) -> AnyView {
         OnboardingCommunityView(
-            viewModel: OnboardingCommunityViewModel(
+            presenter: OnboardingCommunityPresenter(
                 interactor: interactor,
                 router: CoreRouter(router: router, builder: self)
             ),
@@ -211,7 +211,7 @@ struct CoreBuilder {
 
     func onboardingCompletedView(router: Router, delegate: OnboardingCompletedDelete) -> AnyView {
         OnboardingCompletedView(
-            viewModel: OnboardingCompletedViewModel(
+            presenter: OnboardingCompletedPresenter(
                 interactor: interactor,
                 router: CoreRouter(router: router, builder: self)
             ),
@@ -224,7 +224,7 @@ struct CoreBuilder {
 
     func onboardingIntroView(router: Router, delegate: OnboardingIntroDelete) -> AnyView {
         OnboardingIntroView(
-            viewModel: OnboardingIntroViewModel(
+            presenter: OnboardingIntroPresenter(
                 interactor: interactor,
                 router: CoreRouter(router: router, builder: self)
             ),

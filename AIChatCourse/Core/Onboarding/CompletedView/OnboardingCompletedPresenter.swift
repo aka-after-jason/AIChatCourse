@@ -7,25 +7,11 @@
 import SwiftUI
 
 @MainActor
-protocol OnboardingCompletedViewModelInteractor {
-    func trackEvent(event: LoggableEvent)
-    func markOnboardingCompleteForCurrentUser(profileColorHex: String) async throws
-    func updateAppState(showTabBarView: Bool)
-}
-extension CoreInteractor: OnboardingCompletedViewModelInteractor {}
-
-@MainActor
-protocol OnboardingCompletedViewModelRouter {
-    func showAlert(error: Error)
-}
-extension CoreRouter: OnboardingCompletedViewModelRouter {}
-
-@MainActor
 @Observable
-final class OnboardingCompletedViewModel {
-    private let interactor: OnboardingCompletedViewModelInteractor
-    private let router: OnboardingCompletedViewModelRouter
-    init(interactor: OnboardingCompletedViewModelInteractor, router: OnboardingCompletedViewModelRouter) {
+final class OnboardingCompletedPresenter {
+    private let interactor: OnboardingCompletedInteractor
+    private let router: OnboardingCompletedRouter
+    init(interactor: OnboardingCompletedInteractor, router: OnboardingCompletedRouter) {
         self.interactor = interactor
         self.router = router
     }
@@ -53,7 +39,7 @@ final class OnboardingCompletedViewModel {
     }
 }
 
-extension OnboardingCompletedViewModel {
+extension OnboardingCompletedPresenter {
     enum Event: LoggableEvent {
         case finishStart
         case finishSuccess(hex: String)
