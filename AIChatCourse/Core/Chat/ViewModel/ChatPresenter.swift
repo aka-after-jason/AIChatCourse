@@ -7,44 +7,11 @@
 import SwiftUI
 
 @MainActor
-protocol ChatViewModelInteractor {
-    var currentUser: UserModel? { get }
-    var authUser: UserAuthInfoModel? { get }
-    var entitlements: [PurchasedEntitlement] { get }
-    func trackEvent(event: LoggableEvent)
-    func streamChatMessages(chatId: String) -> AsyncThrowingStream<[ChatMessageModel], Error>
-    func getCurrentUserId() throws -> String
-    func getChat(userId: String, avatarId: String) async throws -> ChatModel?
-    func getAvatar(id: String) async throws -> AvatarModel
-    func addRecentAvatar(avatar: AvatarModel) async throws
-    func markChatMessageAsSeen(chatId: String, messageId: String, userId: String) async throws
-    func addChatMessage(chatId: String, message: ChatMessageModel) async throws
-    func generateText(chats: [AIChatModel]) async throws -> AIChatModel
-    func createNewChat(chat: ChatModel) async throws
-    func reportChat(chatId: String, userId: String) async throws
-    func deleteChat(chatId: String) async throws
-}
-extension CoreInteractor: ChatViewModelInteractor {}
-
-@MainActor
-protocol ChatViewModelRouter {
-    func showPaywallView()
-    func showAlert(error: Error)
-    func showAlert(type: CustomRouting.AlertType, title: String, subtitle: String?, buttons: (() -> AnyView)?)
-    func showAlert(title: String, subtitle: String?)
-    func showProfileModal(avatar: AvatarModel, onXmarkPressed: @escaping () -> Void)
-    func dismissModal()
-    func dismissAlert()
-    func dismissScreen()
-}
-extension CoreRouter: ChatViewModelRouter {}
-
-@MainActor
 @Observable
-final class ChatViewModel {
-    private let interactor: ChatViewModelInteractor
-    private let router: ChatViewModelRouter
-    init(interactor: ChatViewModelInteractor, router: ChatViewModelRouter) {
+final class ChatPresenter {
+    private let interactor: ChatInteractor
+    private let router: ChatRouter
+    init(interactor: ChatInteractor, router: ChatRouter) {
         self.interactor = interactor
         self.router = router
     }
@@ -296,7 +263,7 @@ final class ChatViewModel {
     }
 }
 
-extension ChatViewModel {
+extension ChatPresenter {
     enum Event: LoggableEvent {
         case loadAvatarStart
         case loadAvatarSuccess(avatar: AvatarModel)

@@ -13,7 +13,7 @@ struct ChatViewDelegate {
 }
 
 struct ChatView: View {
-    @State var viewModel: ChatViewModel
+    @State var presenter: ChatPresenter
     let delegate: ChatViewDelegate
     
     var body: some View {
@@ -21,12 +21,12 @@ struct ChatView: View {
             scrollviewSection
             textFieldSection
         }
-        .navigationTitle(viewModel.avatar?.name ?? "")
+        .navigationTitle(presenter.avatar?.name ?? "")
         .toolbarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button(action: {
-                    viewModel.onChatSettingsPressed()
+                    presenter.onChatSettingsPressed()
                 }, label: {
                     Image(systemName: "ellipsis")
                         .foregroundStyle(.accent)
@@ -36,36 +36,36 @@ struct ChatView: View {
         }
         .appearAnalyticsViewModifier(name: "ChatView")
         .task {
-            await viewModel.loadAvatar(avatarId: delegate.avatarId)
+            await presenter.loadAvatar(avatarId: delegate.avatarId)
         }
         .task {
-            await viewModel.loadChat(avatarId: delegate.avatarId)
+            await presenter.loadChat(avatarId: delegate.avatarId)
             // 放在下面
-            await viewModel.listenForChatMessages()
+            await presenter.listenForChatMessages()
         }
         .onFirstAppear {
-            viewModel.onViewFirstAppear(chat: delegate.chat)
+            presenter.onViewFirstAppear(chat: delegate.chat)
         }
     }
 
     private var scrollviewSection: some View {
         ScrollView {
             LazyVStack(spacing: 24) {
-                ForEach(viewModel.chatMessages) { message in
+                ForEach(presenter.chatMessages) { message in
                     // 45 分钟 才显示时间
-                    if viewModel.messageIsDelayed(message: message) {
+                    if presenter.messageIsDelayed(message: message) {
                         timestampView(date: message.dateCreatedCalculated)
                     }
-                    let isCurrentUser = viewModel.messageIsCurrentUser(message: message) // currentUser?.userId
+                    let isCurrentUser = presenter.messageIsCurrentUser(message: message) // currentUser?.userId
                     ChatBubbleViewBuilder(
                         message: message,
                         isCurrentUser: isCurrentUser,
-                        currentUserProfileColor: viewModel.currentUser?.profileColorCalculated ?? .accent,
-                        imageName: viewModel.avatar?.profileImageName,
-                        onImagePressed: viewModel.onAvatarImagePressed
+                        currentUserProfileColor: presenter.currentUser?.profileColorCalculated ?? .accent,
+                        imageName: presenter.avatar?.profileImageName,
+                        onImagePressed: presenter.onAvatarImagePressed
                     )
                     .onAppear(perform: {
-                        viewModel.onMessageDidAppear(message: message)
+                        presenter.onMessageDidAppear(message: message)
                     })
                     .id(message.id)
                 }
@@ -76,9 +76,9 @@ struct ChatView: View {
         }
         // 将 scrollview 反转,目的是让内容贴近输入框
         .rotationEffect(.degrees(180))
-        .scrollPosition(id: $viewModel.scrollPosition, anchor: .center)
+        .scrollPosition(id: $presenter.scrollPosition, anchor: .center)
         // .default 动画 搭配scrollview 绝配
-        .animation(.default, value: viewModel.chatMessages.count)
+        .animation(.default, value: presenter.chatMessages.count)
     }
 
     private func timestampView(date: Date) -> some View {
@@ -94,7 +94,7 @@ struct ChatView: View {
     }
 
     private var textFieldSection: some View {
-        TextField("Say something...", text: $viewModel.textfieldText)
+        TextField("Say something...", text: $presenter.textfieldText)
             .keyboardType(.alphabet)
             .autocorrectionDisabled()
             .padding(12)
@@ -105,7 +105,7 @@ struct ChatView: View {
                     .padding(.trailing, 4)
                     .foregroundStyle(.accent)
                     .anyButton {
-                        viewModel.onSendMessagePressed()
+                        presenter.onSendMessagePressed()
                     }
             })
             .background(

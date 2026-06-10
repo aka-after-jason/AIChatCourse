@@ -137,7 +137,7 @@ struct CoreBuilder {
 
     func chatView(router: Router, delegate: ChatViewDelegate = ChatViewDelegate()) -> AnyView {
         ChatView(
-            viewModel: ChatViewModel(
+            presenter: ChatPresenter(
                 interactor: interactor,
                 router: CoreRouter(router: router, builder: self)
             ),
