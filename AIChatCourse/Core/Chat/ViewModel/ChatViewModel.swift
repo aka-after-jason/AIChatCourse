@@ -6,6 +6,7 @@
 //
 import SwiftUI
 
+@MainActor
 protocol ChatViewModelInteractor {
     var currentUser: UserModel? { get }
     var authUser: UserAuthInfoModel? { get }
@@ -23,15 +24,29 @@ protocol ChatViewModelInteractor {
     func reportChat(chatId: String, userId: String) async throws
     func deleteChat(chatId: String) async throws
 }
-
 extension CoreInteractor: ChatViewModelInteractor {}
+
+@MainActor
+protocol ChatViewModelRouter {
+    func showPaywallView()
+    func showAlert(error: Error)
+    func showAlert(type: CustomRouting.AlertType, title: String, subtitle: String?, buttons: (() -> AnyView)?)
+    func showAlert(title: String, subtitle: String?)
+    func showProfileModal(avatar: AvatarModel, onXmarkPressed: @escaping () -> Void)
+    func dismissModal()
+    func dismissAlert()
+    func dismissScreen()
+}
+extension CoreRouter: ChatViewModelRouter {}
 
 @MainActor
 @Observable
 final class ChatViewModel {
     private let interactor: ChatViewModelInteractor
-    init(interactor: ChatViewModelInteractor) {
+    private let router: ChatViewModelRouter
+    init(interactor: ChatViewModelInteractor, router: ChatViewModelRouter) {
         self.interactor = interactor
+        self.router = router
     }
 
     private(set) var chatMessages: [ChatMessageModel] = []
@@ -41,10 +56,6 @@ final class ChatViewModel {
 
     var scrollPosition: String?
     var textfieldText: String = ""
-    var alertItem: AnyAppAlertItem?
-    var dialogItem: AnyAppAlertItem?
-    var showProfileModalView: Bool = false
-    var showPaywallViwe: Bool = false
 
     var entitlements: [PurchasedEntitlement] {
         interactor.entitlements
@@ -140,7 +151,7 @@ final class ChatViewModel {
                 // Chat has >= 3 messages
                 let isPremium = interactor.entitlements.hasActiveEntitlement
                 if !isPremium && chatMessages.count >= 3 {
-                    showPaywallViwe = true
+                    router.showPaywallView()
                     return
                 }
 
@@ -194,8 +205,8 @@ final class ChatViewModel {
 
                 interactor.trackEvent(event: Event.sendMessageResponseSent(chat: chat, avatar: avatar, message: newAIMessage))
             } catch {
-                alertItem = AnyAppAlertItem(error: error)
                 interactor.trackEvent(event: Event.sendMessageFail(error: error))
+                router.showAlert(error: error)
             }
         }
     }
@@ -215,24 +226,24 @@ final class ChatViewModel {
         return newChat
     }
 
-    func onChatSettingsPressed(onDismiss: @escaping () -> Void) {
+    func onChatSettingsPressed() {
         interactor.trackEvent(event: Event.chatSettingsPressed)
-        dialogItem = AnyAppAlertItem(
+        router.showAlert(
+            type: .confirmationDialog,
             title: "",
             subtitle: "What would you like to do?",
             buttons: {
-                AnyView(
-                    Group {
-                        Button("Report User / Chat", role: .destructive) {
-                            self.onReportChatPressed()
-                        }
-                        Button("Delete Chat", role: .destructive) {
-                            self.onDeleteChatPressed(onDismiss: onDismiss)
-                        }
+            AnyView(
+                Group {
+                    Button("Report User / Chat", role: .destructive, action: {
+                        self.onReportChatPressed()
+                    })
+                    Button("Delete Chat", role: .destructive) {
+                        self.onDeleteChatPressed()
                     }
-                )
-            }
-        )
+                }
+            )
+        })
     }
 
     func onReportChatPressed() {
@@ -242,43 +253,46 @@ final class ChatViewModel {
                 let chatId = try getChatId()
                 let uid = try interactor.getCurrentUserId()
                 try await interactor.reportChat(chatId: chatId, userId: uid)
-                alertItem = AnyAppAlertItem(
+                interactor.trackEvent(event: Event.reportChatSuccess)
+                router.showAlert(
                     title: "👮🏻 Reported 👮🏻",
                     subtitle: "We will review the chat shortly. You may leave the chat at any time. Thanks for bringing this to our attention!"
                 )
-                interactor.trackEvent(event: Event.reportChatSuccess)
             } catch {
-                alertItem = AnyAppAlertItem(
+                interactor.trackEvent(event: Event.reportChatFail(error: error))
+                router.showAlert(
                     title: "Something went wrong",
                     subtitle: "Please check your internet connection and try again."
                 )
-                interactor.trackEvent(event: Event.reportChatFail(error: error))
             }
         }
     }
 
-    func onDeleteChatPressed(onDismiss: @escaping () -> Void) {
+    func onDeleteChatPressed() {
         interactor.trackEvent(event: Event.deleteChatStart)
         Task {
             do {
                 let chatId = try getChatId()
                 try await interactor.deleteChat(chatId: chatId)
-                onDismiss()
+                router.dismissScreen()
                 interactor.trackEvent(event: Event.deleteChatSuccess)
             } catch {
-                print("Failed to delete chat: \(error)")
-                alertItem = AnyAppAlertItem(
+                interactor.trackEvent(event: Event.deleteChatFail(error: error))
+                router.showAlert(
                     title: "Something went wrong",
                     subtitle: "Please check your internet connection and try again."
                 )
-                interactor.trackEvent(event: Event.deleteChatFail(error: error))
             }
         }
     }
 
     func onAvatarImagePressed() {
-        showProfileModalView = true
         interactor.trackEvent(event: Event.avatarImagePressed(avatar: avatar))
+        if let avatar = avatar {
+            router.showProfileModal(avatar: avatar, onXmarkPressed: {
+                self.router.dismissModal()
+            })
+        }
     }
 }
 

@@ -25,8 +25,8 @@ struct CoreRouter {
     }
 
     func showChatView(delegate: ChatViewDelegate) {
-        router.showScreen(.push) { _ in
-            builder.chatView(delegate: delegate)
+        router.showScreen(.push) { router in
+            builder.chatView(router: router, delegate: delegate)
         }
     }
 
@@ -67,12 +67,14 @@ struct CoreRouter {
         router.dismissScreen()
     }
 
-    func dismissModal() {
-        router.dismissModal()
+    // MARK: sheets
+
+    func showPaywallView() {
+        router.showScreen(.sheet) { _ in
+            builder.paywallView()
+        }
     }
 
-    // MARK: sheets
-    
     func showSettingsView() {
         router.showScreen(.sheet) { _ in
             builder.settingsView()
@@ -115,12 +117,35 @@ struct CoreRouter {
         )
     }
 
+    func showProfileModal(avatar: AvatarModel, onXmarkPressed: @escaping () -> Void) {
+        router.showModal(
+            backgroundColor: Color.black.opacity(0.6),
+            transition: .slide,
+            destination: {
+                ProfileModalView(
+                    imageName: avatar.profileImageName,
+                    title: avatar.name,
+                    subtitle: avatar.characterOption?.rawValue.capitalized,
+                    headline: avatar.characterDescription,
+                    onXmarkPressed: {
+                        onXmarkPressed()
+                    }
+                )
+                .padding(40)
+            }
+        )
+    }
+
+    func dismissModal() {
+        router.dismissModal()
+    }
+
     // MARK: alerts
 
     func showAlert(type: CustomRouting.AlertType, title: String, subtitle: String?, buttons: (() -> AnyView)?) {
         router.showAlert(type: type, title: title, subtitle: subtitle, buttons: buttons)
     }
-    
+
     func showAlert(title: String, subtitle: String?) {
         router.showAlert(type: .alert, title: title, subtitle: subtitle, buttons: nil)
     }
@@ -247,13 +272,13 @@ struct CoreBuilder {
 
     // MARK: ChatView
 
-    func chatView(delegate: ChatViewDelegate = ChatViewDelegate()) -> AnyView {
+    func chatView(router: Router, delegate: ChatViewDelegate = ChatViewDelegate()) -> AnyView {
         ChatView(
-            viewModel: ChatViewModel(interactor: interactor),
-            delegate: delegate,
-            paywallView: {
-                paywallView()
-            }
+            viewModel: ChatViewModel(
+                interactor: interactor,
+                router: CoreRouter(router: router, builder: self)
+            ),
+            delegate: delegate
         )
         .any()
     }

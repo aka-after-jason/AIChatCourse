@@ -13,10 +13,8 @@ struct ChatViewDelegate {
 }
 
 struct ChatView: View {
-    @Environment(\.dismiss) private var dismiss
     @State var viewModel: ChatViewModel
     let delegate: ChatViewDelegate
-    @ViewBuilder var paywallView: () -> AnyView
     
     var body: some View {
         VStack {
@@ -28,9 +26,7 @@ struct ChatView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button(action: {
-                    viewModel.onChatSettingsPressed(onDismiss: {
-                        dismiss()
-                    })
+                    viewModel.onChatSettingsPressed()
                 }, label: {
                     Image(systemName: "ellipsis")
                         .foregroundStyle(.accent)
@@ -39,16 +35,6 @@ struct ChatView: View {
             }
         }
         .appearAnalyticsViewModifier(name: "ChatView")
-        .showCustomAlert(type: .confirmationDialog, alertItem: $viewModel.dialogItem)
-        .showCustomAlert(type: .alert, alertItem: $viewModel.alertItem)
-        .showModal(showModal: $viewModel.showProfileModalView) {
-            if let avatar = viewModel.avatar {
-                profileModal(avatar: avatar)
-            }
-        }
-        .sheet(isPresented: $viewModel.showPaywallViwe, content: {
-            paywallView()
-        })
         .task {
             await viewModel.loadAvatar(avatarId: delegate.avatarId)
         }
@@ -60,19 +46,6 @@ struct ChatView: View {
         .onFirstAppear {
             viewModel.onViewFirstAppear(chat: delegate.chat)
         }
-    }
-
-    private func profileModal(avatar: AvatarModel) -> some View {
-        ProfileModalView(
-            imageName: avatar.profileImageName,
-            title: avatar.name,
-            subtitle: avatar.characterOption?.rawValue.capitalized,
-            headline: avatar.characterDescription
-        ) {
-            viewModel.showProfileModalView = false
-        }
-        .padding(40)
-        .transition(.slide)
     }
 
     private var scrollviewSection: some View {
@@ -154,8 +127,8 @@ struct ChatView: View {
 #Preview("Working chat - Not Premium") {
     let container = DevPreview.shared.container
     let builder = CoreBuilder(interactor: CoreInteractor(container: container))
-    return NavigationStack {
-        builder.chatView()
+    return RouterView { router in
+        builder.chatView(router: router)
             .previewEnvironment()
     }
 }
@@ -165,8 +138,8 @@ struct ChatView: View {
     container.regiser(PurchaseManager.self, manager: PurchaseManager(service: MockPurchaseService(activeEntitlements: [.mock])))
     let builder = CoreBuilder(interactor: CoreInteractor(container: container))
     let delegate = ChatViewDelegate()
-    return NavigationStack {
-        builder.chatView(delegate: delegate)
+    return RouterView { router in
+        builder.chatView(router: router, delegate: delegate)
             .previewEnvironment()
     }
 }
