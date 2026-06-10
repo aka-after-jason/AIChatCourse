@@ -236,4 +236,15 @@ struct CoreBuilder {
             )
         )
     }
+    
+    // MARK: AboutView
+    func aboutView(router: Router, delegate: AboutDelegate) -> some View {
+        AboutView(
+            presenter: AboutPresenter(
+                interactor: interactor,
+                router: CoreRouter(router: router, builder: self)
+            ),
+            delegate: delegate
+        )
+    }
 }

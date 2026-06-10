@@ -14,5 +14,6 @@ protocol SettingsRouter {
     func showCreateAccountView(delegate: CreateAccountDelegate, onDisappear: (() -> Void)?)
     func showRatingsModal(onEnjoyAppYesPressed: @escaping () -> Void, onEnjoyAppNoPressed: @escaping () -> Void)
     func dismissModal()
+    func showAboutView(delegate: AboutDelegate)
 }
 extension CoreRouter: SettingsRouter {}

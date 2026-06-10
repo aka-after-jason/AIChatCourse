@@ -106,6 +106,11 @@ extension SettingsView {
                 .rowFormatting()
                 .anyButton(.highlight) { presenter.onContactUsPressed() }
                 .removeListRowFormatting()
+            
+            Text("About Us")
+                .rowFormatting()
+                .anyButton(.highlight) { presenter.onAboutUsPressed() }
+                .removeListRowFormatting()
 
         }, header: {
             Text("Application")

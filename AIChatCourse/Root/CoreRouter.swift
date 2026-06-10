@@ -59,6 +59,12 @@ struct CoreRouter {
                 .onDisappear(perform: { onDisappear() })
         }
     }
+    
+    func showAboutView(delegate: AboutDelegate) {
+        router.showScreen(.push) { router in
+            builder.aboutView(router: router, delegate: delegate)
+        }
+    }
 
     // MARK: sheets
 

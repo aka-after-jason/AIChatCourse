@@ -109,6 +109,11 @@ final class SettingsPresenter {
         guard let url = URL(string: emailString), UIApplication.shared.canOpenURL(url) else { return }
         UIApplication.shared.open(url)
     }
+    
+    func onAboutUsPressed() {
+        let delegate = AboutDelegate()
+        router.showAboutView(delegate: delegate)
+    }
 
     func onRatingsButtonPressed() {
         interactor.trackEvent(event: Event.ratingPressed)
