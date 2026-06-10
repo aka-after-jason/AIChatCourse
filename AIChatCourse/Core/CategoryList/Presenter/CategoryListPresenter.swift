@@ -1,5 +1,5 @@
 //
-//  CategoryListViewModel.swift
+//  CategoryListPresenter.swift
 //  AIChatCourse
 //
 //  Created by Elaine on 2026/5/31.
@@ -7,26 +7,12 @@
 import SwiftUI
 
 @MainActor
-protocol CategoryListViewModelInteractor {
-    func trackEvent(event: LoggableEvent)
-    func getAvatarsForCategory(category: CharacterOption) async throws -> [AvatarModel]
-}
-extension CoreInteractor: CategoryListViewModelInteractor {}
-
-@MainActor
-protocol CategoryListViewModelRouter {
-    func showAlert(error: Error)
-    func showChatView(delegate: ChatViewDelegate)
-}
-extension CoreRouter: CategoryListViewModelRouter {}
-
-@MainActor
 @Observable
-final class CategoryListViewModel {
+final class CategoryListPresenter {
     
-    private let interactor: CategoryListViewModelInteractor
-    private let router: CategoryListViewModelRouter
-    init(interactor: CategoryListViewModelInteractor, router: CategoryListViewModelRouter) {
+    private let interactor: CategoryListInteractor
+    private let router: CategoryListRouter
+    init(interactor: CategoryListInteractor, router: CategoryListRouter) {
         self.interactor = interactor
         self.router = router
     }
@@ -53,7 +39,7 @@ final class CategoryListViewModel {
     }
 }
 
-extension CategoryListViewModel {
+extension CategoryListPresenter {
     enum Event: LoggableEvent {
         case loadAvatarsStart
         case loadAvatarsSuccess

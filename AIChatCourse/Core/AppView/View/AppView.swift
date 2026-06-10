@@ -11,7 +11,7 @@ import SwiftUI
 // onboarding - signed out
 
 struct AppView: View {
-    @Environment(\.scenePhase) private var scenePhase // LifeCycle: SwiftUI 使用这个
+    // @Environment(\.scenePhase) private var scenePhase // LifeCycle: SwiftUI 使用这个
     @State var viewModel: AppViewModel
     @ViewBuilder var tabbarView: () -> AnyView
     @ViewBuilder var onboardingView: () -> AnyView
