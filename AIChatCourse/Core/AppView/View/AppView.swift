@@ -10,11 +10,11 @@ import SwiftUI
 // tabbar - signed in
 // onboarding - signed out
 
-struct AppView: View {
+struct AppView<TabbarView: View, OnboardingView: View>: View {
     // @Environment(\.scenePhase) private var scenePhase // LifeCycle: SwiftUI 使用这个
     @State var viewModel: AppViewModel
-    @ViewBuilder var tabbarView: () -> AnyView
-    @ViewBuilder var onboardingView: () -> AnyView
+    @ViewBuilder var tabbarView: () -> TabbarView
+    @ViewBuilder var onboardingView: () -> OnboardingView
     var body: some View {
         // RootView 来自 SwiftfulUI 框架
         RootView(

@@ -7,9 +7,9 @@
 
 import SwiftUI
 
-struct ChatsView: View {
+struct ChatsView<ChatRowCell: View>: View {
     @State var presenter: ChatsPresenter
-    @ViewBuilder var chatRowCellViewBuilder: (ChatRowCellViewDelegate) -> AnyView
+    @ViewBuilder var chatRowCellViewBuilder: (ChatRowCellViewDelegate) -> ChatRowCell
     var body: some View {
         List {
             if !presenter.recentAvatars.isEmpty {

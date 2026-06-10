@@ -9,57 +9,10 @@ import SwiftUI
 @MainActor
 struct CoreBuilder {
     let interactor: CoreInteractor
-
-    // MARK: CreateAccountView
-
-    func createAccountView(router: Router, delegate: CreateAccountDelegate = CreateAccountDelegate()) -> AnyView {
-        CreateAccountView(
-            presenter: CreateAccountPresenter(
-                interactor: interactor,
-                router: CoreRouter(router: router, builder: self)
-            ),
-            delegate: delegate
-        )
-        .any()
-    }
-
-    func createAccountView(router: Router) -> AnyView {
-        CreateAccountView(
-            presenter: CreateAccountPresenter(
-                interactor: interactor,
-                router: CoreRouter(router: router, builder: self)
-            )
-        )
-        .any()
-    }
-
-    // MARK: DevSettingsView
-
-    func devSettingsView(router: Router) -> AnyView {
-        DevSettingsView(
-            presenter: DevSettingsPresenter(
-                interactor: interactor,
-                router: CoreRouter(router: router, builder: self)
-            )
-        )
-        .any()
-    }
-
-    // MARK: ExploreView
-
-    func exploreView(router: Router) -> AnyView {
-        ExploreView(
-            presenter: ExplorePresenter(
-                interactor: interactor,
-                router: CoreRouter(router: router, builder: self)
-            )
-        )
-        .any()
-    }
-
+    
     // MARK: AppView
 
-    func appView() -> AnyView {
+    func appView() -> some View {
         AppView(
             viewModel: AppViewModel(interactor: interactor),
             tabbarView: {
@@ -69,10 +22,9 @@ struct CoreBuilder {
                 welcomeView()
             }
         )
-        .any()
     }
 
-    func tabbarView() -> AnyView {
+    func tabbarView() -> some View {
         TabBarView(
             tabs: [
                 TabBarScreen(title: "Explore", systemImage: "eyes", screen: {
@@ -95,22 +47,62 @@ struct CoreBuilder {
                 })
             ]
         )
-        .any()
     }
 
-    func welcomeView() -> AnyView {
+    // MARK: CreateAccountView
+
+    func createAccountView(router: Router, delegate: CreateAccountDelegate = CreateAccountDelegate()) -> some View {
+        CreateAccountView(
+            presenter: CreateAccountPresenter(
+                interactor: interactor,
+                router: CoreRouter(router: router, builder: self)
+            ),
+            delegate: delegate
+        )
+    }
+
+    func createAccountView(router: Router) -> some View {
+        CreateAccountView(
+            presenter: CreateAccountPresenter(
+                interactor: interactor,
+                router: CoreRouter(router: router, builder: self)
+            )
+        )
+    }
+
+    // MARK: DevSettingsView
+
+    func devSettingsView(router: Router) -> some View {
+        DevSettingsView(
+            presenter: DevSettingsPresenter(
+                interactor: interactor,
+                router: CoreRouter(router: router, builder: self)
+            )
+        )
+    }
+
+    // MARK: ExploreView
+
+    func exploreView(router: Router) -> some View {
+        ExploreView(
+            presenter: ExplorePresenter(
+                interactor: interactor,
+                router: CoreRouter(router: router, builder: self)
+            )
+        )
+    }
+
+    func welcomeView() -> some View {
         RouterView { router in
             WelcomeView(
                 viewModel: WelcomePresenter(interactor: interactor, router: CoreRouter(router: router, builder: self))
             )
-            .any()
         }
-        .any()
     }
 
     // MARK: CategoryListView
 
-    func categoryListView(router: Router, delegate: CategoryListDelegate) -> AnyView {
+    func categoryListView(router: Router, delegate: CategoryListDelegate) -> some View {
         CategoryListView(
             presenter: CategoryListPresenter(
                 interactor: interactor,
@@ -118,24 +110,22 @@ struct CoreBuilder {
             ),
             delegate: delegate
         )
-        .any()
     }
 
     // MARK: PaywallView
 
-    func paywallView(router: Router) -> AnyView {
+    func paywallView(router: Router) -> some View {
         PaywallView(
             presenter: PaywallPresenter(
                 interactor: interactor,
                 router: CoreRouter(router: router, builder: self)
             )
         )
-        .any()
     }
 
     // MARK: ChatView
 
-    func chatView(router: Router, delegate: ChatViewDelegate = ChatViewDelegate()) -> AnyView {
+    func chatView(router: Router, delegate: ChatViewDelegate = ChatViewDelegate()) -> some View {
         ChatView(
             presenter: ChatPresenter(
                 interactor: interactor,
@@ -143,20 +133,18 @@ struct CoreBuilder {
             ),
             delegate: delegate
         )
-        .any()
     }
 
     // MARK: ChatsView
 
-    func chatRowCellViewBuilder(delegate: ChatRowCellViewDelegate = ChatRowCellViewDelegate()) -> AnyView {
+    func chatRowCellViewBuilder(delegate: ChatRowCellViewDelegate = ChatRowCellViewDelegate()) -> some View {
         ChatRowCellViewBuilder(
             viewModel: ChatRowCellViewModel(interactor: interactor),
             delegate: delegate
         )
-        .any()
     }
 
-    func chatsView(router: Router) -> AnyView {
+    func chatsView(router: Router) -> some View {
         ChatsView(
             presenter: ChatsPresenter(
                 interactor: interactor,
@@ -166,24 +154,22 @@ struct CoreBuilder {
                 chatRowCellViewBuilder(delegate: delegate)
             }
         )
-        .any()
     }
 
     // MARK: CreateAvatarView
 
-    func createAvatarView(router: Router) -> AnyView {
+    func createAvatarView(router: Router) -> some View {
         CreateAvatarView(
             presenter: CreateAvatarPresenter(
                 interactor: interactor,
                 router: CoreRouter(router: router, builder: self)
             )
         )
-        .any()
     }
 
     // MARK: OnboardingColorView
 
-    func onboardingColorView(router: Router, delegate: OnboardingColorDelete) -> AnyView {
+    func onboardingColorView(router: Router, delegate: OnboardingColorDelete) -> some View {
         OnboardingColorView(
             presenter: OnboardingColorPresenter(
                 interactor: interactor,
@@ -191,12 +177,11 @@ struct CoreBuilder {
             ),
             delegate: delegate
         )
-        .any()
     }
 
     // MARK: OnboardingCommunityView
 
-    func onboardingCommunityView(router: Router, delegate: OnboardingCommunityDelete) -> AnyView {
+    func onboardingCommunityView(router: Router, delegate: OnboardingCommunityDelete) -> some View {
         OnboardingCommunityView(
             presenter: OnboardingCommunityPresenter(
                 interactor: interactor,
@@ -204,12 +189,11 @@ struct CoreBuilder {
             ),
             delegate: delegate
         )
-        .any()
     }
 
     // MARK: OnboardingCompletedView
 
-    func onboardingCompletedView(router: Router, delegate: OnboardingCompletedDelete) -> AnyView {
+    func onboardingCompletedView(router: Router, delegate: OnboardingCompletedDelete) -> some View {
         OnboardingCompletedView(
             presenter: OnboardingCompletedPresenter(
                 interactor: interactor,
@@ -217,12 +201,11 @@ struct CoreBuilder {
             ),
             delegate: delegate
         )
-        .any()
     }
 
     // MARK: OnboardingIntroView
 
-    func onboardingIntroView(router: Router, delegate: OnboardingIntroDelete) -> AnyView {
+    func onboardingIntroView(router: Router, delegate: OnboardingIntroDelete) -> some View {
         OnboardingIntroView(
             presenter: OnboardingIntroPresenter(
                 interactor: interactor,
@@ -230,30 +213,27 @@ struct CoreBuilder {
             ),
             delegate: delegate
         )
-        .any()
     }
 
     // MARK: SettingsView
 
-    func settingsView(router: Router) -> AnyView {
+    func settingsView(router: Router) -> some View {
         SettingsView(
             presenter: SettingsPresenter(
                 interactor: interactor,
                 router: CoreRouter(router: router, builder: self)
             )
         )
-        .any()
     }
 
     // MARK: ProfileView
 
-    func profileView(router: Router) -> AnyView {
+    func profileView(router: Router) -> some View {
         ProfileView(
             presenter: ProfilePresenter(
                 interactor: interactor,
                 router: CoreRouter(router: router, builder: self)
             )
         )
-        .any()
     }
 }
