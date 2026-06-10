@@ -16,7 +16,7 @@ extension CoreInteractor: WelcomeViewModelInteractor {}
 @MainActor
 protocol WelcomeViewModelRoutre {
     func showOnboardingIntroView(delegate: OnboardingIntroDelete)
-    func showCreateAccountView(delegate: CreateAccountDelegate)
+    func showCreateAccountView(delegate: CreateAccountDelegate, onDisappear: @escaping () -> Void)
 }
 extension CoreRouter: WelcomeViewModelRoutre {}
 
@@ -43,7 +43,7 @@ final class WelcomeViewModel {
             subtitle: "Connect to an existing account") { isNewUser in
                 self.handleDidSignIn(isNewUser: isNewUser)
             }
-        router.showCreateAccountView(delegate: delegate)
+        router.showCreateAccountView(delegate: delegate, onDisappear: {})
     }
 
     private func handleDidSignIn(isNewUser: Bool) {

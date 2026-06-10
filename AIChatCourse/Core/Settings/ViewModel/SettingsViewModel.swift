@@ -6,6 +6,7 @@
 //
 import SwiftUI
 
+@MainActor
 protocol SettingsViewModelInteractor {
     var authUser: UserAuthInfoModel? { get }
     func trackEvent(event: LoggableEvent)
@@ -18,22 +19,31 @@ protocol SettingsViewModelInteractor {
     func deleteUserProfile()
     func updateAppState(showTabBarView: Bool)
 }
-
 extension CoreInteractor: SettingsViewModelInteractor {}
+
+@MainActor
+protocol SettingsViewModelRouter {
+    func showAlert(error: Error)
+    func showAlert(type: CustomRouting.AlertType, title: String, subtitle: String?, buttons: (() -> AnyView)?)
+    func dismissScreen()
+    func showCreateAccountView(delegate: CreateAccountDelegate, onDisappear: @escaping () -> Void)
+    func showRatingsModal(onEnjoyAppYesPressed: @escaping () -> Void, onEnjoyAppNoPressed: @escaping () -> Void)
+    func dismissModal()
+}
+extension CoreRouter: SettingsViewModelRouter {}
 
 @MainActor
 @Observable
 final class SettingsViewModel {
     private let interactor: SettingsViewModelInteractor
-    init(interactor: SettingsViewModelInteractor) {
+    private let router: SettingsViewModelRouter
+    init(interactor: SettingsViewModelInteractor, router: SettingsViewModelRouter) {
         self.interactor = interactor
+        self.router = router
     }
 
     private(set) var isPremium: Bool = false
     private(set) var isAnonymousUser: Bool = false
-    var showCreateAccountView: Bool = false
-    var showAlert: AnyAppAlertItem?
-    var showRatingsModal: Bool = false
 
     var authUser: UserAuthInfoModel? {
         interactor.authUser
@@ -43,40 +53,47 @@ final class SettingsViewModel {
         isAnonymousUser = interactor.authUser?.isAnonymous == true
     }
 
-    func onSignOutButtonPressed(onDismiss: @escaping () async -> Void) {
+    func onSignOutButtonPressed() {
         // do some logic to sign out of app!
         interactor.trackEvent(event: Event.signOutStart)
         Task {
             do {
                 try await interactor.signOut()
-                await onDismiss()
+                
+                await dismissScreen()
+                
                 interactor.updateAppState(showTabBarView: false)
                 interactor.trackEvent(event: Event.signOutSuccess)
             } catch {
-                showAlert = AnyAppAlertItem(error: error)
                 interactor.trackEvent(event: Event.signOutFail(error: error))
+                router.showAlert(error: error)
             }
         }
     }
+    
+    private func dismissScreen() async {
+        router.dismissScreen()
+        try? await Task.sleep(for: .seconds(1))
+    }
 
-    func onDeleteAccountPressed(onDismiss: @escaping () async -> Void) {
+    func onDeleteAccountPressed() {
         interactor.trackEvent(event: Event.deleteAccountStart)
-        showAlert = AnyAppAlertItem(
+        router.showAlert(
+            type: .alert,
             title: "Delete Account?",
             subtitle: "This action is permanent and cannot be undone. Your data will be deleted from our server forever.",
             buttons: {
-                AnyView(
-                    Group {
-                        Button("Delete", role: .destructive, action: {
-                            self.onDeleteAccountConfirmed(onDismiss: onDismiss)
-                        })
-                    }
-                )
-            }
-        )
+            AnyView(
+                Group {
+                    Button("Delete", role: .destructive, action: {
+                        self.onDeleteAccountConfirmed()
+                    })
+                }
+            )
+        })
     }
 
-    func onDeleteAccountConfirmed(onDismiss: @escaping () async -> Void) {
+    func onDeleteAccountConfirmed() {
         interactor.trackEvent(event: Event.deleteAccountStartConfirm)
         Task {
             do {
@@ -87,27 +104,28 @@ final class SettingsViewModel {
                 try await interactor.removeAuthorIdFromAllUserAvatars(userId: uid)
                 try await interactor.deleteAllChatsForUser(userId: uid)
                 try await interactor.signOut()
-
-                // 使用 async let
-//                async let deleteAuth: () = authManager.deleteAccount()
-//                async let deleteUser: () = userManager.deleteUser()
-//                async let deleteAvatar: () = avatarManager.removeAuthorIdFromAllUserAvatars(userId: uid)
-//                async let deleteChats: () = chatManager.deleteAllChatsForUser(userId: uid)
-//                let (_, _, _, _) = try await (deleteAuth, deleteUser, deleteAvatar, deleteChats)
+                
                 interactor.deleteUserProfile()
                 interactor.trackEvent(event: Event.deleteAccountSuccess)
-                await onDismiss()
+                
+                await dismissScreen()
+                
                 interactor.updateAppState(showTabBarView: false)
             } catch {
-                showAlert = AnyAppAlertItem(error: error)
                 interactor.trackEvent(event: Event.deleteAccountFail(error: error))
+                router.showAlert(error: error)
             }
         }
     }
 
     func onCreateAccountPressed() {
         interactor.trackEvent(event: Event.createAccountPressed)
-        showCreateAccountView.toggle()
+        router.showCreateAccountView(
+            delegate: CreateAccountDelegate(),
+            onDisappear: {
+                self.setAnonymousAccountStatus()
+            }
+        )
     }
 
     func onContactUsPressed() {
@@ -120,18 +138,22 @@ final class SettingsViewModel {
 
     func onRatingsButtonPressed() {
         interactor.trackEvent(event: Event.ratingPressed)
-        showRatingsModal = true
+        router.showRatingsModal(onEnjoyAppYesPressed: {
+            self.onEnjoyAppYesPressed()
+        }, onEnjoyAppNoPressed: {
+            self.onEnjoyAppNoPressed()
+        })
     }
 
     func onEnjoyAppYesPressed() {
         interactor.trackEvent(event: Event.ratingYesPressed)
-        showRatingsModal = false
+        router.dismissModal()
         AppStoreRatingsHelper.requestRatingsReview()
     }
 
     func onEnjoyAppNoPressed() {
         interactor.trackEvent(event: Event.ratingNoPressed)
-        showRatingsModal = false
+        router.dismissModal()
     }
 }
 

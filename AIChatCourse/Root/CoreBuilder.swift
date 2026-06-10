@@ -57,9 +57,7 @@ struct CoreRouter {
     func showCreateAvatarView(onDisappear: @escaping () -> Void) {
         router.showScreen(.fullScreenCover) { _ in
             builder.createAvatarView()
-                .onDisappear {
-                    onDisappear()
-                }
+                .onDisappear(perform: { onDisappear() })
         }
     }
 
@@ -76,8 +74,8 @@ struct CoreRouter {
     }
 
     func showSettingsView() {
-        router.showScreen(.sheet) { _ in
-            builder.settingsView()
+        router.showScreen(.sheet) { router in
+            builder.settingsView(router: router)
         }
     }
 
@@ -87,10 +85,11 @@ struct CoreRouter {
         }
     }
 
-    func showCreateAccountView(delegate: CreateAccountDelegate) {
+    func showCreateAccountView(delegate: CreateAccountDelegate, onDisappear: @escaping () -> Void) {
         router.showScreen(.sheet) { _ in
             builder.createAccountView(delegate: delegate)
                 .presentationDetents([.medium])
+                .onDisappear(perform: { onDisappear() })
         }
     }
 
@@ -132,6 +131,27 @@ struct CoreRouter {
                     }
                 )
                 .padding(40)
+            }
+        )
+    }
+    
+    func showRatingsModal(onEnjoyAppYesPressed: @escaping () -> Void, onEnjoyAppNoPressed: @escaping () -> Void) {
+        router.showModal(
+            backgroundColor: Color.black.opacity(0.6),
+            transition: .move(edge: .bottom),
+            destination: {
+                CustomModalView(
+                    title: "Are you enjoying AIChat?",
+                    subtitle: "We'd love to hear your feedback!",
+                    primaryButtonTitle: "Yes",
+                    primaryButtonAction: {
+                        onEnjoyAppYesPressed()
+                    },
+                    secondaryButtonTitle: "No",
+                    secondaryButtonAction: {
+                        onEnjoyAppNoPressed()
+                    }
+                )
             }
         )
     }
@@ -367,12 +387,12 @@ struct CoreBuilder {
 
     // MARK: SettingsView
 
-    func settingsView() -> AnyView {
+    func settingsView(router: Router) -> AnyView {
         SettingsView(
-            viewModel: SettingsViewModel(interactor: interactor),
-            createAccountView: {
-                createAvatarView()
-            }
+            viewModel: SettingsViewModel(
+                interactor: interactor,
+                router: CoreRouter(router: router, builder: self)
+            )
         )
         .any()
     }

@@ -7,38 +7,19 @@
 import SwiftUI
 
 struct SettingsView: View {
-    @Environment(\.dismiss) private var dismiss
     @State var viewModel: SettingsViewModel
-    @ViewBuilder var createAccountView: () -> AnyView
 
     var body: some View {
-        NavigationStack {
-            List {
-                accountSection
-                purchaseSection
-                applicationSection
-            }
-            .navigationTitle("Settings")
-            .appearAnalyticsViewModifier(name: "SettingsView")
-            .showModal(showModal: $viewModel.showRatingsModal, content: {
-                ratingsModal
-            })
-            .sheet(isPresented: $viewModel.showCreateAccountView, onDismiss: {
-                viewModel.setAnonymousAccountStatus()
-            }, content: {
-                createAccountView()
-                    .presentationDetents([.medium])
-            })
-            .showCustomAlert(alertItem: $viewModel.showAlert)
-            .onAppear {
-                viewModel.setAnonymousAccountStatus()
-            }
+        List {
+            accountSection
+            purchaseSection
+            applicationSection
         }
-    }
-
-    func dismissScreen() async {
-        dismiss()
-        try? await Task.sleep(nanoseconds: 1_000_000_000)
+        .navigationTitle("Settings")
+        .appearAnalyticsViewModifier(name: "SettingsView")
+        .onAppear {
+            viewModel.setAnonymousAccountStatus()
+        }
     }
 }
 
@@ -58,9 +39,7 @@ extension SettingsView {
                 Text("Sign out")
                     .rowFormatting()
                     .anyButton(.highlight, action: {
-                        viewModel.onSignOutButtonPressed(onDismiss: {
-                            await dismissScreen()
-                        })
+                        viewModel.onSignOutButtonPressed()
                     })
                     .removeListRowFormatting()
             }
@@ -69,9 +48,7 @@ extension SettingsView {
                 .foregroundStyle(.red)
                 .rowFormatting()
                 .anyButton(.highlight, action: {
-                    viewModel.onDeleteAccountPressed(onDismiss: {
-                        await dismissScreen()
-                    })
+                    viewModel.onDeleteAccountPressed()
                 })
                 .removeListRowFormatting()
         }, header: {
@@ -167,8 +144,10 @@ private extension View {
     container.regiser(AuthManager.self, manager: AuthManager(service: MockAuthService(user: nil)))
     container.regiser(UserManager.self, manager: UserManager(services: MockUserServices(user: nil)))
     let builder = CoreBuilder(interactor: CoreInteractor(container: container))
-    return builder.settingsView()
-        .previewEnvironment()
+    return RouterView { router in
+        builder.settingsView(router: router)
+            .previewEnvironment()
+    }
 }
 
 #Preview("Anonymous") {
@@ -177,8 +156,10 @@ private extension View {
     container.regiser(AuthManager.self, manager: AuthManager(service: MockAuthService(user: UserAuthInfoModel.mock(isAnonymous: true))))
     container.regiser(UserManager.self, manager: UserManager(services: MockUserServices(user: .mock)))
     let builder = CoreBuilder(interactor: CoreInteractor(container: container))
-    return builder.settingsView()
-        .previewEnvironment()
+    return RouterView { router in
+        builder.settingsView(router: router)
+            .previewEnvironment()
+    }
 }
 
 #Preview("Not anonymous") {
@@ -187,6 +168,8 @@ private extension View {
     container.regiser(AuthManager.self, manager: AuthManager(service: MockAuthService(user: UserAuthInfoModel.mock(isAnonymous: false))))
     container.regiser(UserManager.self, manager: UserManager(services: MockUserServices(user: .mock)))
     let builder = CoreBuilder(interactor: CoreInteractor(container: container))
-    return builder.settingsView()
-        .previewEnvironment()
+    return RouterView { router in
+        builder.settingsView(router: router)
+            .previewEnvironment()
+    }
 }
