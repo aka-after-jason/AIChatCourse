@@ -16,7 +16,7 @@ protocol AppViewModelInteractor {
     func signInAnonymously() async throws -> (user: UserAuthInfoModel, isNewUser: Bool)
 }
 
-extension CoreInteractor: AppViewModelInteractor {}
+extension RootInteractor: AppViewModelInteractor {}
 
 @MainActor
 @Observable

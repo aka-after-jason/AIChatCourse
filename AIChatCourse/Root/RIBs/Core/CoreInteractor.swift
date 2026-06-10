@@ -41,9 +41,6 @@ struct CoreInteractor {
     }
     
     // MARK: AppState
-    var showTabBar: Bool {
-        appState.showTabBar
-    }
     
     func updateAppState(showTabBarView: Bool) {
         appState.updateViewState(showTabBarView: showTabBarView)
@@ -56,10 +53,6 @@ struct CoreInteractor {
     
     func getCurrentUserId() throws -> String {
         try authManager.getCurrentUserId()
-    }
-    
-    func signInAnonymously() async throws -> (user: UserAuthInfoModel, isNewUser: Bool) {
-        try await authManager.signInAnonymously()
     }
     
     func signInApple() async throws -> (user: UserAuthInfoModel, isNewUser: Bool) {

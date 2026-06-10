@@ -12,17 +12,17 @@ struct CoreBuilder {
     
     // MARK: AppView
 
-    func appView() -> some View {
-        AppView(
-            viewModel: AppViewModel(interactor: interactor),
-            tabbarView: {
-                tabbarView()
-            },
-            onboardingView: {
-                welcomeView()
-            }
-        )
-    }
+//    func appView() -> some View {
+//        AppView(
+//            viewModel: AppViewModel(interactor: interactor),
+//            tabbarView: {
+//                tabbarView()
+//            },
+//            onboardingView: {
+//                welcomeView()
+//            }
+//        )
+//    }
 
     func tabbarView() -> some View {
         TabBarView(
