@@ -14,7 +14,7 @@ struct CoreBuilder {
 
     func createAccountView(router: Router, delegate: CreateAccountDelegate = CreateAccountDelegate()) -> AnyView {
         CreateAccountView(
-            viewModel: CreateAccountViewModel(
+            presenter: CreateAccountPresenter(
                 interactor: interactor,
                 router: CoreRouter(router: router, builder: self)
             ),
@@ -25,7 +25,7 @@ struct CoreBuilder {
 
     func createAccountView(router: Router) -> AnyView {
         CreateAccountView(
-            viewModel: CreateAccountViewModel(
+            presenter: CreateAccountPresenter(
                 interactor: interactor,
                 router: CoreRouter(router: router, builder: self)
             )

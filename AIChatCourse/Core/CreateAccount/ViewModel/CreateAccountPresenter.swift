@@ -7,25 +7,11 @@
 import SwiftUI
 
 @MainActor
-protocol CreateAccountViewModelInteractor {
-    func trackEvent(event: LoggableEvent)
-    func signInApple() async throws -> (user: UserAuthInfoModel, isNewUser: Bool)
-    func login(user: UserAuthInfoModel, isNewUser: Bool) async throws
-}
-extension CoreInteractor: CreateAccountViewModelInteractor {}
-
-@MainActor
-protocol CreateAccountViewModelRouter {
-    func dismissScreen()
-}
-extension CoreRouter: CreateAccountViewModelRouter {}
-
-@MainActor
 @Observable
-final class CreateAccountViewModel {
-    private let interactor: CreateAccountViewModelInteractor
-    private let router: CreateAccountViewModelRouter
-    init(interactor: CreateAccountViewModelInteractor, router: CreateAccountViewModelRouter) {
+final class CreateAccountPresenter {
+    private let interactor: CreateAccountInteractor
+    private let router: CreateAccountRouter
+    init(interactor: CreateAccountInteractor, router: CreateAccountRouter) {
         self.interactor = interactor
         self.router = router
     }
@@ -47,7 +33,7 @@ final class CreateAccountViewModel {
     }
 }
 
-extension CreateAccountViewModel {
+extension CreateAccountPresenter {
     enum Event: LoggableEvent {
         case appleAuthStart
         case appleAuthSuccess(user: UserAuthInfoModel, isNewUser: Bool)

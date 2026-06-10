@@ -15,7 +15,7 @@ struct CreateAccountDelegate {
 }
 
 struct CreateAccountView: View {
-    @State var viewModel: CreateAccountViewModel
+    @State var presenter: CreateAccountPresenter
     var delegate: CreateAccountDelegate = .init()
     var body: some View {
         VStack(spacing: 24) {
@@ -36,7 +36,7 @@ struct CreateAccountView: View {
             )
             .frame(height: 50)
             .anyButton(.press, action: {
-                viewModel.onSignInApplePressed(delegate: delegate)
+                presenter.onSignInApplePressed(delegate: delegate)
             })
 
             Spacer()
