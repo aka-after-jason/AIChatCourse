@@ -6,21 +6,29 @@
 //
 import SwiftUI
 
+@MainActor
 protocol DevSettingsViewModelInteractor {
     var activeABTestModel: ActiveABTestModel { get }
     var currentUser: UserModel? { get }
     var authUser: UserAuthInfoModel? { get }
     func override(updateABTestModel: ActiveABTestModel) throws
 }
-
 extension CoreInteractor: DevSettingsViewModelInteractor {}
+
+@MainActor
+protocol DevSettingsViewModelRouter {
+    func dismissScreen()
+}
+extension CoreRouter: DevSettingsViewModelRouter {}
 
 @MainActor
 @Observable
 final class DevSettingsViewModel {
     private let interactor: DevSettingsViewModelInteractor
-    init(interactor: DevSettingsViewModelInteractor) {
+    private let router: DevSettingsViewModelRouter
+    init(interactor: DevSettingsViewModelInteractor, router: DevSettingsViewModelRouter) {
         self.interactor = interactor
+        self.router = router
     }
 
     var createAccountTest: Bool = false
@@ -131,7 +139,7 @@ final class DevSettingsViewModel {
         )
     }
     
-    func onBackButtonPressed(onDismiss: () -> Void) {
-        onDismiss()
+    func onBackButtonPressed() {
+        router.dismissScreen()
     }
 }

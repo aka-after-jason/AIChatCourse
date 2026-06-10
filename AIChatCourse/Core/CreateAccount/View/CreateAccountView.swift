@@ -16,8 +16,7 @@ struct CreateAccountDelegate {
 
 struct CreateAccountView: View {
     @State var viewModel: CreateAccountViewModel
-    @Environment(\.dismiss) private var dismiss
-    var delegate: CreateAccountDelegate = CreateAccountDelegate()
+    var delegate: CreateAccountDelegate = .init()
     var body: some View {
         VStack(spacing: 24) {
             VStack(alignment: .leading, spacing: 10) {
@@ -37,10 +36,7 @@ struct CreateAccountView: View {
             )
             .frame(height: 50)
             .anyButton(.press, action: {
-                viewModel.onSignInApplePressed(onDidSignInSuccessfully: {isNewUser in
-                    delegate.onDidSignIn?(isNewUser)
-                    dismiss()
-                })
+                viewModel.onSignInApplePressed(delegate: delegate)
             })
 
             Spacer()
@@ -53,6 +49,8 @@ struct CreateAccountView: View {
 
 #Preview {
     let builder = CoreBuilder(interactor: CoreInteractor(container: DevPreview.shared.container))
-    return builder.createAccountView()
-        .previewEnvironment()
+    return RouterView { router in
+        builder.createAccountView(router: router)
+    }
+    .previewEnvironment()
 }

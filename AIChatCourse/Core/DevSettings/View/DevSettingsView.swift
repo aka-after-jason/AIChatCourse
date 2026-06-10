@@ -8,26 +8,23 @@ import SwiftUI
 
 struct DevSettingsView: View {
     @State var viewModel: DevSettingsViewModel
-    @Environment(\.dismiss) private var dismiss
     var body: some View {
         // This is a sheet, new environment
-        NavigationStack {
-            List {
-                abtestSection
-                authInfoSection
-                userInfoSection
-                deviceInfoSection
+        List {
+            abtestSection
+            authInfoSection
+            userInfoSection
+            deviceInfoSection
+        }
+        .navigationTitle("Dev Settings 🤗")
+        .appearAnalyticsViewModifier(name: "DevSettings")
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                backButtonView
             }
-            .navigationTitle("Dev Settings 🤗")
-            .appearAnalyticsViewModifier(name: "DevSettings")
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    backButtonView
-                }
-            }
-            .onFirstAppear {
-                viewModel.loadABTest()
-            }
+        }
+        .onFirstAppear {
+            viewModel.loadABTest()
         }
     }
 }
@@ -35,13 +32,12 @@ struct DevSettingsView: View {
 extension DevSettingsView {
     private var backButtonView: some View {
         Button(action: {
-            viewModel.onBackButtonPressed(onDismiss: {
-                dismiss()
-            })
+            viewModel.onBackButtonPressed()
         }, label: {
             Image(systemName: "xmark")
         })
     }
+
     private var abtestSection: some View {
         Section {
             Toggle("Create Account Test", isOn: $viewModel.createAccountTest)
@@ -119,7 +115,9 @@ extension DevSettingsView {
 }
 
 #Preview {
-    CoreBuilder(interactor: CoreInteractor(container: DevPreview.shared.container))
-        .devSettingsView()
-        .previewEnvironment()
+    let builder = CoreBuilder(interactor: CoreInteractor(container: DevPreview.shared.container))
+    return RouterView { router in
+        builder.devSettingsView(router: router)
+    }
+    .previewEnvironment()
 }

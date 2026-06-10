@@ -6,23 +6,31 @@
 //
 import SwiftUI
 
+@MainActor
 protocol CreateAccountViewModelInteractor {
     func trackEvent(event: LoggableEvent)
     func signInApple() async throws -> (user: UserAuthInfoModel, isNewUser: Bool)
     func login(user: UserAuthInfoModel, isNewUser: Bool) async throws
 }
-
 extension CoreInteractor: CreateAccountViewModelInteractor {}
+
+@MainActor
+protocol CreateAccountViewModelRouter {
+    func dismissScreen()
+}
+extension CoreRouter: CreateAccountViewModelRouter {}
 
 @MainActor
 @Observable
 final class CreateAccountViewModel {
     private let interactor: CreateAccountViewModelInteractor
-    init(interactor: CreateAccountViewModelInteractor) {
+    private let router: CreateAccountViewModelRouter
+    init(interactor: CreateAccountViewModelInteractor, router: CreateAccountViewModelRouter) {
         self.interactor = interactor
+        self.router = router
     }
 
-    func onSignInApplePressed(onDidSignInSuccessfully: @escaping (_ isNewUser: Bool) -> Void) {
+    func onSignInApplePressed(delegate: CreateAccountDelegate) {
         interactor.trackEvent(event: Event.appleAuthStart)
         Task {
             do {
@@ -30,7 +38,8 @@ final class CreateAccountViewModel {
                 interactor.trackEvent(event: Event.appleAuthSuccess(user: userAuthInfo, isNewUser: isNewUser))
                 try await interactor.login(user: userAuthInfo, isNewUser: isNewUser)
                 interactor.trackEvent(event: Event.appleAuthLoginSuccess(user: userAuthInfo, isNewUser: isNewUser))
-                onDidSignInSuccessfully(isNewUser)
+                delegate.onDidSignIn?(isNewUser)
+                router.dismissScreen()
             } catch {
                 interactor.trackEvent(event: Event.appleAuthFail(error: error))
             }
