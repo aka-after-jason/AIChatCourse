@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct CreateAvatarView: View {
-    @State var viewModel: CreateAvatarViewModel
+    @State var presenter: CreateAvatarPresenter
 
     var body: some View {
         List {
@@ -31,13 +31,13 @@ extension CreateAvatarView {
     private var backButton: some View {
         Image(systemName: "xmark")
             .anyButton(.press) {
-                viewModel.onBackButtonPressed()
+                presenter.onBackButtonPressed()
             }
     }
 
     private var nameSection: some View {
         Section {
-            TextField("your name...", text: $viewModel.avatarName)
+            TextField("your name...", text: $presenter.avatarName)
         } header: {
             Text("Name your avatar*")
         }
@@ -45,21 +45,21 @@ extension CreateAvatarView {
 
     private var attributesSection: some View {
         Section {
-            Picker("is a...", selection: $viewModel.characterOption) {
+            Picker("is a...", selection: $presenter.characterOption) {
                 ForEach(CharacterOption.allCases, id: \.self) { option in
                     Text(option.rawValue.capitalized)
                         .tag(option)
                 }
             }
 
-            Picker("that is...", selection: $viewModel.characterAction) {
+            Picker("that is...", selection: $presenter.characterAction) {
                 ForEach(CharacterAction.allCases, id: \.self) { option in
                     Text(option.rawValue.capitalized)
                         .tag(option)
                 }
             }
 
-            Picker("in the...", selection: $viewModel.characterLocation) {
+            Picker("in the...", selection: $presenter.characterLocation) {
                 ForEach(CharacterLocation.allCases, id: \.self) { option in
                     Text(option.rawValue.capitalized)
                         .tag(option)
@@ -78,20 +78,20 @@ extension CreateAvatarView {
                     Text("Generate image")
                         .underline()
                         .foregroundStyle(.accent)
-                        .opacity(viewModel.isGenerating ? 0.0 : 1.0)
-                        .anyButton(.plain, action: { viewModel.onGenerateImagePressed() })
+                        .opacity(presenter.isGenerating ? 0.0 : 1.0)
+                        .anyButton(.plain, action: { presenter.onGenerateImagePressed() })
 
                     ProgressView()
                         .tint(.accent)
-                        .opacity(viewModel.isGenerating ? 1.0 : 0.0)
+                        .opacity(presenter.isGenerating ? 1.0 : 0.0)
                 }
-                .disabled(viewModel.isGenerating || viewModel.avatarName.isEmpty)
+                .disabled(presenter.isGenerating || presenter.avatarName.isEmpty)
 
                 Circle()
                     .fill(Color.secondary.opacity(0.3))
                     .overlay {
                         ZStack {
-                            if let generatedImage = viewModel.generatedImage {
+                            if let generatedImage = presenter.generatedImage {
                                 Image(uiImage: generatedImage)
                                     .resizable()
                                     .scaledToFill()
@@ -108,15 +108,15 @@ extension CreateAvatarView {
     private var saveSection: some View {
         Section {
             AsyncCallToActionButton(
-                isLoading: viewModel.isSvaing,
+                isLoading: presenter.isSvaing,
                 title: "Save",
                 action: {
-                    viewModel.onSavePressed()
+                    presenter.onSavePressed()
                 }
             )
             .removeListRowFormatting()
-            .opacity(viewModel.generatedImage == nil ? 0.5 : 1.0)
-            .disabled(viewModel.generatedImage == nil)
+            .opacity(presenter.generatedImage == nil ? 0.5 : 1.0)
+            .disabled(presenter.generatedImage == nil)
         }
     }
 }

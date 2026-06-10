@@ -173,7 +173,7 @@ struct CoreBuilder {
 
     func createAvatarView(router: Router) -> AnyView {
         CreateAvatarView(
-            viewModel: CreateAvatarViewModel(
+            presenter: CreateAvatarPresenter(
                 interactor: interactor,
                 router: CoreRouter(router: router, builder: self)
             )

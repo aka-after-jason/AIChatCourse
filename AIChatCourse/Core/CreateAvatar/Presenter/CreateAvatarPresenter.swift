@@ -7,29 +7,13 @@
 
 import SwiftUI
 
-@MainActor
-protocol CreateAvatarViewModelInteractor {
-    func trackEvent(event: LoggableEvent)
-    func generateImage(prompt: String) async throws -> UIImage
-    func getCurrentUserId() throws -> String
-    func createAvatar(avatar: AvatarModel, image: UIImage) async throws
-}
-extension CoreInteractor: CreateAvatarViewModelInteractor {}
-
-@MainActor
-protocol CreateAvatarViewModelRouter {
-    func dismissScreen()
-    func showAlert(error: Error)
-}
-extension CoreRouter: CreateAvatarViewModelRouter {}
-
 @Observable
 @MainActor
-final class CreateAvatarViewModel {
+final class CreateAvatarPresenter {
     
-    private let interactor: CreateAvatarViewModelInteractor
-    private let router: CreateAvatarViewModelRouter
-    init (interactor: CreateAvatarViewModelInteractor, router: CreateAvatarViewModelRouter) {
+    private let interactor: CreateAvatarInteractor
+    private let router: CreateAvatarRouter
+    init (interactor: CreateAvatarInteractor, router: CreateAvatarRouter) {
         self.interactor = interactor
         self.router = router
     }
@@ -91,7 +75,7 @@ final class CreateAvatarViewModel {
     }
 }
 
-extension CreateAvatarViewModel {
+extension CreateAvatarPresenter {
     enum Event: LoggableEvent {
         case backButtonPressed
 
