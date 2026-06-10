@@ -7,7 +7,7 @@
 import SwiftUI
 
 struct SettingsView: View {
-    @State var viewModel: SettingsViewModel
+    @State var presenter: SettingsPresenter
 
     var body: some View {
         List {
@@ -18,7 +18,7 @@ struct SettingsView: View {
         .navigationTitle("Settings")
         .appearAnalyticsViewModifier(name: "SettingsView")
         .onAppear {
-            viewModel.setAnonymousAccountStatus()
+            presenter.setAnonymousAccountStatus()
         }
     }
 }
@@ -28,18 +28,18 @@ struct SettingsView: View {
 extension SettingsView {
     private var accountSection: some View {
         Section(content: {
-            if viewModel.isAnonymousUser {
+            if presenter.isAnonymousUser {
                 Text("Save & back-up account")
                     .rowFormatting()
                     .anyButton(.highlight, action: {
-                        viewModel.onCreateAccountPressed()
+                        presenter.onCreateAccountPressed()
                     })
                     .removeListRowFormatting()
             } else {
                 Text("Sign out")
                     .rowFormatting()
                     .anyButton(.highlight, action: {
-                        viewModel.onSignOutButtonPressed()
+                        presenter.onSignOutButtonPressed()
                     })
                     .removeListRowFormatting()
             }
@@ -48,7 +48,7 @@ extension SettingsView {
                 .foregroundStyle(.red)
                 .rowFormatting()
                 .anyButton(.highlight, action: {
-                    viewModel.onDeleteAccountPressed()
+                    presenter.onDeleteAccountPressed()
                 })
                 .removeListRowFormatting()
         }, header: {
@@ -59,9 +59,9 @@ extension SettingsView {
     private var purchaseSection: some View {
         Section(content: {
             HStack(spacing: 8) {
-                Text("Account status: \(viewModel.isPremium ? "PREMIUM" : "FREE")")
+                Text("Account status: \(presenter.isPremium ? "PREMIUM" : "FREE")")
                 Spacer()
-                if viewModel.isPremium {
+                if presenter.isPremium {
                     Text("MANAGE")
                         .badgeButton()
                 }
@@ -69,7 +69,7 @@ extension SettingsView {
             .rowFormatting()
             .anyButton(.highlight, action: {})
             .removeListRowFormatting()
-            .disabled(!viewModel.isPremium)
+            .disabled(!presenter.isPremium)
         }, header: {
             Text("Purchases")
         })
@@ -80,7 +80,7 @@ extension SettingsView {
             Text("Rete us on the AppStore!")
                 .foregroundStyle(.blue)
                 .rowFormatting()
-                .anyButton(.highlight, action: { viewModel.onRatingsButtonPressed() })
+                .anyButton(.highlight, action: { presenter.onRatingsButtonPressed() })
                 .removeListRowFormatting()
 
             HStack(spacing: 8) {
@@ -104,7 +104,7 @@ extension SettingsView {
             Text("Contact us")
                 .foregroundStyle(.blue)
                 .rowFormatting()
-                .anyButton(.highlight) { viewModel.onContactUsPressed() }
+                .anyButton(.highlight) { presenter.onContactUsPressed() }
                 .removeListRowFormatting()
 
         }, header: {
@@ -120,9 +120,9 @@ extension SettingsView {
             title: "Are you enjoying AIChat?",
             subtitle: "We'd love to hear your feedback!",
             primaryButtonTitle: "Yes",
-            primaryButtonAction: { viewModel.onEnjoyAppYesPressed() },
+            primaryButtonAction: { presenter.onEnjoyAppYesPressed() },
             secondaryButtonTitle: "No",
-            secondaryButtonAction: { viewModel.onEnjoyAppNoPressed() }
+            secondaryButtonAction: { presenter.onEnjoyAppNoPressed() }
         )
     }
 }

@@ -7,37 +7,11 @@
 import SwiftUI
 
 @MainActor
-protocol SettingsViewModelInteractor {
-    var authUser: UserAuthInfoModel? { get }
-    func trackEvent(event: LoggableEvent)
-    func signOut() async throws
-    func getCurrentUserId() throws -> String
-    func deleteAccount() async throws
-    func deleteUser() async throws
-    func removeAuthorIdFromAllUserAvatars(userId: String) async throws
-    func deleteAllChatsForUser(userId: String) async throws
-    func deleteUserProfile()
-    func updateAppState(showTabBarView: Bool)
-}
-extension CoreInteractor: SettingsViewModelInteractor {}
-
-@MainActor
-protocol SettingsViewModelRouter {
-    func showAlert(error: Error)
-    func showAlert(type: CustomRouting.AlertType, title: String, subtitle: String?, buttons: (() -> AnyView)?)
-    func dismissScreen()
-    func showCreateAccountView(delegate: CreateAccountDelegate, onDisappear: (() -> Void)?)
-    func showRatingsModal(onEnjoyAppYesPressed: @escaping () -> Void, onEnjoyAppNoPressed: @escaping () -> Void)
-    func dismissModal()
-}
-extension CoreRouter: SettingsViewModelRouter {}
-
-@MainActor
 @Observable
-final class SettingsViewModel {
-    private let interactor: SettingsViewModelInteractor
-    private let router: SettingsViewModelRouter
-    init(interactor: SettingsViewModelInteractor, router: SettingsViewModelRouter) {
+final class SettingsPresenter {
+    private let interactor: SettingsInteractor
+    private let router: SettingsRouter
+    init(interactor: SettingsInteractor, router: SettingsRouter) {
         self.interactor = interactor
         self.router = router
     }
@@ -157,7 +131,7 @@ final class SettingsViewModel {
     }
 }
 
-extension SettingsViewModel {
+extension SettingsPresenter {
     enum Event: LoggableEvent {
         case signOutStart
         case signOutSuccess

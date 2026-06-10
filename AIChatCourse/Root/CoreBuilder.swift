@@ -237,7 +237,7 @@ struct CoreBuilder {
 
     func settingsView(router: Router) -> AnyView {
         SettingsView(
-            viewModel: SettingsViewModel(
+            presenter: SettingsPresenter(
                 interactor: interactor,
                 router: CoreRouter(router: router, builder: self)
             )
