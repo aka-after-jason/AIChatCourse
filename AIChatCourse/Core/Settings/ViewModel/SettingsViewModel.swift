@@ -26,7 +26,7 @@ protocol SettingsViewModelRouter {
     func showAlert(error: Error)
     func showAlert(type: CustomRouting.AlertType, title: String, subtitle: String?, buttons: (() -> AnyView)?)
     func dismissScreen()
-    func showCreateAccountView(delegate: CreateAccountDelegate, onDisappear: @escaping () -> Void)
+    func showCreateAccountView(delegate: CreateAccountDelegate, onDisappear: (() -> Void)?)
     func showRatingsModal(onEnjoyAppYesPressed: @escaping () -> Void, onEnjoyAppNoPressed: @escaping () -> Void)
     func dismissModal()
 }

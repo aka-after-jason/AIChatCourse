@@ -10,26 +10,18 @@ import SwiftUI
 struct CreateAvatarView: View {
     @State var viewModel: CreateAvatarViewModel
 
-    /// 这里打破了 MVVM 架构
-    /// ViewModel cannot use SwiftUI Property Wrappers
-    /// 这里在 viewmodel 中传入了事件
-    @Environment(\.dismiss) private var dismiss
-
     var body: some View {
-        NavigationStack {
-            List {
-                nameSection
-                attributesSection
-                imageSection
-                saveSection
-            }
-            .navigationTitle("Create Avatar")
-            .appearAnalyticsViewModifier(name: "CreateAvatarView")
-            .showCustomAlert(type: .alert, alertItem: $viewModel.showAlert)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    backButton
-                }
+        List {
+            nameSection
+            attributesSection
+            imageSection
+            saveSection
+        }
+        .navigationTitle("Create Avatar")
+        .appearAnalyticsViewModifier(name: "CreateAvatarView")
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                backButton
             }
         }
     }
@@ -39,9 +31,7 @@ extension CreateAvatarView {
     private var backButton: some View {
         Image(systemName: "xmark")
             .anyButton(.press) {
-                viewModel.onBackButtonPressed(onDismiss: {
-                    dismiss()
-                })
+                viewModel.onBackButtonPressed()
             }
     }
 
@@ -121,7 +111,7 @@ extension CreateAvatarView {
                 isLoading: viewModel.isSvaing,
                 title: "Save",
                 action: {
-                    viewModel.onSavePressed(onDismiss: { dismiss() })
+                    viewModel.onSavePressed()
                 }
             )
             .removeListRowFormatting()
@@ -132,7 +122,9 @@ extension CreateAvatarView {
 }
 
 #Preview {
-    CoreBuilder(interactor: CoreInteractor(container: DevPreview.shared.container))
-        .createAvatarView()
-        .previewEnvironment()
+    let builder = CoreBuilder(interactor: CoreInteractor(container: DevPreview.shared.container))
+    return RouterView { router in
+        builder.createAvatarView(router: router)
+    }
+    .previewEnvironment()
 }

@@ -23,7 +23,7 @@ extension CoreInteractor: ExploreViewModelInteractor {}
 protocol ExploreViewModelRouter {
     func showCategoryListView(delegate: CategoryListDelegate)
     func showChatView(delegate: ChatViewDelegate)
-    func showCreateAccountView(delegate: CreateAccountDelegate, onDisappear: @escaping () -> Void)
+    func showCreateAccountView(delegate: CreateAccountDelegate, onDisappear: (() -> Void)?)
     func showPushNotificationModal(onEnablePressed: @escaping () -> Void, onCancelPressed: @escaping () -> Void)
     func showDevSettingsView()
     func dismissModal()
@@ -70,7 +70,7 @@ final class ExploreViewModel {
             guard interactor.authUser?.isAnonymous == true && interactor.createAccountTest == true else {
                 return
             }
-            router.showCreateAccountView(delegate: CreateAccountDelegate(), onDisappear: {})
+            router.showCreateAccountView(delegate: CreateAccountDelegate(), onDisappear: nil)
         }
     }
 

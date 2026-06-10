@@ -55,14 +55,10 @@ struct CoreRouter {
     }
 
     func showCreateAvatarView(onDisappear: @escaping () -> Void) {
-        router.showScreen(.fullScreenCover) { _ in
-            builder.createAvatarView()
+        router.showScreen(.fullScreenCover) { router in
+            builder.createAvatarView(router: router)
                 .onDisappear(perform: { onDisappear() })
         }
-    }
-
-    func dismissScreen() {
-        router.dismissScreen()
     }
 
     // MARK: sheets
@@ -85,11 +81,11 @@ struct CoreRouter {
         }
     }
 
-    func showCreateAccountView(delegate: CreateAccountDelegate, onDisappear: @escaping () -> Void) {
+    func showCreateAccountView(delegate: CreateAccountDelegate, onDisappear: (() -> Void)? = nil) {
         router.showScreen(.sheet) { _ in
             builder.createAccountView(delegate: delegate)
                 .presentationDetents([.medium])
-                .onDisappear(perform: { onDisappear() })
+                .onDisappear(perform: { onDisappear?() })
         }
     }
 
@@ -134,7 +130,7 @@ struct CoreRouter {
             }
         )
     }
-    
+
     func showRatingsModal(onEnjoyAppYesPressed: @escaping () -> Void, onEnjoyAppNoPressed: @escaping () -> Void) {
         router.showModal(
             backgroundColor: Color.black.opacity(0.6),
@@ -156,10 +152,6 @@ struct CoreRouter {
         )
     }
 
-    func dismissModal() {
-        router.dismissModal()
-    }
-
     // MARK: alerts
 
     func showAlert(type: CustomRouting.AlertType, title: String, subtitle: String?, buttons: (() -> AnyView)?) {
@@ -174,8 +166,16 @@ struct CoreRouter {
         router.showAlert(type: .alert, title: "Error", subtitle: error.localizedDescription, buttons: nil)
     }
 
+    func dismissScreen() {
+        router.dismissScreen()
+    }
+
     func dismissAlert() {
         router.dismissAlert()
+    }
+
+    func dismissModal() {
+        router.dismissModal()
     }
 }
 
@@ -328,9 +328,14 @@ struct CoreBuilder {
 
     // MARK: CreateAvatarView
 
-    func createAvatarView() -> AnyView {
-        CreateAvatarView(viewModel: CreateAvatarViewModel(interactor: interactor))
-            .any()
+    func createAvatarView(router: Router) -> AnyView {
+        CreateAvatarView(
+            viewModel: CreateAvatarViewModel(
+                interactor: interactor,
+                router: CoreRouter(router: router, builder: self)
+            )
+        )
+        .any()
     }
 
     // MARK: OnboardingColorView
