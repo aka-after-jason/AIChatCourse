@@ -23,7 +23,10 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 
         config.configure() // 先执行 FirebaseApp.configure()
         dependencies = Dependencies(config: config)
-        builder = RootBuilder(interactor: RootInteractor(container: dependencies.container))
+        builder = RootBuilder(
+            interactor: RootInteractor(container: dependencies.container),
+            loggedInRIB: CoreBuilder(interactor: CoreInteractor(container: dependencies.container))
+        )
 
         // JPush
         // JPushManager.shared.configure(launchOptions: launchOptions)

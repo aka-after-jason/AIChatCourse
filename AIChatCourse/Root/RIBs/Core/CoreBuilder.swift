@@ -7,23 +7,13 @@
 import SwiftUI
 
 @MainActor
-struct CoreBuilder {
+struct CoreBuilder: Builder {
     let interactor: CoreInteractor
     
-    // MARK: AppView
-
-//    func appView() -> some View {
-//        AppView(
-//            viewModel: AppViewModel(interactor: interactor),
-//            tabbarView: {
-//                tabbarView()
-//            },
-//            onboardingView: {
-//                welcomeView()
-//            }
-//        )
-//    }
-
+    func build() -> AnyView {
+        tabbarView().any()
+    }
+    
     func tabbarView() -> some View {
         TabBarView(
             tabs: [

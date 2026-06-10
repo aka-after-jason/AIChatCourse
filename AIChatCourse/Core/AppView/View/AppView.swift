@@ -92,7 +92,10 @@ struct AppView<TabbarView: View, OnboardingView: View>: View {
     container.regiser(UserManager.self, manager: UserManager(services: MockUserServices(user: .mock)))
     container.regiser(AuthManager.self, manager: AuthManager(service: MockAuthService(user: .mock(isAnonymous: true))))
     container.regiser(AppState.self, manager: AppState(showTabBar: true))
-    let builder = RootBuilder(interactor: RootInteractor(container: container))
+    let builder = RootBuilder(
+        interactor: RootInteractor(container: container),
+        loggedInRIB: CoreBuilder(interactor: CoreInteractor(container: container))
+    )
     return builder.appView()
         .previewEnvironment()
 }
@@ -102,7 +105,10 @@ struct AppView<TabbarView: View, OnboardingView: View>: View {
     container.regiser(UserManager.self, manager: UserManager(services: MockUserServices(user: nil)))
     container.regiser(AuthManager.self, manager: AuthManager(service: MockAuthService(user: nil)))
     container.regiser(AppState.self, manager: AppState(showTabBar: false))
-    let builder = RootBuilder(interactor: RootInteractor(container: container))
+    let builder = RootBuilder(
+        interactor: RootInteractor(container: container),
+        loggedInRIB: CoreBuilder(interactor: CoreInteractor(container: container))
+    )
     return builder.appView()
     .previewEnvironment()
 }
