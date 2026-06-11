@@ -13,8 +13,8 @@ import SwiftUI
 struct AppView<TabbarView: View, OnboardingView: View>: View {
     // @Environment(\.scenePhase) private var scenePhase // LifeCycle: SwiftUI 使用这个
     @State var viewModel: AppViewModel
-    @ViewBuilder var tabbarView: () -> TabbarView
-    @ViewBuilder var onboardingView: () -> OnboardingView
+    var tabbarView: () -> TabbarView
+    var onboardingView: () -> OnboardingView
     var body: some View {
         // RootView 来自 SwiftfulUI 框架
         RootView(
@@ -94,8 +94,12 @@ struct AppView<TabbarView: View, OnboardingView: View>: View {
     container.regiser(AppState.self, manager: AppState(showTabBar: true))
     let builder = RootBuilder(
         interactor: RootInteractor(container: container),
-        loggedInRIB: CoreBuilder(interactor: CoreInteractor(container: container)),
-        loggedOutRIB: OnboardingBuilder(interactor: OnboardingInteractor(container: container))
+        loggedInRIB: {
+            CoreBuilder(interactor: CoreInteractor(container: container))
+        },
+        loggedOutRIB: {
+            OnboardingBuilder(interactor: OnboardingInteractor(container: container))
+        }
     )
     return builder.appView()
         .previewEnvironment()
@@ -108,8 +112,12 @@ struct AppView<TabbarView: View, OnboardingView: View>: View {
     container.regiser(AppState.self, manager: AppState(showTabBar: false))
     let builder = RootBuilder(
         interactor: RootInteractor(container: container),
-        loggedInRIB: CoreBuilder(interactor: CoreInteractor(container: container)),
-        loggedOutRIB: OnboardingBuilder(interactor: OnboardingInteractor(container: container))
+        loggedInRIB: {
+            CoreBuilder(interactor: CoreInteractor(container: container))
+        },
+        loggedOutRIB: {
+            OnboardingBuilder(interactor: OnboardingInteractor(container: container))
+        }
     )
     return builder.appView()
     .previewEnvironment()

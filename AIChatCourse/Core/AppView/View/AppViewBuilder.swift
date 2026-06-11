@@ -9,16 +9,24 @@ import SwiftUI
 
 struct AppViewBuilder<TabbarView: View, OnboardingView: View>: View {
     var showTabBar: Bool = false
+    /*
     @ViewBuilder var tabbarView: TabbarView
     @ViewBuilder var onboardingView: OnboardingView
+     */
+    
+    /**
+     下面是定义成函数的形式: 可以懒加载
+     */
+    var tabbarView: () -> TabbarView
+    var onboardingView: () -> OnboardingView
 
     var body: some View {
         ZStack {
             if showTabBar {
-                tabbarView
+                tabbarView()
                     .transition(.move(edge: .leading))
             } else {
-                onboardingView
+                onboardingView()
                     .transition(.move(edge: .trailing))
             }
         }
