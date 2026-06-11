@@ -10,11 +10,12 @@ import SwiftUI
 struct RootBuilder: Builder {
     let interactor: RootInteractor
     let loggedInRIB: Builder
-    
+    let loggedOutRIB: Builder
+
     func build() -> AnyView {
         appView().any()
     }
-    
+
     func appView() -> some View {
         AppView(
             viewModel: AppViewModel(interactor: interactor),
@@ -22,9 +23,8 @@ struct RootBuilder: Builder {
                 loggedInRIB.build()
             },
             onboardingView: {
-                Text("onboardingView")
+                loggedOutRIB.build()
             }
         )
     }
 }
-

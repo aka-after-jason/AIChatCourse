@@ -12,4 +12,4 @@ protocol OnboardingCompletedInteractor {
     func markOnboardingCompleteForCurrentUser(profileColorHex: String) async throws
     func updateAppState(showTabBarView: Bool)
 }
-extension CoreInteractor: OnboardingCompletedInteractor {}
+extension OnboardingInteractor: OnboardingCompletedInteractor {}

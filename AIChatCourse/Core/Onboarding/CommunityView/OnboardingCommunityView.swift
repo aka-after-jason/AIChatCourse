@@ -46,7 +46,7 @@ struct OnboardingCommunityView: View {
 }
 
 #Preview {
-    let builder = CoreBuilder(interactor: CoreInteractor(container: DevPreview.shared.container))
+    let builder = OnboardingBuilder(interactor: OnboardingInteractor(container: DevPreview.shared.container))
     let delegate = OnboardingCommunityDelete()
     return RouterView { router in
         builder.onboardingCommunityView(router: router, delegate: delegate)

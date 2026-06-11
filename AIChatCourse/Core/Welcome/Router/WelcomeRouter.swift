@@ -11,4 +11,4 @@ protocol WelcomeRouter {
     func showOnboardingIntroView(delegate: OnboardingIntroDelete)
     func showCreateAccountView(delegate: CreateAccountDelegate, onDisappear: (() -> Void)?)
 }
-extension CoreRouter: WelcomeRouter {}
+extension OnboardingRouter: WelcomeRouter {}

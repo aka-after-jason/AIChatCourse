@@ -13,3 +13,4 @@ protocol CreateAccountInteractor {
     func login(user: UserAuthInfoModel, isNewUser: Bool) async throws
 }
 extension CoreInteractor: CreateAccountInteractor {}
+extension OnboardingInteractor: CreateAccountInteractor {}

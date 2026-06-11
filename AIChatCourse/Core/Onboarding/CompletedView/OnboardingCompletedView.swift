@@ -49,7 +49,7 @@ struct OnboardingCompletedView: View {
 #Preview {
     let container = DevPreview.shared.container
     container.regiser(UserManager.self, manager: UserManager(services: MockUserServices()))
-    let builder = CoreBuilder(interactor: CoreInteractor(container: container))
+    let builder = OnboardingBuilder(interactor: OnboardingInteractor(container: container))
     return RouterView { router in
         builder.onboardingCompletedView(router: router, delegate: OnboardingCompletedDelete(selectedColor: .mint))
         .previewEnvironment()

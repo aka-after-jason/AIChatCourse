@@ -48,7 +48,7 @@ struct CreateAccountView: View {
 }
 
 #Preview {
-    let builder = CoreBuilder(interactor: CoreInteractor(container: DevPreview.shared.container))
+    let builder = OnboardingBuilder(interactor: OnboardingInteractor(container: DevPreview.shared.container))
     return RouterView { router in
         builder.createAccountView(router: router)
     }

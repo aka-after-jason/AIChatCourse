@@ -8,4 +8,4 @@ import SwiftUI
 
 @MainActor
 protocol OnboardingCommunityInteractor {}
-extension CoreInteractor: OnboardingCommunityInteractor {}
+extension OnboardingInteractor: OnboardingCommunityInteractor {}

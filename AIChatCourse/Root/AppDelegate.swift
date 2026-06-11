@@ -25,7 +25,8 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         dependencies = Dependencies(config: config)
         builder = RootBuilder(
             interactor: RootInteractor(container: dependencies.container),
-            loggedInRIB: CoreBuilder(interactor: CoreInteractor(container: dependencies.container))
+            loggedInRIB: CoreBuilder(interactor: CoreInteractor(container: dependencies.container)),
+            loggedOutRIB: OnboardingBuilder(interactor: OnboardingInteractor(container: dependencies.container))
         )
 
         // JPush

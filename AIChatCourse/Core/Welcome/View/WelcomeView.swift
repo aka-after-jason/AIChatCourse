@@ -77,7 +77,9 @@ extension WelcomeView {
 }
 
 #Preview {
-    CoreBuilder(interactor: CoreInteractor(container: DevPreview.shared.container))
-        .welcomeView()
+    let container = DevPreview.shared.container
+    let builder = OnboardingBuilder(interactor: OnboardingInteractor(container: container))
+    
+    return builder.welcomeView()
         .previewEnvironment()
 }

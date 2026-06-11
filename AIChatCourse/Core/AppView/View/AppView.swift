@@ -94,7 +94,8 @@ struct AppView<TabbarView: View, OnboardingView: View>: View {
     container.regiser(AppState.self, manager: AppState(showTabBar: true))
     let builder = RootBuilder(
         interactor: RootInteractor(container: container),
-        loggedInRIB: CoreBuilder(interactor: CoreInteractor(container: container))
+        loggedInRIB: CoreBuilder(interactor: CoreInteractor(container: container)),
+        loggedOutRIB: OnboardingBuilder(interactor: OnboardingInteractor(container: container))
     )
     return builder.appView()
         .previewEnvironment()
@@ -107,7 +108,8 @@ struct AppView<TabbarView: View, OnboardingView: View>: View {
     container.regiser(AppState.self, manager: AppState(showTabBar: false))
     let builder = RootBuilder(
         interactor: RootInteractor(container: container),
-        loggedInRIB: CoreBuilder(interactor: CoreInteractor(container: container))
+        loggedInRIB: CoreBuilder(interactor: CoreInteractor(container: container)),
+        loggedOutRIB: OnboardingBuilder(interactor: OnboardingInteractor(container: container))
     )
     return builder.appView()
     .previewEnvironment()

@@ -39,6 +39,17 @@ struct CoreBuilder: Builder {
         )
     }
 
+    // MARK: DevSettingsView
+
+    func devSettingsView(router: Router) -> some View {
+        DevSettingsView(
+            presenter: DevSettingsPresenter(
+                interactor: interactor,
+                router: CoreRouter(router: router, builder: self)
+            )
+        )
+    }
+    
     // MARK: CreateAccountView
 
     func createAccountView(router: Router, delegate: CreateAccountDelegate = CreateAccountDelegate()) -> some View {
@@ -60,17 +71,6 @@ struct CoreBuilder: Builder {
         )
     }
 
-    // MARK: DevSettingsView
-
-    func devSettingsView(router: Router) -> some View {
-        DevSettingsView(
-            presenter: DevSettingsPresenter(
-                interactor: interactor,
-                router: CoreRouter(router: router, builder: self)
-            )
-        )
-    }
-
     // MARK: ExploreView
 
     func exploreView(router: Router) -> some View {
@@ -80,14 +80,6 @@ struct CoreBuilder: Builder {
                 router: CoreRouter(router: router, builder: self)
             )
         )
-    }
-
-    func welcomeView() -> some View {
-        RouterView { router in
-            WelcomeView(
-                viewModel: WelcomePresenter(interactor: interactor, router: CoreRouter(router: router, builder: self))
-            )
-        }
     }
 
     // MARK: CategoryListView
@@ -154,54 +146,6 @@ struct CoreBuilder: Builder {
                 interactor: interactor,
                 router: CoreRouter(router: router, builder: self)
             )
-        )
-    }
-
-    // MARK: OnboardingColorView
-
-    func onboardingColorView(router: Router, delegate: OnboardingColorDelete) -> some View {
-        OnboardingColorView(
-            presenter: OnboardingColorPresenter(
-                interactor: interactor,
-                router: CoreRouter(router: router, builder: self)
-            ),
-            delegate: delegate
-        )
-    }
-
-    // MARK: OnboardingCommunityView
-
-    func onboardingCommunityView(router: Router, delegate: OnboardingCommunityDelete) -> some View {
-        OnboardingCommunityView(
-            presenter: OnboardingCommunityPresenter(
-                interactor: interactor,
-                router: CoreRouter(router: router, builder: self)
-            ),
-            delegate: delegate
-        )
-    }
-
-    // MARK: OnboardingCompletedView
-
-    func onboardingCompletedView(router: Router, delegate: OnboardingCompletedDelete) -> some View {
-        OnboardingCompletedView(
-            presenter: OnboardingCompletedPresenter(
-                interactor: interactor,
-                router: CoreRouter(router: router, builder: self)
-            ),
-            delegate: delegate
-        )
-    }
-
-    // MARK: OnboardingIntroView
-
-    func onboardingIntroView(router: Router, delegate: OnboardingIntroDelete) -> some View {
-        OnboardingIntroView(
-            presenter: OnboardingIntroPresenter(
-                interactor: interactor,
-                router: CoreRouter(router: router, builder: self)
-            ),
-            delegate: delegate
         )
     }
 

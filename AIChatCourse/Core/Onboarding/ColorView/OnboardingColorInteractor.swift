@@ -8,4 +8,4 @@ import SwiftUI
 
 @MainActor
 protocol OnboardingColorInteractor {}
-extension CoreInteractor: OnboardingColorInteractor {}
+extension OnboardingInteractor: OnboardingColorInteractor {}

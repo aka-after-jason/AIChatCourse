@@ -81,7 +81,7 @@ extension OnboardingColorView {
 }
 
 #Preview {
-    let builder = CoreBuilder(interactor: CoreInteractor(container: DevPreview.shared.container))
+    let builder = OnboardingBuilder(interactor: OnboardingInteractor(container: DevPreview.shared.container))
     let delegate = OnboardingColorDelete()
     return RouterView { router in
         builder.onboardingColorView(router: router, delegate: delegate)

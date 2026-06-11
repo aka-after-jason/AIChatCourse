@@ -29,30 +29,6 @@ struct CoreRouter: GlobalRouter {
         }
     }
 
-    func showOnboardingIntroView(delegate: OnboardingIntroDelete) {
-        router.showScreen(.push) { router in
-            builder.onboardingIntroView(router: router, delegate: delegate)
-        }
-    }
-
-    func showOnboardingCommunityView(delegate: OnboardingCommunityDelete) {
-        router.showScreen(.push) { router in
-            builder.onboardingCommunityView(router: router, delegate: delegate)
-        }
-    }
-
-    func showOnboardingColorView(delegate: OnboardingColorDelete) {
-        router.showScreen(.push) { router in
-            builder.onboardingColorView(router: router, delegate: delegate)
-        }
-    }
-
-    func showOnboardingCompletedView(delegate: OnboardingCompletedDelete) {
-        router.showScreen(.push) { router in
-            builder.onboardingCompletedView(router: router, delegate: delegate)
-        }
-    }
-
     func showCreateAvatarView(onDisappear: @escaping () -> Void) {
         router.showScreen(.fullScreenCover) { router in
             builder.createAvatarView(router: router)

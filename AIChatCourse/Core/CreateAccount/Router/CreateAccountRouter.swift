@@ -11,3 +11,4 @@ protocol CreateAccountRouter {
     func dismissScreen()
 }
 extension CoreRouter: CreateAccountRouter {}
+extension OnboardingRouter: CreateAccountRouter {}

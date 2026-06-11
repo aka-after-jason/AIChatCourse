@@ -45,7 +45,7 @@ struct OnboardingIntroView: View {
 }
 
 #Preview("Original") {
-    let builder = CoreBuilder(interactor: CoreInteractor(container: DevPreview.shared.container))
+    let builder = OnboardingBuilder(interactor: OnboardingInteractor(container: DevPreview.shared.container))
     let delegate = OnboardingIntroDelete()
     return RouterView { router in
         builder.onboardingIntroView(router: router, delegate: delegate)
@@ -56,7 +56,7 @@ struct OnboardingIntroView: View {
 #Preview("OnboardingCommunityTest") {
     let container = DevPreview.shared.container
     container.regiser(ABTestManager.self, manager: ABTestManager(service: MockABTestService(onboardingCommunityTest: true)))
-    let builder = CoreBuilder(interactor: CoreInteractor(container: container))
+    let builder = OnboardingBuilder(interactor: OnboardingInteractor(container: container))
     let delegate = OnboardingIntroDelete()
     return RouterView { router in
         builder.onboardingIntroView(router: router, delegate: delegate)

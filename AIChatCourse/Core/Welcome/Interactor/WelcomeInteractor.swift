@@ -11,4 +11,4 @@ protocol WelcomeInteractor {
     func trackEvent(event: LoggableEvent)
     func updateAppState(showTabBarView: Bool)
 }
-extension CoreInteractor: WelcomeInteractor {}
+extension OnboardingInteractor: WelcomeInteractor {}

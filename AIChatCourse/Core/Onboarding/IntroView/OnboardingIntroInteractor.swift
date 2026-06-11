@@ -10,4 +10,4 @@ import SwiftUI
 protocol OnboardingIntroInteractor {
     var activeABTestModel: ActiveABTestModel { get }
 }
-extension CoreInteractor: OnboardingIntroInteractor {}
+extension OnboardingInteractor: OnboardingIntroInteractor {}
